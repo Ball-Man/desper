@@ -15,6 +15,8 @@ class AbstractComponent:
 
         This method is called presumably at each frame(at each
         AbstractProcessor.process call).
+
+        :param world: The world to which the component is bound.
         """
         raise NotImplementedError
 
@@ -57,6 +59,7 @@ class AbstractWorld(esper.World):
 
     def _get_component(self, component_type):
         """Get an iterator for Entity, Component pairs.
+
         :param component_type: The Component type to retrieve(will scan
         all subtypes).
         :return: An iterator for (Entity, Component) tuples.
