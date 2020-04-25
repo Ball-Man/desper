@@ -126,7 +126,7 @@ class AbstractWorld(esper.World):
         :return: A iterator containg the single Component instance
         requested, which is empty if the component doesn't exist.
         """
-        # For performance reasons, the code is replied from
+        # For performance reasons, the code is replicated from
         # component_for_entity
         ent_components = self._entities[entity]
 
@@ -140,3 +140,57 @@ class AbstractWorld(esper.World):
                 return ent_components[ex_type]
 
             [q.put(subtype) for subtype in ex_type.__subclasses__()]
+
+    def has_component(self, entity, component_type):
+        """Check if a specific Entity has a Component of a certain type.
+
+        This checks for subtypes of the component_type too.
+
+        :param entity: The Entity you are querying.
+        :param component_type: The type of Component to check for.
+        :return: True if the Entity has a Component of this type,
+                 otherwise False
+        """
+        q = queue.SimpleQueue()
+        q.put(component_type)
+
+        while not q.empty():
+            ex_type = q.get()
+
+            if ex_type in self._entities[entity]:
+                return True
+
+            [q.put(subtype) for subtype in ex_type.__subclasses__()]
+
+        return False
+
+    def has_components(self, entity, *component_types):
+        """Check if an Entity has all of the specified Component types.
+
+        This checks for the subtypes of all the given component types
+        too.
+
+        :param entity: The Entity you are querying.
+        :param component_types: Two or more Component types to check
+                                for.
+        :return: True if the Entity has all of the Components,
+                 otherwise False
+        """
+        # For performance reasons, code is partially replicated from
+        # has_component
+        for component_type in component_types:
+            q = queue.SimpleQueue()
+            q.put(component_type)
+
+            found = False
+            while not q.empty():
+                ex_type = q.get()
+
+                found = found or ex_type in self._entities[entity]
+
+                [q.put(subtype) for subtype in ex_type.__subclasses__()]
+
+            if not found:
+                return False
+
+        return True

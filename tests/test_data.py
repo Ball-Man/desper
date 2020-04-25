@@ -75,6 +75,29 @@ def test_abstract_processor(world):
     assert world.try_component(entity2, ComponentD).val == (ComponentD.INIT_VAL
                                                    + range_update)
 
+
+def test_has_component(world):
+    entity = world.create_entity()
+
+    world.add_component(entity, ComponentB())
+
+    assert world.has_component(entity, ComponentA)
+    assert world.has_component(entity, ComponentB)
+    assert not world.has_component(entity, ComponentC)
+
+
+def test_has_components(world):
+    entity = world.create_entity()
+
+    world.add_component(entity, ComponentA())
+    world.add_component(entity, ComponentB())
+    world.add_component(entity, ComponentC())
+
+    assert world.has_components(entity, ComponentA, ComponentB)
+    assert world.has_components(entity, ComponentB)
+    assert not world.has_components(entity, ComponentC, ComponentD)
+    assert not world.has_components(entity, ComponentD)
+
 # Helpers
 
 
