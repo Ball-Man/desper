@@ -38,6 +38,16 @@ def test_entity_for_component(world):
     entity = world.create_entity(component)
 
     assert world.component_for_entity(entity, ComponentC) == component
+    with pytest.raises(KeyError):
+        world.component_for_entity(entity, ComponentA)
+
+
+def test_try_component(world):
+    component = ComponentD()
+    entity = world.create_entity(component)
+
+    assert world.try_component(entity, ComponentC) == component
+    assert world.try_component(entity, ComponentA) is None
 
 # def test_abstract_processor(world):
 #     range_entity = 500

@@ -108,3 +108,35 @@ class AbstractWorld(esper.World):
                 return ent_components[ex_type]
 
             [q.put(subtype) for subtype in ex_type.__subclasses__()]
+
+        raise KeyError
+
+    def try_component(self, entity, component_type):
+        """Try to get a single component type for an Entity.
+
+        This method will return the requested Component if it exists,
+        but will pass silently if it does not. This allows a way to
+        access optional Components that may or may not exist, without
+        having to first querty the Entity to see if it has the Component
+        type. Like with component_for_entity, this checks for subtypes.
+
+        :param entity: The Entity ID to retrieve the Component for.
+        :param component_type: The Component instance you wish to
+        retrieve.
+        :return: A iterator containg the single Component instance
+        requested, which is empty if the component doesn't exist.
+        """
+        # For performance reasons, the code is replied from
+        # component_for_entity
+        ent_components = self._entities[entity]
+
+        q = queue.SimpleQueue()
+        q.put(component_type)
+
+        while not q.empty():
+            ex_type = q.get()
+
+            if ex_type in ent_components:
+                return ent_components[ex_type]
+
+            [q.put(subtype) for subtype in ex_type.__subclasses__()]
