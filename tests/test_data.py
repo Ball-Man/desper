@@ -98,6 +98,15 @@ def test_has_components(world):
     assert not world.has_components(entity, ComponentC, ComponentD)
     assert not world.has_components(entity, ComponentD)
 
+
+def test_remove_component(world):
+    entity = world.create_entity(ComponentB(), ComponentA())
+
+    world.remove_component(entity, ComponentA)
+
+    assert len(world.components_for_entity(entity)) == 1
+    assert type(world.components_for_entity(entity)[0]) is ComponentB
+
 # Helpers
 
 

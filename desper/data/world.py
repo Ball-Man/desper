@@ -194,3 +194,42 @@ class AbstractWorld(esper.World):
                 return False
 
         return True
+
+    def remove_component(self, entity, component_type):
+        """Remove a Component instance from an Entity, by type.
+
+        A Component instance can be removed by providing it's base type.
+        For example: world.delete_component(enemy_a, Velocity) will
+        remove the Velocity instance from the Entity enemy_a.
+
+        This will remove one component, based on its base type.
+
+        :raises KeyError: If either the given entity or Component type
+                          are not found in the database.
+        :param entity: The Entity to remove the Component from.
+        :param component_type: The type of the Component to remove.
+        :return: The entity ID which had its component removed.
+        """
+        q = queue.SimpleQueue()
+        q.put(component_type)
+
+        while not q.empty():
+            ex_type = q.get()
+
+            if ex_type in self._entities[entity]:
+                self._components[component_type].discard(entity)
+
+                if not self._components[ex_type]:
+                    del self._components[ex_type]
+
+                del self._entities[entity][ex_type]
+
+                if not self._entities[entity]:
+                    del self._entities[entity]
+
+                self.clear_cache()
+                return entity
+
+            [q.put(subtype) for subtype in ex_type.__subclasses__()]
+
+        raise KeyError
