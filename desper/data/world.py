@@ -76,3 +76,35 @@ class AbstractWorld(esper.World):
 
             for entity in self._components.get(ex_type, []):
                 yield entity, entity_db[entity][ex_type]
+
+    def component_for_entity(self, entity, component_type):
+        """Retrieve a Component instance for a specific Entity.
+
+        Retrieve a Component instance for a specific Entity. In some
+        cases, it may be necessary to access a specific Component
+        instance. For example: directly modifying a Component to handle
+        user input.
+        This will retrieve the Component based on its hierarchy, meaning
+        that if a base-class type is requested, the output could be an
+        instance of a derived class. Priority goes to the base class.
+
+        :raises KeyError: If the given Entity and Component do not
+        exist.
+        :param entity: The Entity ID to retrieve the Component for.
+        :param component_type: The Component instance you wish to
+        retrieve.
+        :return: The Component instance requested for the given Entity
+        ID.
+        """
+        ent_components = self._entities[entity]
+
+        q = queue.SimpleQueue()
+        q.put(component_type)
+
+        while not q.empty():
+            ex_type = q.get()
+
+            if ex_type in ent_components:
+                return ent_components[ex_type]
+
+            [q.put(subtype) for subtype in ex_type.__subclasses__()]
