@@ -41,6 +41,11 @@ def test_entity_for_component(world):
     with pytest.raises(KeyError):
         world.component_for_entity(entity, ComponentA)
 
+    component2 = ComponentC()
+    world.add_component(entity, component2)
+
+    assert type(world.component_for_entity(entity, ComponentC)) is ComponentC
+
 
 def test_try_component(world):
     component = ComponentD()
@@ -49,14 +54,17 @@ def test_try_component(world):
     assert world.try_component(entity, ComponentC) == component
     assert world.try_component(entity, ComponentA) is None
 
+    component2 = ComponentC()
+    world.add_component(entity, component2)
+
+    assert type(world.try_component(entity, ComponentC)) is ComponentC
+
+
 # def test_abstract_processor(world):
-#     range_entity = 500
 #     range_update = 50
 
-#     for i in range(range_entity):
-#         world.create_entity(ComponentC())
-#     for i in range(range_entity):
-#         world.create_entity(ComponentD())
+#     world.create_entity(ComponentC())
+#     world.create_entity(ComponentD())
 
 #     world.add_processor(data.AbstractProcessor())
 
