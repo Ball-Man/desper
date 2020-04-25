@@ -60,19 +60,20 @@ def test_try_component(world):
     assert type(world.try_component(entity, ComponentC)) is ComponentC
 
 
-# def test_abstract_processor(world):
-#     range_update = 50
+def test_abstract_processor(world):
+    range_update = 50
 
-#     world.create_entity(ComponentC())
-#     world.create_entity(ComponentD())
+    entity1 = world.create_entity(ComponentC())
+    entity2 = world.create_entity(ComponentD())
 
-#     world.add_processor(data.AbstractProcessor())
+    world.add_processor(data.AbstractProcessor())
 
-#     for i in range(range_update):
-#         world.process()
+    for i in range(range_update):
+        world.process()
 
-#     for i in range(range_entity):
-#         assert len(world.get_component(ComponentC))
+    assert world.try_component(entity1, ComponentC).val == range_update
+    assert world.try_component(entity2, ComponentD).val == (ComponentD.INIT_VAL
+                                                   + range_update)
 
 # Helpers
 
