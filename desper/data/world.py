@@ -1,3 +1,5 @@
+import queue
+
 import esper
 
 
@@ -36,7 +38,7 @@ class AbstractProcessor(esper.Processor):
         AbstractWorld this means calling all the update methods of all
         the instances deriving from AbstractComponent.
         """
-        for ent, comp in self.world.get_components(AbstractComponent):
+        for ent, comp in self.world.get_component(AbstractComponent):
             comp.update(self.world)
 
 
@@ -52,4 +54,22 @@ class AbstractWorld(esper.World):
     NB: Despite the name, it's not an abstract class(in polymorphic
     terms. While it's designed to be derived, it's not compulsive).
     """
-    pass
+
+    def _get_component(self, component_type):
+        """Get an iterator for Entity, Component pairs.
+        :param component_type: The Component type to retrieve(will scan
+        all subtypes).
+        :return: An iterator for (Entity, Component) tuples.
+        """
+        entity_db = self._entities
+
+        q = queue.SimpleQueue()
+        q.put(component_type)
+        while not q.empty():
+            ex_type = q.get()
+
+            for type_ in ex_type.__subclasses__():
+                q.put(type_)
+
+            for entity in self._components.get(ex_type, []):
+                yield entity, entity_db[entity][ex_type]
