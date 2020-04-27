@@ -107,6 +107,19 @@ def test_remove_component(world):
     assert len(world.components_for_entity(entity)) == 1
     assert type(world.components_for_entity(entity)[0]) is ComponentB
 
+
+def test_handle():
+    test_val = 10
+    handle = SquareHandle(test_val)
+
+    assert handle._value is None
+    assert handle.get() == test_val ** 2
+    assert handle._value == test_val ** 2
+    assert handle.get() == test_val ** 2
+
+    handle.clear()
+    assert handle._value is None
+
 # Helpers
 
 
@@ -132,3 +145,13 @@ class ComponentD(ComponentC):
 
     def __init__(self):
         self.val = ComponentD.INIT_VAL
+
+
+class SquareHandle(desper.Handle):
+    def __init__(self, n):
+        super().__init__()
+
+        self._n = n
+
+    def _load(self):
+        return self._n ** 2
