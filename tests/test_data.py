@@ -1,3 +1,6 @@
+import os
+import os.path as pt
+
 from context import desper
 from desper import data
 
@@ -7,6 +10,11 @@ import pytest
 @pytest.fixture
 def world():
     return data.AbstractWorld()
+
+
+@pytest.fixture
+def gamemodel():
+    return data.GameModel()
 
 # Test functions
 
@@ -120,6 +128,32 @@ def test_handle():
     handle.clear()
     assert handle._value is None
 
+
+def test_gamemodel_res(gamemodel):
+    dirs = [pt.join(pt.dirname(__file__), pt.join('files', 'gamemodel_res'))]
+    check_string = open(pt.dirname(__file__) + os.sep + 'files' + os.sep
+                        + 'gamemodel_res' + os.sep + 'sounds.txt').read()
+
+    # Try importing nothing
+    import_dict = {accept_none: TextHandle}
+    gamemodel.init_handles(dirs, import_dict)
+
+    with pytest.raises(KeyError):
+        gamemodel.res['sounds.txt']
+
+    # Try importing sound files
+    import_dict = {accept_sounds: TextHandle}
+    gamemodel.init_handles(dirs, import_dict)
+
+    assert gamemodel.res['sounds.txt'].get() == check_string
+    with pytest.raises(KeyError):
+        gamemodel.res['test.txt']
+
+    # Try importing everything
+    import_dict = {accept_all: TextHandle}
+    gamemodel.init_handles(dirs, import_dict)
+
+    assert type(gamemodel.res['test.txt']) is TextHandle
 # Helpers
 
 
@@ -155,3 +189,26 @@ class SquareHandle(desper.Handle):
 
     def _load(self):
         return self._n ** 2
+
+
+class TextHandle(desper.Handle):
+    def __init__(self, filepath):
+        super().__init__()
+
+        self._filepath = filepath
+
+    def _load(self):
+        return open(self._filepath).read()
+
+
+def accept_all(filepath):
+    return filepath,
+
+
+def accept_none(filepath):
+    return None
+
+
+def accept_sounds(filepath):
+    if 'sounds' in filepath:
+        return filepath,
