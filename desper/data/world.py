@@ -10,12 +10,13 @@ class AbstractComponent:
     Any AbstractComponent subclass should implement the update method.
     """
 
-    def update(self, world, *args, **kwargs):
+    def update(self, entity, world, *args, **kwargs):
         """Base method for main game logic.
 
         This method is called presumably at each frame(at each
         AbstractProcessor.process call).
 
+        :param entity: The entity ID owning this component.
         :param world: The world to which the component is bound.
         """
         raise NotImplementedError
@@ -41,7 +42,7 @@ class AbstractProcessor(esper.Processor):
         the instances deriving from AbstractComponent.
         """
         for ent, comp in self.world.get_component(AbstractComponent):
-            comp.update(self.world)
+            comp.update(ent, self.world, *args, **kwargs)
 
 
 class AbstractWorld(esper.World):

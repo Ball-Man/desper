@@ -1,8 +1,8 @@
 import glob
 import os
 import os.path as pt
-import re
 from functools import reduce
+from .handle import Handle
 
 
 class GameModel:
@@ -39,6 +39,10 @@ class GameModel:
         :param importer_dict: A dictionary that associates regex
                               patterns to Handle implementations.
         """
+        self._current_world = None
+        self._current_world_handle = None
+        self.quit = False
+
         self.res = {}
         if dirs:
             self.init_handles(dirs, importer_dict)
@@ -124,3 +128,43 @@ class GameModel:
                     p = p.setdefault(subitem, {})
 
         return res
+
+    def loop(self):
+        """Start the main loop.
+
+        To stop the loop, set `quit` to True. Before calling this,
+        initialize the current world with `switch`.
+
+        :raises AttributeError: If the current world isn't initialized.
+        """
+        self.quit = False
+
+        while not self.quit:
+            self._current_world.process(self)
+
+    @property
+    def current_world_handle(self):
+        """Get the world currently executed in the main loop."""
+        return self._current_world_handle
+
+    @property
+    def current_world(self):
+        return self._current_world
+
+    def switch(self, world_handle, reset=False):
+        """Switch to a new world.
+
+        Optionally, reset the current world handle before leaving.
+
+        :raises TypeError: If world_handle isn't a Handle type.
+        :param world_handle: The world handle instance to game should
+                      switch.
+        :param reset: Whether the current world handle should be.
+        """
+        if not isinstance(world_handle, Handle):
+            raise TypeError
+        if reset and self._current_world is not None:
+            self._current_world_handle.clear()
+
+        self._current_world_handle = world_handle
+        self._current_world = world_handle.get()

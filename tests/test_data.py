@@ -14,7 +14,12 @@ def world():
 
 @pytest.fixture
 def gamemodel():
-    return data.GameModel()
+    model = data.GameModel()
+    w = data.AbstractWorld()
+    w.add_processor(data.AbstractProcessor())
+    model.res['testworld'] = WorldHandle(w)
+    model.switch(model.res['testworld'])
+    return model
 
 # Test functions
 
@@ -154,6 +159,39 @@ def test_gamemodel_res(gamemodel):
     gamemodel.init_handles(dirs, import_dict)
 
     assert type(gamemodel.res['test.txt']) is TextHandle
+
+
+def test_gamemodel_quit_loop(gamemodel):
+    w = gamemodel.current_world_handle.get()
+    entity = w.create_entity(ModelComponent())
+
+    gamemodel.loop()
+
+    assert w.component_for_entity(entity, ModelComponent).var == 11
+
+
+def test_gamemodel_switch(gamemodel, world):
+    gamemodel.res['testworld'].get().create_entity(ModelComponent())
+    gamemodel.res['testworld2'] = WorldHandle(world)
+
+    component = ModelComponent()
+    world.create_entity(component)
+    world.add_processor(data.AbstractProcessor())
+
+    assert gamemodel.current_world_handle == gamemodel.res['testworld']
+    assert gamemodel.current_world == gamemodel.res['testworld'].get()
+    gamemodel.loop()
+
+    assert component.var == 0
+
+    gamemodel.switch(gamemodel.res['testworld2'])
+    assert gamemodel.current_world_handle == gamemodel.res['testworld2']
+    assert gamemodel.current_world == gamemodel.res['testworld2'].get()
+    gamemodel.loop()
+
+    assert component.var == 11
+
+
 # Helpers
 
 
@@ -170,7 +208,7 @@ class ComponentC(data.AbstractComponent):
     def __init__(self):
         self.val = 0
 
-    def update(self, world):
+    def update(self, en, world):
         self.val += 1
 
 
@@ -179,6 +217,17 @@ class ComponentD(ComponentC):
 
     def __init__(self):
         self.val = ComponentD.INIT_VAL
+
+
+class ModelComponent(data.AbstractComponent):
+
+    def __init__(self):
+        self.var = 0
+
+    def update(self, en, world, model):
+        self.var += 1
+        if self.var > 10:
+            model.quit = True
 
 
 class SquareHandle(desper.Handle):
@@ -199,6 +248,16 @@ class TextHandle(desper.Handle):
 
     def _load(self):
         return open(self._filepath).read()
+
+
+class WorldHandle(desper.Handle):
+
+    def __init__(self, w):
+        super().__init__()
+        self._w = w
+
+    def _load(self):
+        return self._w
 
 
 def accept_all(filepath):
