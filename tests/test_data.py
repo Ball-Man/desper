@@ -2,21 +2,21 @@ import os
 import os.path as pt
 
 from context import desper
-from desper import data
+from desper import core
 
 import pytest
 
 
 @pytest.fixture
 def world():
-    return data.AbstractWorld()
+    return core.AbstractWorld()
 
 
 @pytest.fixture
 def gamemodel():
-    model = data.GameModel()
-    w = data.AbstractWorld()
-    w.add_processor(data.AbstractProcessor())
+    model = core.GameModel()
+    w = core.AbstractWorld()
+    w.add_processor(core.AbstractProcessor())
     model.res['testworld'] = WorldHandle(w)
     model.switch(model.res['testworld'])
     return model
@@ -79,7 +79,7 @@ def test_abstract_processor(world):
     entity1 = world.create_entity(ComponentC())
     entity2 = world.create_entity(ComponentD())
 
-    world.add_processor(data.AbstractProcessor())
+    world.add_processor(core.AbstractProcessor())
 
     for i in range(range_update):
         world.process()
@@ -176,7 +176,7 @@ def test_gamemodel_switch(gamemodel, world):
 
     component = ModelComponent()
     world.create_entity(component)
-    world.add_processor(data.AbstractProcessor())
+    world.add_processor(core.AbstractProcessor())
 
     assert gamemodel.current_world_handle == gamemodel.res['testworld']
     assert gamemodel.current_world == gamemodel.res['testworld'].get()
@@ -195,7 +195,7 @@ def test_gamemodel_switch(gamemodel, world):
 # Helpers
 
 
-class ComponentA(data.AbstractComponent):
+class ComponentA(core.AbstractComponent):
     pass
 
 
@@ -203,7 +203,7 @@ class ComponentB(ComponentA):
     pass
 
 
-class ComponentC(data.AbstractComponent):
+class ComponentC(core.AbstractComponent):
 
     def __init__(self):
         self.val = 0
@@ -219,7 +219,7 @@ class ComponentD(ComponentC):
         self.val = ComponentD.INIT_VAL
 
 
-class ModelComponent(data.AbstractComponent):
+class ModelComponent(core.AbstractComponent):
 
     def __init__(self):
         self.var = 0
