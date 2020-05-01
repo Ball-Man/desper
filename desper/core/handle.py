@@ -1,11 +1,11 @@
 class Handle:
     """A base class helper class for resource access.
 
-    A Handle exposes a `get` method which loads a resource from given
-    attributes(e.g. a filename) and caches it for later use.
-    When deriving, the `__init__` and `_load` method should be overridden
-    in order to reproduce the desired behaviour(correctly load and
-    cache the desired resource).
+    A Handle exposes a :py:meth:`get` method which loads a resource from
+    given attributes(e.g. a filename) and caches it for later use.
+    When deriving, the :py:meth:`__init__` and :py:meth:`_load` method
+    should be overridden in order to reproduce the desired
+    behaviour(correctly load and cache the desired resource).
     """
 
     def __init__(self):
@@ -23,7 +23,7 @@ class Handle:
         raise NotImplementedError
 
     def get(self):
-        """Get the handled resource(and cache it not already).
+        """Get the handled resource(and cache it if it's not already).
 
         NB: This method generally doesn't need to be overridden.
 
@@ -38,7 +38,7 @@ class Handle:
         """Clear the cached resource.
 
         The cached value is wiped and will need to be reloaded(that is
-        overhead) when calling `get`.
+        overhead) when calling :py:meth:`get`.
         This won't necessarily free the memory allocated by the given
         resource. The handle will simply "forget" about the value, which
         may or may not release the memory based on the garbage

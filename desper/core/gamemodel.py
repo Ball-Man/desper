@@ -15,16 +15,16 @@ class GameModel:
     A GameModel also manages the main game loop and contains useful
     data structures for resource usage and media(audio/video).
 
-    Loaded resources can be accessed via the `res` parameter(int this
-    implementation: a nested structure of dictionaries which keys are
-    the directory names).
+    Loaded resources can be accessed via the :py:attr:`res`
+    attribute(int this implementation: a nested structure of
+    dictionaries which keys are the directory names).
     """
 
     def __init__(self, dirs=[], importer_dict={}):
         """Construct a new GameModel from an importer dictionary.
 
         An importer dictionary is in the form:
-        { lambda1: HandleType1, lambda2: HandleType2, ...}
+        ``{ lambda1: HandleType1, lambda2: HandleType2, ...}``
         and specifies which Handle implementation should be used to load
         specific resources. Which resources are actually loaded using
         which Handle is decided by passing the pathnames (recursively
@@ -51,7 +51,7 @@ class GameModel:
         """Init a handle structure for resources and place it in `res`.
 
         An importer dictionary is in the form:
-        { lambda1: HandleType1, lambda2: HandleType2, ...}
+        ``{ lambda1: HandleType1, lambda2: HandleType2, ...}``
         and specifies which Handle implementation should be used to load
         specific resources. Which resources are actually loaded using
         which Handle is decided by passing the pathnames (recursively
@@ -61,9 +61,9 @@ class GameModel:
         iterable containing the parameters passed to the Handle
         constructor otherwise.
 
-        This will call `_init_handles` as its internal implementation.
-        If you need to reimplement this logic, please consider
-        overriding `_init_handles` instead.
+        This will call :py:meth:`_init_handles` as its internal
+        implementation. If you need to reimplement this logic, please
+        consider overriding :py:meth:`_init_handles` instead.
 
         :raises TypeError: If dirs is an empty list.
         :param dirs: A list of directory paths that will be recursively
@@ -77,7 +77,7 @@ class GameModel:
         """Init a handle structure for resources and return it.
 
         An importer dictionary is in the form:
-        { lambda1: HandleType1, lambda2: HandleType2, ...}
+        ``{ lambda1: HandleType1, lambda2: HandleType2, ...}``
         and specifies which Handle implementation should be used to load
         specific resources. Which resources are actually loaded using
         which Handle is decided by passing the pathnames (recursively
@@ -144,11 +144,12 @@ class GameModel:
 
     @property
     def current_world_handle(self):
-        """Get the world currently executed in the main loop."""
+        """Get the handle of the world currently executed world."""
         return self._current_world_handle
 
     @property
     def current_world(self):
+        """Get the world currently executed in the main loop."""
         return self._current_world
 
     def switch(self, world_handle, reset=False):
@@ -156,7 +157,9 @@ class GameModel:
 
         Optionally, reset the current world handle before leaving.
 
-        :raises TypeError: If world_handle isn't a Handle type.
+        :raises TypeError: If world_handle isn't a :class:`Handle` type
+                           or the inner world isn't a
+                           :class:`esper.World` implementation.
         :param world_handle: The world handle instance to game should
                       switch.
         :param reset: Whether the current world handle should be.

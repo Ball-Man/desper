@@ -6,15 +6,16 @@ import esper
 class AbstractComponent:
     """An inheritance based component for an entity-component design.
 
-    It's designed to be used with an AbstractProcessor.
-    Any AbstractComponent subclass should implement the update method.
+    It's designed to be used with an :class:`AbstractProcessor`.
+    Any :class:`AbstractComponent` subclass should implement the update
+    method.
     """
 
     def update(self, entity, world, *args, **kwargs):
         """Base method for main game logic.
 
         This method is called presumably at each frame(at each
-        AbstractProcessor.process call).
+        :py:meth:`AbstractProcessor.process` call).
 
         :param entity: The entity ID owning this component.
         :param world: The world to which the component is bound.
@@ -25,9 +26,10 @@ class AbstractComponent:
 class AbstractProcessor(esper.Processor):
     """An inheritance based processor.
 
-    It's designed to work on AbstractComponents in an AbstractWorld(
-    will process all subclasses of AbstractComponents thanks to
-    the AbstractWorld working with subclasses).
+    It's designed to work on :class:`AbstractComponents` in an
+    :class:`AbstractWorld`\( will process all subclasses of
+    AbstractComponents thanks to the AbstractWorld working with
+    subclasses).
 
     NB: Despite the name, it's not an abstract class(in polymorphic
     terms. While it's designed to be derived, it's not compulsive).
@@ -36,10 +38,10 @@ class AbstractProcessor(esper.Processor):
     def process(self, *args, **kwargs):
         """Base method for main game logic.
 
-        This method calls AbstractComponent.update on all the
-        AbstractComponents in his bound world. If bound to an
-        AbstractWorld this means calling all the update methods of all
-        the instances deriving from AbstractComponent.
+        This method calls :py:meth:`AbstractComponent.update` on all the
+        :class:`AbstractComponent`\s in his bound world. If bound to an
+        :class:`AbstractWorld` this means calling all the update methods
+        of all the instances deriving from AbstractComponent.
         """
         for ent, comp in self.world.get_component(AbstractComponent):
             comp.update(ent, self.world, *args, **kwargs)
@@ -49,13 +51,13 @@ class AbstractWorld(esper.World):
     """An AbstractWorld keeps track of the game state(or part of it).
 
     It contains a collection of all the Entity/Component assignments.
-    It's designed for being used with AbstractComponents and
-    AbstractProcessors. Basically, this emulates an inheritance-based
-    Entity-Component design through specialization of an ECS design.
-    (that is esper.World).
+    It's designed for being used with :class:`AbstractComponent`\s and
+    :class:`AbstractProcessor`\s. Basically, this emulates an
+    inheritance-based Entity-Component design through specialization of
+    an ECS design (that is esper.World).
 
-    NB: Despite the name, it's not an abstract class(in polymorphic
-    terms. While it's designed to be derived, it's not compulsive).
+    NB: Despite the name, it's not an abstract class(While it's designed
+    to be derived, it's not compulsive).
     """
 
     def _get_component(self, component_type):
@@ -90,12 +92,12 @@ class AbstractWorld(esper.World):
         instance of a derived class. Priority goes to the base class.
 
         :raises KeyError: If the given Entity and Component do not
-        exist.
+                          exist.
         :param entity: The Entity ID to retrieve the Component for.
         :param component_type: The Component instance you wish to
-        retrieve.
+                               retrieve.
         :return: The Component instance requested for the given Entity
-        ID.
+                 ID.
         """
         ent_components = self._entities[entity]
 
@@ -123,9 +125,10 @@ class AbstractWorld(esper.World):
 
         :param entity: The Entity ID to retrieve the Component for.
         :param component_type: The Component instance you wish to
-        retrieve.
+                               retrieve.
         :return: A iterator containg the single Component instance
-        requested, which is empty if the component doesn't exist.
+                 requested, which is empty if the component doesn't
+                 exist.
         """
         # For performance reasons, the code is replicated from
         # component_for_entity
