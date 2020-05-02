@@ -1,8 +1,10 @@
 import os
 import os.path as pt
+import inspect
 
 from context import desper
 from desper import core
+from desper.core import _signature
 
 import pytest
 
@@ -192,6 +194,20 @@ def test_gamemodel_switch(gamemodel, world):
     assert component.var == 11
 
 
+def test_loose_signature():
+    sig = _signature.LooseSignature([
+        inspect.Parameter('x', inspect.Parameter.POSITIONAL_OR_KEYWORD)])
+
+    def fun1(y):
+        pass
+
+    def fun2(x, y):
+        pass
+
+    assert sig == inspect.signature(fun1)
+    assert inspect.signature(fun1) == sig
+    assert sig != inspect.signature(fun2)
+
 # Helpers
 
 
@@ -260,14 +276,14 @@ class WorldHandle(desper.Handle):
         return self._w
 
 
-def accept_all(filepath):
-    return filepath,
+def accept_all(root, path, res):
+    return pt.abspath(pt.join(root, path)),
 
 
-def accept_none(filepath):
+def accept_none(resource_root, rel_path, resources):
     return None
 
 
-def accept_sounds(filepath):
-    if 'sounds' in filepath:
-        return filepath,
+def accept_sounds(resource_root, rel_path, resources):
+    if 'sounds' in rel_path:
+        return pt.abspath(pt.join(resource_root, rel_path)),

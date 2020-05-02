@@ -1,8 +1,11 @@
 import glob
 import os
 import os.path as pt
+import inspect as insp
 from functools import reduce
+
 from .handle import Handle
+from ._signature import LooseSignature
 
 
 class GameModel:
@@ -20,6 +23,24 @@ class GameModel:
     dictionaries which keys are the directory names).
     """
 
+    LAMBDA_SIG = LooseSignature(
+        [insp.Parameter('resource_root', insp.Parameter.POSITIONAL_OR_KEYWORD),
+         insp.Parameter('rel_path', insp.Parameter.POSITIONAL_OR_KEYWORD),
+         insp.Parameter('resources', insp.Parameter.POSITIONAL_OR_KEYWORD)])
+    """``(resource_root: string, rel_path: string, resources: dict) -> tuple``
+
+    Where `resource_root` will be populated by the absolute path to
+    one of the resource directories(an element of `dir`),
+    `rel_path` will be populated by the relative path from the
+    `resource_root` to the actual resource file and `resources` will
+    be populated with :py:attr`res`(the dict of :class:`Handle`
+    pointing to the already loaded resources).
+
+    The lambda should return None if the given pathname doesn't
+    refer to its specific resource type. It should return an
+    iterable containing the parameters passed to the Handle
+    constructor otherwise."""
+
     def __init__(self, dirs=[], importer_dict={}):
         """Construct a new GameModel from an importer dictionary.
 
@@ -29,11 +50,16 @@ class GameModel:
         specific resources. Which resources are actually loaded using
         which Handle is decided by passing the pathnames (recursively
         explored) of the `dirs` parameter to the lambdas in the dict.
-        The lambda should return None if the given pathname doesn't
-        refer to its specific resource type. It should return an
-        iterable containing the parameters passed to the Handle
-        constructor otherwise.
 
+        The correct lambda signature can be found at
+        :py:attr:`GameModel.LAMBDA_SIG`
+
+        Note: `dirs` will be scanned in the given order, which is very
+        important when loading resources that rely on others(e.g.
+        ``World`` ).
+
+        :raises TypeError: If the functions in `importer_dict` don't
+                           match :py:attr:`GameModel.LAMBDA_SIG`.
         :param dirs: A list of directory paths that will be recursively
                      scanned in search of resources.
         :param importer_dict: A dictionary that associates regex
@@ -56,16 +82,21 @@ class GameModel:
         specific resources. Which resources are actually loaded using
         which Handle is decided by passing the pathnames (recursively
         explored) of the `dirs` parameter to the lambdas in the dict.
-        The lambda should return None if the given pathname doesn't
-        refer to its specific resource type. It should return an
-        iterable containing the parameters passed to the Handle
-        constructor otherwise.
+
+        The correct lambda signature can be found at
+        :py:attr:`GameModel.LAMBDA_SIG`
+
+        Note: `dirs` will be scanned in the given order, which is very
+            important when loading resources that rely on others(e.g.
+            ``World`` ).
 
         This will call :py:meth:`_init_handles` as its internal
         implementation. If you need to reimplement this logic, please
         consider overriding :py:meth:`_init_handles` instead.
 
         :raises TypeError: If dirs is an empty list.
+        :raises TypeError: If the functions in `importer_dict` don't
+                           match :py:attr:`GameModel.LAMBDA_SIG`.
         :param dirs: A list of directory paths that will be recursively
                      scanned in search of resources.
         :param importer_dict: A dictionary that associates lamdas to
@@ -82,12 +113,17 @@ class GameModel:
         specific resources. Which resources are actually loaded using
         which Handle is decided by passing the pathnames (recursively
         explored) of the `dirs` parameter to the lambdas in the dict.
-        The lambda should return None if the given pathname doesn't
-        refer to its specific resource type. It should return an
-        iterable containing the parameters passed to the Handle
-        constructor otherwise.
+
+        The correct lambda signature can be found at
+        :py:attr:`GameModel.LAMBDA_SIG`
+
+        Note: `dirs` will be scanned in the given order, which is very
+            important when loading resources that rely on others(e.g.
+            ``World`` ).
 
         :raises TypeError: If dirs is an empty list.
+        :raises TypeError: If the functions in `importer_dict` don't
+                           match :py:attr:`GameModel.LAMBDA_SIG`.
         :param dirs: A list of directory paths that will be recursively
                      scanned in search of resources.
         :param importer_dict: A dictionary that associates lamdas to
@@ -97,6 +133,11 @@ class GameModel:
                  implementation, a dict of dicts(each dict representing
                  a directory in the filesystem)).
         """
+        # Check lambda signatures
+        if not all([insp.signature(fun) == GameModel.LAMBDA_SIG
+                    for fun in importer_dict]):
+            raise TypeError
+
         # Get recursively all the content of the given dirs
         pathnames = reduce(
             lambda x, y: x + y,
@@ -121,7 +162,7 @@ class GameModel:
                 # it
                 if subitem == split[-1] and not pt.isdir(abs_path):
                     for lam, handle in importer_dict.items():
-                        params = lam(abs_path)
+                        params = lam(pt.abspath(dirpath), item, self.res)
                         if params is not None:
                             p[subitem] = handle(*params)
                 elif subitem != split[-1]:
