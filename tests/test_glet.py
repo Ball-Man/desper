@@ -1,9 +1,16 @@
+import os.path as pt
+import os
 from helpers import *
 from context import desper
 from desper import glet
 from desper import core
 
 import pytest
+import pyglet
+
+
+IMAGE = pyglet.image.load(
+    pt.join(pt.dirname(__file__), 'files' + os.sep + 'test.png'))
 
 
 @pytest.fixture
@@ -21,6 +28,11 @@ def gamemodel():
     return model
 
 
+@pytest.fixture
+def sprite():
+    return pyglet.sprite.Sprite(IMAGE)
+
+
 def test_gamemodel_quit_loop(gamemodel):
     w = gamemodel.current_world_handle.get()
     entity = w.create_entity(ModelComponent())
@@ -28,3 +40,18 @@ def test_gamemodel_quit_loop(gamemodel):
     gamemodel.loop()
 
     assert w.component_for_entity(entity, ModelComponent).var == 11
+
+
+def test_active_sprite_processor(gamemodel, sprite):
+    w = gamemodel.current_world
+    w.add_processor(glet.ActiveSpriteProcessor())
+
+    entity = w.create_entity(glet.ActivePosition(50, 50), sprite,
+                             ModelComponent())
+
+    gamemodel.loop()
+
+    pos = w.component_for_entity(entity, glet.ActivePosition)
+    spr = w.component_for_entity(entity, pyglet.sprite.Sprite)
+    assert pos.x == spr.x
+    assert pos.y == spr.y

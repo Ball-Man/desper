@@ -100,7 +100,9 @@ class GletGameModel(desper.GameModel):
     def _iteration(self, dt):
         """Used as iteration inside the main loop."""
         self._current_world.process(self)
-        print(pyglet.clock.get_fps())
+
+        # print(pyglet.clock.get_fps())
+
         # Render
         self.window.clear()
         self._batches[self._current_world].draw()
