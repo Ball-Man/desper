@@ -9,6 +9,9 @@ import pytest
 import pyglet
 
 
+pyglet.resource.path = [pt.abspath(os.curdir).replace(os.sep, '/')]
+pyglet.resource.reindex()
+
 IMAGE = pyglet.image.load(
     pt.join(pt.dirname(__file__), 'files' + os.sep + 'test.png'))
 
@@ -55,3 +58,12 @@ def test_active_sprite_processor(gamemodel, sprite):
     spr = w.component_for_entity(entity, pyglet.sprite.Sprite)
     assert pos.x == spr.x
     assert pos.y == spr.y
+
+
+def test_image_handle(gamemodel):
+    print(pyglet.resource.path)
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {glet.get_image_importer(): glet.ImageHandle})
+
+    assert isinstance(gamemodel.res['sprites']['test.png'].get(),
+                      pyglet.image.AbstractImage)
