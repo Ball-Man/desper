@@ -61,9 +61,17 @@ def test_active_sprite_processor(gamemodel, sprite):
 
 
 def test_image_handle(gamemodel):
-    print(pyglet.resource.path)
     gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
                            {glet.get_image_importer(): glet.ImageHandle})
 
     assert isinstance(gamemodel.res['sprites']['test.png'].get(),
                       pyglet.image.AbstractImage)
+
+
+def test_animation_handle(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {glet.get_animation_importer():
+                            glet.AnimationHandle})
+
+    assert isinstance(gamemodel.res['sprites']['anim.json'].get(),
+                      pyglet.image.Animation)
