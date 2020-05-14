@@ -11,13 +11,13 @@ and is as follows:
 ``Component``
 
 Where a :class:`GameModel` contains all the game resources(graphics,
-etc.), including the game ``World``\s(game levels, basically).
-Each ``World`` works with entities and ``Component``\s. Entities are
+etc.), including the game ``World`` s(game levels, basically).
+Each ``World`` works with entities and ``Component`` s. Entities are
 "virtual", meaning that there is no class Entity(inside a ``World``
-they're just plain ``int``\s).
+they're just plain ``int`` s).
 
-Each entity can contain a set of ``Component``\s. The ``Component``\s
-are processed by ``Processor``\s, which query them, edit them and execute
+Each entity can contain a set of ``Component`` s. The ``Component`` s
+are processed by ``Processor`` s, which query them, edit them and execute
 the main game logic. This is the ECS pattern so far.
 
 Note that the ``World`` and ``Processor`` base classes comes from
@@ -32,8 +32,8 @@ Polymorphic data structures can be used as a standard ECS anyway, which
 means that it's possible to combine the polymorphic design with an ECS
 design when needed.
 
-:class:`GameModel` works with both ``esper.World``\s(pure ECS) and
-desper's :class:`AbstractWorld`\(which can be freely derived). The set
+:class:`GameModel` works with both ``esper.World`` s(pure ECS) and
+desper's :class:`AbstractWorld` (which can be freely derived). The set
 of base polymorphic types is made of: :class:`AbstractWorld`,
 :class:`AbstractProcessor`, :class:`AbstractComponent`.
 """
