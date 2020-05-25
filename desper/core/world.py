@@ -27,7 +27,7 @@ class AbstractProcessor(esper.Processor):
     """An inheritance based processor.
 
     It's designed to work on :class:`AbstractComponents` in an
-    :class:`AbstractWorld`\( will process all subclasses of
+    :class:`AbstractWorld` (will process all subclasses of
     AbstractComponents thanks to the AbstractWorld working with
     subclasses).
 
@@ -39,7 +39,7 @@ class AbstractProcessor(esper.Processor):
         """Base method for main game logic.
 
         This method calls :py:meth:`AbstractComponent.update` on all the
-        :class:`AbstractComponent`\s in his bound world. If bound to an
+        :class:`AbstractComponent` s in his bound world. If bound to an
         :class:`AbstractWorld` this means calling all the update methods
         of all the instances deriving from AbstractComponent.
         """
@@ -51,8 +51,8 @@ class AbstractWorld(esper.World):
     """An AbstractWorld keeps track of the game state(or part of it).
 
     It contains a collection of all the Entity/Component assignments.
-    It's designed for being used with :class:`AbstractComponent`\s and
-    :class:`AbstractProcessor`\s. Basically, this emulates an
+    It's designed for being used with :class:`AbstractComponent` s and
+    :class:`AbstractProcessor` s. Basically, this emulates an
     inheritance-based Entity-Component design through specialization of
     an ECS design (that is esper.World).
 

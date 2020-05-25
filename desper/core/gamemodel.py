@@ -203,7 +203,7 @@ class GameModel:
                            :class:`esper.World` implementation.
         :param world_handle: The world handle instance to game should
                       switch.
-        :param reset: Whether the current world handle should be.
+        :param reset: Whether the current world handle should be reset.
         """
         if not isinstance(world_handle, Handle):
             raise TypeError
