@@ -16,6 +16,6 @@ setup(name='desper',
       author='Francesco Mistri',
       author_email='franc.mistri@gmail.com',
       license='MIT',
-      packages=['desper', 'desper.data'],
+      packages=['desper', 'desper.core', 'desper.glet'],
       install_requires=REQUIREMENTS
       )
