@@ -41,6 +41,24 @@ class GameModel:
     iterable containing the parameters passed to the Handle
     constructor otherwise."""
 
+    resource_extensions = True
+    """Whether extensions should be kept in resource names or not.
+
+    When set to `True`, accessing resources will require that the
+    file extension, or an exception will be raised(e.g.
+    res['music']['bip.ogg']).
+
+    When set to `False`, resources won't need the original file
+    extensions, but this could potentially lead to overlapping names.
+    Based on this, as a best practice you should never have two or more
+    files in the same resource dir with the same name(and different
+    extension), one would override the other since in the resource dict
+    there can only be one resource with a given name. Note that
+    overlapping names could be allowed in special cases(e.g. an image
+    file and its metadata might have the same name, based on their
+    importer lambda's/:class:`Handle` s).
+    """
+
     def __init__(self, dirs=[], importer_dict={}):
         """Construct a new GameModel from an importer dictionary.
 
@@ -164,7 +182,16 @@ class GameModel:
                     for lam, handle in importer_dict.items():
                         params = lam(pt.abspath(dirpath), item, self.res)
                         if params is not None:
-                            p[subitem] = handle(*params)
+                            # Check if extensions are kept or ignored
+                            if GameModel.resource_extensions:
+                                res_key = subitem
+                            else:
+                                res_key = pt.splitext(subitem)[0]
+
+                            # Actually create the Handle
+                            p[res_key] = handle(*params)
+
+                # If it's not a leaf, it's a directory. Make a subtree.
                 elif subitem != split[-1]:
                     p = p.setdefault(subitem, {})
 
