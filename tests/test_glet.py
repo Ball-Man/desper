@@ -75,3 +75,11 @@ def test_animation_handle(gamemodel):
 
     assert isinstance(gamemodel.res['sprites']['anim.json'].get(),
                       pyglet.image.Animation)
+
+
+def test_media_handle(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {glet.get_media_importer(): glet.MediaHandle})
+
+    assert isinstance(gamemodel.res['media']['volt.wav'].get(),
+                      pyglet.media.Source)

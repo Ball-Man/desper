@@ -14,6 +14,9 @@ DEFAULT_ANIMATION_EXTS = ('.json')
 DEFAULT_ANIMATION_SHEET_EXTS = DEFAULT_IMAGE_EXTS
 """Default exts for the animation sprite sheet files."""
 
+DEFAULT_MEDIA_LOCATION = 'media'
+DEFAULT_MEDIA_EXTS = ('.wav', '.mp4', '.mp3', '.ogg')
+
 
 def _pyglet_path(path):
     """Manipulate path to match pyglet.resource requirements.
@@ -144,6 +147,52 @@ def get_animation_importer(location=DEFAULT_SPRITES_LOCATION,
     return sprite_importer
 
 
+def get_media_importer(location=DEFAULT_MEDIA_LOCATION,
+                       accepted_exts=DEFAULT_MEDIA_EXTS):
+    """Get an importer function for `pyglet.media.Source` resources.
+
+    Given the resource subfolder and accepted extensions, return a
+    function in the form of :py:attr:`GameModel.LAMBDA_SIG` that will
+    only accept files in the given resource subfolder(`location`) and
+    returns the path to the given media resource if it's considered
+    accepted.
+    (Designed to be used with :class:`MediaHandle`).
+
+    Currently there is not metadata file, the resource is imported as it
+    is (by default streamed from the disk, a custom importer function/handle
+    might be necessary if pre-decoded resources are needed).
+
+    :param location: The resource subfolder for the game where media
+                     should be stored(other directories won't be
+                     accepted).
+    :param accepted_exts: An iterable of extensions recognized as valid
+                          media metadata.
+    """
+    def media_importer(root, rel_path, resources):
+        """Return the joined path `root` + `rel_path` if accepted.
+
+        Designed to be used with :class:`MediaHandle`. If a
+        :class:`Handle` is found in the resource dict where the
+        :class:`MediaHandle` from this importer should go(e.g.
+        there is a file with the relative path of the given one) it
+        will merely be overwritten by a new :class:`MediaHandle`.
+
+        :param root: The root resource directory.
+        :param rel_path: The relative path from the resource directory
+                         to the specific resource being analyzed.
+        :return: The joined path `root` + `rel_path` if accepted, None
+                 otherwise(as stated in :py:attr:`GameModel.LAMBDA_SIG`
+                 ).
+        """
+        if (location in pt.dirname(rel_path) and pt.splitext(rel_path)[1] in
+                accepted_exts):
+            return pt.join(root, rel_path),
+
+        return None
+
+    return media_importer
+
+
 class ImageHandle(desper.Handle):
     """Handle implementation for a `pyglet.image.AbstractImage`.
 
@@ -219,3 +268,28 @@ class AnimationHandle(desper.Handle):
 
         return pyglet.image.Animation(
             frames=frames)
+
+
+class MediaHandle(desper.Handle):
+    """Handle implementation for a `pyglet.media.Source`.
+
+    This is used to load a media resource(in games, probably an audio
+    track or sfx). For non-raw data types, FFmpeg should be installed
+    (this is required by pyglet).
+    """
+
+    def __init__(self, filename, streamed=True):
+        """Construct a new MediaHandle, encapsulating the given file.
+
+        :param filename: The path to the desired file.
+        :param streamed: Whether the resource should be streamed from
+                          disk when needed or decoded into memory.
+        """
+        super().__init__()
+
+        self._filename = _pyglet_path(filename)
+        self._streamed = streamed
+
+    def _load(self):
+        """Implementation of the load function for media loading."""
+        return pyglet.resource.media(self._filename, self._streamed)
