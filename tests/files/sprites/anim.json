@@ -51,6 +51,7 @@
   "image": "anim.png",
   "format": "RGBA8888",
   "size": { "w": 160, "h": 32 },
+  "origin": { "x": 80, "y": 16 },
   "scale": "1"
  }
 }

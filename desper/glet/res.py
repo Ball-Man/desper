@@ -201,11 +201,21 @@ class AnimationHandle(desper.Handle):
             if isinstance(data['frames'], dict):
                 data['frames'] = data['frames'].values()
 
+        meta = data['meta']
         filedir = _pyglet_path(pt.join(pt.dirname(
-            self._filename), data['meta']['image']))
-        image = pyglet.resource.image(filedir)
+            self._filename), meta['image']))
+        image = pyglet.resource.image(filedir)      # Full image
+        # Extract single frames
+        frames = [pyglet.image.AnimationFrame(image.get_region(
+            frame['frame']['x'], frame['frame']['y'],
+            frame['frame']['w'], frame['frame']['h']),
+            frame['duration'] / 1000) for frame in data['frames']]
+
+        # Set the given anchor to all the frames
+        origin = meta['origin']
+        for anim_frame in frames:
+            anim_frame.image.anchor_x = origin['x']
+            anim_frame.image.anchor_y = origin['y']
+
         return pyglet.image.Animation(
-            frames=[pyglet.image.AnimationFrame(image.get_region(
-                frame['frame']['x'], frame['frame']['y'],
-                frame['frame']['w'], frame['frame']['h']),
-                frame['duration'] / 1000) for frame in data['frames']])
+            frames=frames)
