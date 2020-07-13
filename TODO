@@ -1,0 +1,12 @@
+Entries are numerated in order to reference them easily, but the order doesn't necessary depend on importance.
+
+Core:
+  01 - Manage paths with pathlib instead of os.path(?) (this will reflect on other modules probably)
+  02 - Importer closure getters(see Glet point 01)
+  03 - Add a feature to AbstractWorld that calls an on_attach method on newly added components(if the interface is implemented). The interface might be called OnAttachListener.
+
+Glet:
+  01 - Collapse all the importer closure getters (e.g. get_image_importer) into one global importer that can be specialized thanks to parameters. The global importer getter should be put into core module. Already existing getters might persist by calling the global importer with default parameters.
+       
+       Conflicts should be managed during the importing loop(by GameModel), by looping in order of priority and stop looping at the first match(this might be explicited to the user by having an importer_dict builder(gof builder pattern) which can build an ordered dict)
+
