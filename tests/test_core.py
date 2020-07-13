@@ -164,6 +164,21 @@ def test_gamemodel_res(gamemodel):
     assert type(gamemodel.res['test.txt']) is TextHandle
 
 
+def test_gamemodel_res_no_extensions(gamemodel):
+    dirs = [pt.join(pt.dirname(__file__), pt.join('files', 'gamemodel_res'))]
+    import_dict = {accept_sounds: TextHandle}
+
+    desper.options['resource_extensions'] = False
+
+    gamemodel.init_handles(dirs, import_dict)
+
+    desper.options['resource_extensions'] = True
+
+    assert type(gamemodel.res['sounds']) is TextHandle
+    with pytest.raises(KeyError):
+        gamemodel.res['sounds.txt']
+
+
 def test_gamemodel_quit_loop(gamemodel):
     w = gamemodel.current_world_handle.get()
     entity = w.create_entity(ModelComponent())

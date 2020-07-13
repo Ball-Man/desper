@@ -48,7 +48,14 @@ def get_resource_from_path(res, rel_path, default=None):
     :return: The :class:`Handle` loaded from the given `rel_path` if
              exists, `default` otherwise.
     """
-    for path in rel_path.split(pt.sep):
+    # Convert to posix path if needed
+    rel_path = rel_path.replace(pt.sep, '/')
+
+    # Remove extension if required
+    if not desper.options['resource_extensions']:
+        rel_path = pt.splitext(rel_path)[0]
+
+    for path in rel_path.split('/'):
         p = res.get(path, None)
 
         if p is None:
