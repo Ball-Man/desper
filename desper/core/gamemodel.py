@@ -91,6 +91,10 @@ class GameModel:
             important when loading resources that rely on others(e.g.
             ``World`` ).
 
+        Note: Once a resource is loaded thanks to the `importer_dict`,
+            it won't be used anymore(meaning that each file will be
+            considered at most once).
+
         This will call :py:meth:`_init_handles` as its internal
         implementation. If you need to reimplement this logic, please
         consider overriding :py:meth:`_init_handles` instead.
@@ -121,6 +125,10 @@ class GameModel:
         Note: `dirs` will be scanned in the given order, which is very
             important when loading resources that rely on others(e.g.
             ``World`` ).
+
+        Note: Once a resource is loaded thanks to the `importer_dict`,
+            it won't be used anymore(meaning that each file will be
+            considered at most once).
 
         :raises TypeError: If dirs is an empty list.
         :raises TypeError: If the functions in `importer_dict` don't
@@ -153,6 +161,7 @@ class GameModel:
         # Parse the dirs creating the handle structure from
         # importer_dict
         res = {}
+        used_paths = set()
         for item, dirpath in pathnames:
             abs_path = pt.join(dirpath, item)
             p = res
@@ -163,6 +172,10 @@ class GameModel:
                 # it
                 if subitem == split[-1] and not pt.isdir(abs_path):
                     for lam, handle in importer_dict.items():
+                        # If the resource has already been loaded, skip
+                        if abs_path in used_paths:
+                            break
+
                         params = lam(pt.abspath(dirpath), item, self.res)
                         if params is not None:
                             # Check if extensions are kept or ignored
@@ -173,6 +186,11 @@ class GameModel:
 
                             # Actually create the Handle
                             p[res_key] = handle(*params)
+
+                            # Keep track of already loaded resources
+                            # so that it won't be considered in future
+                            # iterations
+                            used_paths.add(abs_path)
 
                 # If it's not a leaf, it's a directory. Make a subtree.
                 elif subitem != split[-1]:

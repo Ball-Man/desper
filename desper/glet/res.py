@@ -62,8 +62,7 @@ def get_resource_from_path(res, rel_path, default=None):
             return default
 
 
-def get_image_importer(location=DEFAULT_SPRITES_LOCATION,
-                       accepted_exts=DEFAULT_IMAGE_EXTS):
+def get_image_importer():
     """Get an importer function for `pyglet.image.AbstractImage`.
 
     Given the resource subfolder and accepted extensions, return a
@@ -72,43 +71,13 @@ def get_image_importer(location=DEFAULT_SPRITES_LOCATION,
     returns the path to the given image if it's considered accepted
     (designed to be used with :class:`ImageHandle`).
 
-    :param location: The resource subfolder for the game where sprites
-                     should be stored(other directories won't be
-                     accepted).
-    :param accepted_exts: An iterable of extensions recognized as valid
-                          images.
     :return: A function usable as key in an `importer_dict`.
     """
-    def sprite_importer(root, rel_path, resources):
-        """Return the joined path `root` + `rel_path` if accepted.
-
-        Designed to be used with :class:`ImageHandle`. If in the
-        resource dictionary a :class:`Handle` is already present(e.g.
-        there is another file with the same name in the same directory)
-        then nothing will happen(this importer will return ``None``).
-
-        :param root: The root resource directory.
-        :param rel_path: The relative path from the resource directory
-                         to the specific resource being analyzed.
-        :return: The joined path `root` + `rel_path` if accepted, None
-                 otherwise(as stated in :py:attr:`GameModel.LAMBDA_SIG`
-                 ).
-        """
-        abspath = pt.join(root, rel_path)
-
-        if (location in pt.dirname(rel_path) and pt.splitext(rel_path)[1] in
-            accepted_exts and not isinstance(
-                get_resource_from_path(resources, rel_path), desper.Handle)):
-            return abspath,
-
-        return None
-
-    return sprite_importer
+    return desper.get_resource_importer(location=DEFAULT_SPRITES_LOCATION,
+                                        accepted_exts=DEFAULT_IMAGE_EXTS)
 
 
-def get_animation_importer(location=DEFAULT_SPRITES_LOCATION,
-                           accepted_exts=DEFAULT_ANIMATION_EXTS,
-                           accepted_sheet_exts=DEFAULT_ANIMATION_SHEET_EXTS):
+def get_animation_importer():
     """Get an importer function for `pyglet.image.animation.Animation`.
 
     Given the resource subfolder and accepted extensions, return a
@@ -129,33 +98,11 @@ def get_animation_importer(location=DEFAULT_SPRITES_LOCATION,
                                 valid animation files(sprite sheets).
     :return: A function usable as key in an `importer_dict`.
     """
-    def sprite_importer(root, rel_path, resources):
-        """Return the joined path `root` + `rel_path` if accepted.
-
-        Designed to be used with :class:`AnimationHandle`. If a
-        :class:`Handle` is found in the resource dict where the
-        :class:`AnimationHandle` from this importer should go(e.g.
-        there is a file with the relative path of the given one) it
-        will merely be overwritten by an :class:`AnimationHandle`.
-
-        :param root: The root resource directory.
-        :param rel_path: The relative path from the resource directory
-                         to the specific resource being analyzed.
-        :return: The joined path `root` + `rel_path` if accepted, None
-                 otherwise(as stated in :py:attr:`GameModel.LAMBDA_SIG`
-                 ).
-        """
-        if (location in pt.dirname(rel_path) and pt.splitext(rel_path)[1] in
-                accepted_exts):
-            return pt.join(root, rel_path),
-
-        return None
-
-    return sprite_importer
+    return desper.get_resource_importer(location=DEFAULT_SPRITES_LOCATION,
+                                        accepted_exts=DEFAULT_ANIMATION_EXTS)
 
 
-def get_media_importer(location=DEFAULT_MEDIA_LOCATION,
-                       accepted_exts=DEFAULT_MEDIA_EXTS):
+def get_media_importer():
     """Get an importer function for `pyglet.media.Source` resources.
 
     Given the resource subfolder and accepted extensions, return a
@@ -175,29 +122,8 @@ def get_media_importer(location=DEFAULT_MEDIA_LOCATION,
     :param accepted_exts: An iterable of extensions recognized as valid
                           media metadata.
     """
-    def media_importer(root, rel_path, resources):
-        """Return the joined path `root` + `rel_path` if accepted.
-
-        Designed to be used with :class:`MediaHandle`. If a
-        :class:`Handle` is found in the resource dict where the
-        :class:`MediaHandle` from this importer should go(e.g.
-        there is a file with the relative path of the given one) it
-        will merely be overwritten by a new :class:`MediaHandle`.
-
-        :param root: The root resource directory.
-        :param rel_path: The relative path from the resource directory
-                         to the specific resource being analyzed.
-        :return: The joined path `root` + `rel_path` if accepted, None
-                 otherwise(as stated in :py:attr:`GameModel.LAMBDA_SIG`
-                 ).
-        """
-        if (location in pt.dirname(rel_path) and pt.splitext(rel_path)[1] in
-                accepted_exts):
-            return pt.join(root, rel_path),
-
-        return None
-
-    return media_importer
+    return desper.get_resource_importer(location=DEFAULT_MEDIA_LOCATION,
+                                        accepted_exts=DEFAULT_MEDIA_EXTS)
 
 
 class ImageHandle(desper.Handle):
