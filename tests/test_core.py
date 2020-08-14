@@ -223,3 +223,11 @@ def test_loose_signature():
     assert sig == inspect.signature(fun1)
     assert inspect.signature(fun1) == sig
     assert sig != inspect.signature(fun2)
+
+
+def test_on_attach(world):
+    comp = OnAttachComponent()
+    en = world.create_entity(comp)
+
+    assert comp.entity == en
+    assert comp.world == world

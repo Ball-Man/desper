@@ -23,6 +23,25 @@ class AbstractComponent:
         raise NotImplementedError
 
 
+class OnAttachListener:
+    """An interface that enables components to be initialized.
+
+    When a component is added to an :class:`AbstractWorld`, the
+    :py:attr:`on_attach` method from this interface will be called(
+    if implemented).
+
+    Note: Unfortunately, during the attach event there is no direct
+        access to eventual resource dictionaries(like the on from
+        :class:`GameModel` ).
+
+    Note that this won't work with standard ecs worlds(esper ``World``),
+    but it's meant to be used with :class:`AbstractWorld`.
+    """
+
+    def on_attach(self, entity, world):
+        raise NotImplementedError
+
+
 class AbstractProcessor(esper.Processor):
     """An inheritance based processor.
 
@@ -237,3 +256,35 @@ class AbstractWorld(esper.World):
             [q.put(subtype) for subtype in ex_type.__subclasses__()]
 
         raise KeyError
+
+    def add_component(self, entity, component_instance):
+        """Add a new Component instance to an Entity.
+
+        Add a Component instance to an Entiy. If a Component of the same
+        type is already assigned to the Entity, it will be replaced.
+
+        If the given `component_type` implements
+        :class:`OnAttachListener`, the
+        :py:meth:`OnAttachListener.on_attach` method will be called.
+        The arguments passed to the listener are ``entity`` and the
+        current :class:`AbstractWorld` (from the world point of view,
+        ``self``).
+
+        :param entity: The Entity to associate the Component with.
+        :param component_instance: A Component instance.
+        """
+        component_type = type(component_instance)
+
+        if component_type not in self._components:
+            self._components[component_type] = set()
+
+        self._components[component_type].add(entity)
+
+        if entity not in self._entities:
+            self._entities[entity] = {}
+
+        self._entities[entity][component_type] = component_instance
+        self.clear_cache()
+
+        if isinstance(component_instance, OnAttachListener):
+            component_instance.on_attach(entity, self)

@@ -40,6 +40,17 @@ class ModelComponent(core.AbstractComponent):
             model.quit = True
 
 
+class OnAttachComponent(core.OnAttachListener):
+
+    def __init__(self):
+        self.entity = -1
+        self.world = None
+
+    def on_attach(self, en, world):
+        self.entity = en
+        self.world = world
+
+
 class SquareHandle(desper.Handle):
     def __init__(self, n):
         super().__init__()
