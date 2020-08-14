@@ -128,7 +128,10 @@ class GameModel:
 
         Note: Once a resource is loaded thanks to the `importer_dict`,
             it won't be used anymore(meaning that each file will be
-            considered at most once).
+            considered at most once) and once a resource is in the dict,
+            it won't be replaces but any other(e.g. in case of conflicts
+            due to file extensions being disabled the model will keep
+            the first loaded :class:`Handle` .
 
         :raises TypeError: If dirs is an empty list.
         :raises TypeError: If the functions in `importer_dict` don't
@@ -184,8 +187,10 @@ class GameModel:
                             else:
                                 res_key = pt.splitext(subitem)[0]
 
-                            # Actually create the Handle
-                            p[res_key] = handle(*params)
+                            # Actually create the Handle (skip if
+                            # already existing).
+                            if res_key not in p:
+                                p[res_key] = handle(*params)
 
                             # Keep track of already loaded resources
                             # so that it won't be considered in future
