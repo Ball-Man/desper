@@ -231,3 +231,16 @@ def test_on_attach(world):
 
     assert comp.entity == en
     assert comp.world == world
+
+
+def test_importer_dict_builder(gamemodel):
+    dic = core.importer_dict_builder.add_rule(accept_all, SquareHandle, 1) \
+                                    .add_rule(accept_all_2, TextHandle, 0) \
+                                    .build()
+    print(dic)
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files' + pt.sep
+                            + 'gamemodel_res')],
+                           dic)
+
+    assert isinstance(gamemodel.res['sounds.txt'], TextHandle)
+    assert isinstance(gamemodel.res['test.txt'], TextHandle)

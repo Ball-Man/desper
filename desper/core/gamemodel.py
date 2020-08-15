@@ -4,7 +4,7 @@ import os.path as pt
 import inspect as insp
 from functools import reduce
 
-from .handle import Handle
+from .res import Handle
 from ._signature import LooseSignature
 from .options import options
 

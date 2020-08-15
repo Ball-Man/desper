@@ -85,6 +85,10 @@ def accept_all(root, path, res):
     return pt.abspath(pt.join(root, path)),
 
 
+def accept_all_2(root, path, res):
+    return pt.abspath(pt.join(root, path)),
+
+
 def accept_none(resource_root, rel_path, resources):
     return None
 

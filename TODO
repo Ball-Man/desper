@@ -2,8 +2,7 @@ Entries are numerated in order to reference them easily, but the order doesn't n
 
 Core:
   01 - Manage paths with pathlib instead of os.path(?) (this will reflect on other modules probably)
-  02 - Builder for importer_dicts(gof)
-  03 - Deactivator
+  02 - Deactivator
 
 Glet:
   01 - Camera management(component)
