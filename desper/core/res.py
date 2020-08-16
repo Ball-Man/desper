@@ -88,6 +88,26 @@ class Handle:
         self._value = None
 
 
+class IdentityHandle(Handle):
+    """Special kind of :class:`Handle` that returns the given value.
+
+    This handle accepts any value, and when :py:meth:`get` is called,
+    returns the given value itself(basically, there is no "generated"
+    value).
+
+    This is used to inject manually resources into the resources
+    dictionary of a :class:`GameModel`.
+    """
+
+    def __init__(self, value):
+        super().__init__()
+        self._value = value
+
+    def _load(self):
+        """Return the given value as it is."""
+        return self._value
+
+
 @dataclass(order=True)
 class _PrioritizedDictEntry:
     """Class used to contain a prioritized entry for importer dicts.
