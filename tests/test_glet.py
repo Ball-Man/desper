@@ -49,12 +49,12 @@ def test_active_sprite_processor(gamemodel, sprite):
     w = gamemodel.current_world
     w.add_processor(glet.ActiveSpriteProcessor())
 
-    entity = w.create_entity(glet.ActivePosition(50, 50), sprite,
+    entity = w.create_entity(glet.Position(50, 50), sprite,
                              ModelComponent())
 
     gamemodel.loop()
 
-    pos = w.component_for_entity(entity, glet.ActivePosition)
+    pos = w.component_for_entity(entity, glet.Position)
     spr = w.component_for_entity(entity, pyglet.sprite.Sprite)
     assert pos.x == spr.x
     assert pos.y == spr.y
