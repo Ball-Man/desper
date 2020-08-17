@@ -5,5 +5,4 @@ Core:
   02 - Deactivator
 
 Glet:
-  01 - Camera management(component)
-  02 - Event handler decorator
+  01 - Event handler decorator
