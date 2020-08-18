@@ -1,0 +1,16 @@
+dist: xenial
+language: python
+services:
+  - xvfb
+python:
+  - "3.7"
+  - "3.8"
+cache: pip
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install freeglut3-dev
+install:
+  - pip install -r requirements.txt
+  - pip install -r tests/requirements.txt
+script:
+  - python -m pytest tests
