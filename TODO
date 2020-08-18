@@ -5,4 +5,4 @@ Core:
   02 - Deactivator
 
 Glet:
-  01 - Event handler decorator
+  01 - Improve event handler decorator (e.g. accept arguments to specify which handlers the class should handle, passing those arguments to window.push_handlers(...))

@@ -136,3 +136,47 @@ class GletGameModel(desper.GameModel):
         super().switch(world_handle, reset)
 
         self.get_batch()        # Cache a new batch for the cur World
+
+
+class EventHandler:
+    """Decorator for pyglet window events.
+
+    Instances of this class are callable, and can be used as decorators.
+    An instance of EventHandler also encapsulates a
+    ``pyglet.window.Window`` and when used as decorator will ensure that
+    the newly created instance is added as an event handler using
+    ``pyglet.window.Window.push_handlers``.
+
+    An instance of this class will be automatically constructed at
+    :py:attr:`event_handler` .
+    """
+
+    def __init__(self, window=None):
+        self.window = window
+
+    def __call__(self, cls, *args, **kwargs):
+        """Decorator implementation.
+
+        For details on how this works, see :class:`EventHandler`.
+        """
+        def decorated_constructor():
+            # If no window is set, notify
+            if not isinstance(self.window, pyglet.window.Window):
+                raise TypeError('"window" argument not set or invalid type. '
+                                + 'Expected: pyglet.window.Window')
+
+            instance = cls(*args, **kwargs)
+            self.window.push_handlers(instance)
+
+            return instance
+
+        return decorated_constructor
+
+
+event_handler = EventHandler()
+"""Convenience instance of :class:`EventHandler`, usable as decorator.
+
+Keep in mind that for this to work the correctly
+``pyglet.window.Window`` has to be added to the handler using
+:py:meth:`EventHandler.event_handler` .
+"""

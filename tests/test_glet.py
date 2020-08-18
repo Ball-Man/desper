@@ -83,3 +83,18 @@ def test_media_handle(gamemodel):
 
     assert isinstance(gamemodel.res['media']['volt.wav'].get(),
                       pyglet.media.Source)
+
+
+def test_event_handler(gamemodel):
+    glet.event_handler.window = gamemodel.window
+
+    @glet.event_handler
+    class TestHandler:
+        pass
+
+    assert callable(TestHandler)
+
+    glet.event_handler.window = None
+
+    with pytest.raises(TypeError):
+        TestHandler()
