@@ -17,6 +17,9 @@ DEFAULT_ANIMATION_SHEET_EXTS = DEFAULT_IMAGE_EXTS
 DEFAULT_MEDIA_LOCATION = 'media'
 DEFAULT_MEDIA_EXTS = ('.wav', '.mp4', '.mp3', '.ogg')
 
+DEFAULT_FONT_LOCATION = 'fonts'
+DEFAULT_FONT_EXTS = ('.ttf', '.otf')
+
 
 def _pyglet_path(path):
     """Manipulate path to match pyglet.resource requirements.
@@ -124,6 +127,39 @@ def get_media_importer():
     """
     return desper.get_resource_importer(location=DEFAULT_MEDIA_LOCATION,
                                         accepted_exts=DEFAULT_MEDIA_EXTS)
+
+
+def get_font_importer():
+    """Get an importer function for pyglet fonts.
+
+    The returned importer is suitable as key in an importer dictionary
+    (for :class:`GameModel` subclasses) and will load the given font to
+    memory directly(not using :class:`Handle` s).
+    In fact, this importer always **refuses** the given resource(
+    returns ``None``) because it immediately loads it using
+    ``pyglet.resource.add_font``. Since ``add_font`` returns no resource
+    instance, but only loads the font family, there is no need for a
+    :class:`Handle` to contain the font.
+    """
+
+    location = DEFAULT_FONT_LOCATION
+    accepted_exts = DEFAULT_FONT_EXTS
+
+    def font_importer(root, rel_path, resources):
+        """Import font file if accepted.
+
+        param root: The root resource directory.
+        :param rel_path: The relative path from the resource directory
+                         to the specific resource being analyzed.
+        :return: Always None.
+        """
+        if (location in pt.dirname(rel_path) and pt.splitext(rel_path)[1] in
+                accepted_exts):
+            pyglet.resource.add_font(_pyglet_path(pt.join(root, rel_path)))
+
+        return None
+
+    return font_importer
 
 
 class ImageHandle(desper.Handle):

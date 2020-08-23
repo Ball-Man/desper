@@ -85,6 +85,13 @@ def test_media_handle(gamemodel):
                       pyglet.media.Source)
 
 
+def test_font_importer(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {glet.get_font_importer(): core.IdentityHandle})
+
+    assert pyglet.font.have_font('The Godfather')
+
+
 def test_event_handler(gamemodel):
     glet.event_handler.window = gamemodel.window
 
