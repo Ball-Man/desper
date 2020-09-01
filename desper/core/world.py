@@ -1,4 +1,5 @@
 import queue
+import weakref
 
 import esper
 
@@ -40,6 +41,98 @@ class OnAttachListener:
 
     def on_attach(self, entity, world):
         raise NotImplementedError
+
+
+class Controller(AbstractComponent, OnAttachListener):
+    """A convenience class for easy access to entity components.
+
+    A Controller is both a :class:`AbstractComponent` and a
+    :class:`OnAttachListener`, that implements a convenience
+    :py:meth:`get` method that retrieves and caches components from the
+    given entities and a :py:meth:`processor` method that retrieves
+    and caches processors from the current :class:`AbstractWorld` .
+
+    The :py:meth:`on_attach` implementation for this class also
+    saves as instance attributes the component's entity id and world,
+    in :py:attr:`entity` and :py:attr:`world`.
+
+    If you implement :py:meth:`on_attach` or a constructor, a call to
+    `super` is required.
+    For the :py:meth:`update` method no call to super is required.
+
+    Note that this class will only work if all the used components and
+    processors support weakrefs(e.g. builtin types don't).
+    """
+
+    def __init__(self):
+        self._component_cache = weakref.WeakValueDictionary()
+        self._processor_cache = weakref.WeakValueDictionary()
+        self.world: AbstractWorld = None
+        self.entity = None
+
+    def on_attach(self, entity, world):
+        self.entity = entity
+        self.world = world
+
+    def get(self, component_type):
+        """Retrieve a component from the same entity of this component.
+
+        This method will retrieve and cache for quick access a component
+        of the given type, from the same entity containing this
+        Controller component.
+
+        All subtypes of the given type will be searched(assuming we are
+        working in a :class:`AbstractWorld`. If using a normal ``esper.World``
+        only the exact type will be searched) but once a component is
+        found, querying the same type will always lead to the same
+        component(as long as the component is kept alive inside the
+        game). This means that if you want prioritize some types(e.g.
+        the base type over the subclasses) you should manually call the
+        :class:`AbstractWorld` methods using :py:attr:`world` and
+        :py:attr:`entity`.
+
+        :param component_type: The given component type to find inside
+                               the entity.
+        :return: A component instance that implements the given type.
+        :raises KeyError: If the ``component_type`` isn't found.
+        :raises TypeError: If the ``component_type`` doesn't support
+                           weakrefs.
+        """
+        cache_entry = self._component_cache.get((component_type, self.world))
+        if cache_entry is None:
+            comp = self.world.component_for_entity(self.entity, component_type)
+            self._component_cache[(component_type, self.world)] = comp
+            return comp
+
+        return cache_entry
+
+    def processor(self, processor_type):
+        """Retrieve a processor from the current world.
+
+        This method will retrieve and cache for quick access a processor
+        of the given type, from the current world. Only the exact type
+        will be checked, not subtypes(like when using
+        :py:meth:`AbstractWorld.get_processor` .
+
+        Note that using this method is generally more efficient than
+        iterating over :py:meth:`AbstractWorld.get_processor`, since
+        the results will be cached.
+
+        :param processor_type: The type of the processor to search for.
+        :return: The processor instance of type ``processor_type`` if
+                 found. None otherwise.
+        """
+        cache_entry = self._processor_cache.get((processor_type, self.world))
+
+        if cache_entry is None:
+            proc = self.world.get_processor(processor_type)
+            if proc is not None:
+                self._processor_cache[(processor_type, self.world)] = proc
+                return proc
+
+            return None
+
+        return cache_entry
 
 
 class AbstractProcessor(esper.Processor):

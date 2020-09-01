@@ -3,6 +3,7 @@ import os.path as pt
 
 from context import desper
 from desper import core
+import esper
 
 
 class ComponentA(core.AbstractComponent):
@@ -49,6 +50,18 @@ class OnAttachComponent(core.OnAttachListener):
     def on_attach(self, en, world):
         self.entity = en
         self.world = world
+
+
+class ControllerComponent(core.Controller):
+    pass
+
+
+class ProcessorA(esper.Processor):
+    pass
+
+
+class ProcessorB(esper.Processor):
+    pass
 
 
 class SquareHandle(desper.Handle):

@@ -244,3 +244,33 @@ def test_importer_dict_builder(gamemodel):
 
     assert isinstance(gamemodel.res['sounds.txt'], TextHandle)
     assert isinstance(gamemodel.res['test.txt'], TextHandle)
+
+
+def test_controller_component(gamemodel):
+    world = gamemodel.res['testworld'].get()
+    controller = ControllerComponent()
+    entity = world.create_entity(controller, ComponentA(), 10)
+
+    assert isinstance(controller.get(ComponentA), ComponentA)
+    assert isinstance(controller.get(ComponentA), ComponentA)
+    with pytest.raises(KeyError):
+        controller.get(ComponentB)
+
+    world.remove_component(entity, ComponentA)
+    with pytest.raises(KeyError):
+        controller.get(ComponentA)
+
+    with pytest.raises(TypeError):
+        controller.get(int)
+
+
+def test_controller_processor(gamemodel):
+    world = gamemodel.res['testworld'].get()
+    controller = ControllerComponent()
+    world.create_entity(controller)
+    processor = ProcessorA()
+    world.add_processor(processor)
+
+    assert controller.processor(ProcessorA) is processor
+    assert controller.processor(ProcessorA) is processor
+    assert controller.processor(ProcessorB) is None
