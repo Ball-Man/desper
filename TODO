@@ -3,6 +3,7 @@ Entries are numerated in order to reference them easily, but the order doesn't n
 Core:
   01 - Manage paths with pathlib instead of os.path(?) (this will reflect on other modules probably)
   02 - Deactivator
+  03 - Coroutines (with a custom processor)
 
 Glet:
   01 - Improve event handler decorator (e.g. accept arguments to specify which handlers the class should handle, passing those arguments to window.push_handlers(...))

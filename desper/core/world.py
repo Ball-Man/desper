@@ -350,7 +350,7 @@ class AbstractWorld(esper.World):
 
         raise KeyError
 
-    def add_component(self, entity, component_instance):
+    def add_component(self, entity, component_instance, on_attach=True):
         """Add a new Component instance to an Entity.
 
         Add a Component instance to an Entiy. If a Component of the same
@@ -365,6 +365,8 @@ class AbstractWorld(esper.World):
 
         :param entity: The Entity to associate the Component with.
         :param component_instance: A Component instance.
+        :param on_attach: Whether the on_attach event should be
+                          triggered.
         """
         component_type = type(component_instance)
 
@@ -379,5 +381,31 @@ class AbstractWorld(esper.World):
         self._entities[entity][component_type] = component_instance
         self.clear_cache()
 
-        if isinstance(component_instance, OnAttachListener):
+        if on_attach and isinstance(component_instance, OnAttachListener):
             component_instance.on_attach(entity, self)
+
+    def create_entity(self, *components, on_attach=True):
+        """Create a new Entity.
+        This method returns an Entity ID, which is just a plain integer.
+        You can optionally pass one or more Component instances to be
+        assigned to the Entity.
+        :param components: Optional components to be assigned to the
+               entity on creation.
+        :param on_attach: Whether the on_attach event should be
+                          triggered.
+        :return: The next Entity ID in sequence.
+        """
+        self._next_entity_id += 1
+
+        # TODO: duplicate add_component code here for performance
+        for component in components:
+            self.add_component(self._next_entity_id, component, False)
+
+        # Trigger on_attach event
+        if on_attach:
+            for component in components:
+                if isinstance(component, OnAttachListener):
+                    component.on_attach(self._next_entity_id, self)
+
+        # self.clear_cache()
+        return self._next_entity_id
