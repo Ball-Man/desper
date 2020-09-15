@@ -328,3 +328,41 @@ def test_coroutine_processor_kill():
         proc.kill(coroutine1)
 
     proc.start(coroutine3)
+
+
+def test_coroutine_processor_timer():
+    proc = core.CoroutineProcessor()
+    component = CoroutineComponent()
+
+    old_coroutine = None
+    for i in range(100):
+        coroutine = proc.start(component.coroutine())
+        for _ in range(6):
+            proc.process()
+
+        if old_coroutine is not None:
+            with pytest.raises(ValueError):
+                proc.kill(old_coroutine)
+
+        with pytest.raises(ValueError):
+            proc.start(coroutine)
+
+        old_coroutine = coroutine
+
+
+def test_coroutine_processor_free():
+    coroutine_number = 10
+
+    proc = core.CoroutineProcessor()
+    component = CoroutineComponent()
+
+    coroutines = [component.coroutine() for i in range(coroutine_number)]
+    for cor in coroutines:
+        proc.start(cor)
+
+    for _ in range(11):
+        proc.process()
+
+    for cor in coroutines:
+        with pytest.raises(ValueError):
+            proc.kill(cor)
