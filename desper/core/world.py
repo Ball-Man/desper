@@ -60,8 +60,11 @@ class Controller(AbstractComponent, OnAttachListener):
     `super` is required.
     For the :py:meth:`update` method no call to super is required.
 
-    Note that this class will only work if all the used components and
+    Note: This class will only work if all the used components and
     processors support weakrefs(e.g. builtin types don't).
+
+    Note: This class can't be used with pure ecs ``esper.World`` and
+    should instead be used with :class:`AbstractWorld` .
     """
 
     def __init__(self):
@@ -81,15 +84,13 @@ class Controller(AbstractComponent, OnAttachListener):
         of the given type, from the same entity containing this
         Controller component.
 
-        All subtypes of the given type will be searched(assuming we are
-        working in a :class:`AbstractWorld`. If using a normal ``esper.World``
-        only the exact type will be searched) but once a component is
-        found, querying the same type will always lead to the same
-        component(as long as the component is kept alive inside the
-        game). This means that if you want prioritize some types(e.g.
-        the base type over the subclasses) you should manually call the
-        :class:`AbstractWorld` methods using :py:attr:`world` and
-        :py:attr:`entity`.
+        All subtypes of the given type will be searched, but once a
+        component is found querying the same type will always lead to
+        the same component(as long as the component is kept alive inside
+        the game). This means that if you want prioritize some types
+        (e.g. the base type over the subclasses) you should manually
+        call the :class:`AbstractWorld` methods using :py:attr:`world`
+        and :py:attr:`entity`.
 
         :param component_type: The given component type to find inside
                                the entity.
