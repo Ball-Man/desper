@@ -3,7 +3,10 @@ Entries are numerated in order to reference them easily, but the order doesn't n
 Core:
   01 - Manage paths with pathlib instead of os.path(?) (this will reflect on other modules probably)
   02 - Deactivator
-  03 - Coroutines (with a custom processor)
+  03 - Add appropriate docstrings for coroutines
+  04 - More tests for coroutines(test for multiple resumption of waiting coroutines and for the timer behaviour)
+  05 - Convert all queues in collections.deque (the queue module is for
+       thread safety).
 
 Glet:
   01 - Improve event handler decorator (e.g. accept arguments to specify which handlers the class should handle, passing those arguments to window.push_handlers(...))

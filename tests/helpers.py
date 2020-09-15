@@ -94,6 +94,26 @@ class WorldHandle(desper.Handle):
         return self._w
 
 
+class CoroutineComponent:
+
+    def __init__(self):
+        self.counter = 0
+        self.counter2 = 0
+
+    def coroutine(self):
+        yield 10
+        self.counter += 1
+
+    def coroutine2(self):
+        while self.counter2 < 100:
+            self.counter2 += 1
+            yield
+
+    def coroutine3(self):
+        while True:
+            yield 3
+
+
 def accept_all(root, path, res):
     return pt.abspath(pt.join(root, path)),
 

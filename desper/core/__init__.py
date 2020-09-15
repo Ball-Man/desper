@@ -41,3 +41,4 @@ from .world import *
 from .gamemodel import *
 from .options import *
 from .res import *
+from .ecs import *

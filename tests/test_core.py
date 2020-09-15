@@ -274,3 +274,57 @@ def test_controller_processor(gamemodel):
     assert controller.processor(ProcessorA) is processor
     assert controller.processor(ProcessorA) is processor
     assert controller.processor(ProcessorB) is None
+
+
+def test_coroutine_processor_start():
+    proc = core.CoroutineProcessor()
+    component = CoroutineComponent()
+    coroutine1 = proc.start(component.coroutine())
+    coroutine2 = proc.start(component.coroutine2())
+    proc.start(component.coroutine3())
+
+    with pytest.raises(TypeError):
+        proc.start(None)
+
+    for _ in range(5):
+        proc.process()
+
+    assert component.counter == 0
+    with pytest.raises(ValueError):
+        proc.start(coroutine1)
+    with pytest.raises(ValueError):
+        proc.start(coroutine2)
+
+    for _ in range(6):
+        proc.process()
+
+    assert component.counter == 1
+    assert component.counter2 == 11
+
+    proc.start(coroutine1)
+
+
+def test_coroutine_processor_kill():
+    proc = core.CoroutineProcessor()
+    component = CoroutineComponent()
+    coroutine1 = proc.start(component.coroutine())
+    proc.start(component.coroutine2())
+    coroutine3 = proc.start(component.coroutine3())
+
+    with pytest.raises(TypeError):
+        proc.kill(None)
+
+    for _ in range(5):
+        proc.process()
+
+    proc.kill(coroutine3)
+    with pytest.raises(ValueError):
+        proc.kill(coroutine3)
+
+    for _ in range(6):
+        proc.process()
+
+    with pytest.raises(ValueError):
+        proc.kill(coroutine1)
+
+    proc.start(coroutine3)
