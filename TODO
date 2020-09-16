@@ -3,8 +3,7 @@ Entries are numerated in order to reference them easily, but the order doesn't n
 Core:
   01 - Manage paths with pathlib instead of os.path(?) (this will reflect on other modules probably)
   02 - Deactivator
-  03 - Add appropriate docstrings for coroutines
-  04 - Convert all queues in collections.deque (the queue module is for
+  03 - Convert all queues in collections.deque (the queue module is for
        thread safety).
 
 Glet:
