@@ -330,6 +330,28 @@ def test_coroutine_processor_kill():
     proc.start(coroutine3)
 
 
+def test_coroutine_processor_state():
+    proc = core.CoroutineProcessor()
+    component = CoroutineComponent()
+
+    gen0 = component.coroutine()
+    assert proc.state(gen0) == core.CoroutineState.TERMINATED
+
+    gen1 = proc.start(component.coroutine())
+    gen2 = proc.start(component.coroutine2())
+
+    proc.process()
+
+    assert proc.state(gen1) == core.CoroutineState.PAUSED
+    assert proc.state(gen2) == core.CoroutineState.ACTIVE
+
+    for _ in range(10):
+        proc.process()
+
+    assert proc.state(gen1) == core.CoroutineState.TERMINATED
+    assert proc.state(gen2) == core.CoroutineState.ACTIVE
+
+
 def test_coroutine_processor_timer():
     proc = core.CoroutineProcessor()
     component = CoroutineComponent()

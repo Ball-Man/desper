@@ -1,4 +1,5 @@
 import inspect
+import enum
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
@@ -15,6 +16,13 @@ class _WaitingGenerator:
     """
     generator: Any = field(compare=False)
     wait_time: int
+
+
+class CoroutineState(enum.Enum):
+    """Enumeration of possible states for a coroutine."""
+    TERMINATED = 0
+    PAUSED = 1
+    ACTIVE = 2
 
 
 class CoroutineProcessor(esper.Processor):
@@ -94,10 +102,9 @@ class CoroutineProcessor(esper.Processor):
         :raises TypeError: If `generator` isn't a generator object.
         :raises ValueError: If `generator` is already being executed.
         """
-        if not inspect.isgenerator(generator):
-            raise TypeError('Only generator objects are accepted')
+        state = self.state(generator)
 
-        if self._generators.get(generator, 0) != 0:
+        if state != CoroutineState.TERMINATED:
             raise ValueError('Cannot start the same generator twice')
 
         self._active_queue.append(generator)
@@ -133,6 +140,28 @@ class CoroutineProcessor(esper.Processor):
         del self._generators[generator]
 
         return generator
+
+    def state(self, generator):
+        """Get the current state of the given coroutine.
+
+        :param generator: The generator representing the coroutine.
+        :return: A :class:`CoroutineState` instance representing
+                 the state of the given coroutine.
+                 If the coroutine isn't found
+                 :py:attr:`CoroutineState.TERMINATED` will be returned.
+        """
+        if not inspect.isgenerator(generator):
+            raise TypeError('Only generator objects are accepted')
+
+        waiting_gen = self._generators.get(generator, 0)
+        if waiting_gen == 0:
+            return CoroutineState.TERMINATED
+
+        # Check in which queue the generator currently is
+        if waiting_gen is None:
+            return CoroutineState.ACTIVE
+        else:
+            return CoroutineState.PAUSED
 
     def process(self, *args):
         """Process one frame of all the currently active coroutines.
