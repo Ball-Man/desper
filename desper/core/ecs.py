@@ -49,10 +49,9 @@ class CoroutineProcessor(esper.Processor):
     The coroutine will be called once per frame. To return the control
     use ``yield``.
 
-    e.g.
-    .. code-block
+    e.g::
 
-       def coroutine():
+        def coroutine():
             # Spawn enemies every 60 frames
             while True:
                 spawn_enemies()
@@ -67,10 +66,9 @@ class CoroutineProcessor(esper.Processor):
 
     To stop a coroutine, use it's generator.
 
-    e.g.
-    .. code-block
+    e.g::
 
-       def coroutine():
+        def coroutine():
            # ...
 
         # ...
@@ -214,10 +212,116 @@ class Prototype:
 
     Define a type as a conglomerate of different components, with or
     without arguments.
+
+    Creating entities with many (and complex) components can become
+    quite verbose. Firstly, you bloat pretty easily your code due to
+    the many indentations and brackets. Secondly, sometimes components
+    do share some information, and repeating it is useless work for you.
+    To work smarter and not harder, this class comes in help.
+
+    | **Simple prototypes**
+
+    The first use case is the simplest: define a conglomerate of
+    components with no arguments (default constructor)::
+
+        # Standard approach
+        world.create_entity(ComponentA(), ComponentB(), ComponentC())
+
+        # Prototype approach
+        class PrototypeA(desper.Prototype):
+            component_types = ComponentA, ComponentB, ComponentC
+
+        world.create_entity(*PrototypeA())
+
+    The default-initialized components are not too verbose even in the
+    standard approach, but yet once the prototype is defined it can be
+    used any time without having to remember the exact for of the
+    conglomerate. In this case, we would say the standard approach is
+    more error prone.
+
+    Note that a prototype is an iterable that generates the given
+    components(in fact, to correctly instantiate all the components
+    in an entity the prototype instance has to be unpacked with a
+    ``*`` expression).
+
+    | **Complex prototypes**
+
+    In this second use case let's see how using a prototype it's
+    possible to remove bloat coming from indentation and redundancies.
+
+    Arguments can be intuitively specified in the ``__init__`` method
+    of this class. The user is free to specify whatever argument they
+    want(no need to call super).
+
+    When instantiating the prototype, the class will eventually try and
+    call some special methods for its component types (that we will call
+    init methods). If an init method isn't found, the default
+    constructor for that component is called (that's why and how the
+    above example works, there's no need for init methods if all the
+    components are instantiated without specifying parameters).
+    By default, init methods follow this naming rule::
+
+        ...
+        def init_ComponentType(self):
+            ...
+
+    The return type has to be ``ComponentType`` (for obvious reasons).
+
+    e.g::
+
+        # Standard approach
+        w.create_entity(example.Position(x + offset_x,
+                                         y + offset_y),
+                        example.Sprite(x + offset_x, y + offset_y,
+                                       image, offset_x,
+                                       offset_y),
+                        example.EnemyBehaviour())
+
+        # Prototype approach
+        class EnemyPrototype(desper.Prototype):
+            component_types = (example.Position, example.Sprite,
+                               example.EnemyBehaviour)
+
+            def __init__(self, x, y, image, offset_x, offset_y):
+                self.xx = x + offset_x
+                self.yy = y + offset_y
+                self.image = image
+                self.offset_x = offset_x
+                self.offset_y = offset_y
+
+            def init_Position(self):
+                return example.Position(self.xx, self.yy)
+
+            def init_Sprite(self):
+                return example.Sprite(self.xx, self.yy, self.image,
+                                      self.offset_x, self.offset_y)
+
+        w.create_entity(*EnemyPrototype(x, y, image, offset_x, offset_y))
+
+    With the prototype approach you invest a few more lines,
+    but will save time and effort every time that a new
+    ``EnemyPrototype`` has to be instantiated. It is basically, a more
+    structured way of making a free function that instantiates a set
+    of components.
+
+    Note that since the ``EnemyBehaviour`` had no arguments, no init
+    method is defined for it.
     """
     component_types = tuple()
+    """Iterable of types that compose the prototype."""
     init_methods = dict()
+    """Dictionary in the format ``{type: function}``.
+
+    It's used to specify custom functions instead of the standard
+    init method (using :py:attr:`init_prefix`). The entries from this
+    dictionary are prioritized (the standard init method will be
+    ignored if an entry for that component type is given).
+
+    This is also useful when name conflicts occur (same class name but
+    different namespace).
+    """
     init_prefix = 'init_'
+    """The prefix for the init methods."""
 
     def __iter__(self):
         return (self.init_methods.get(
