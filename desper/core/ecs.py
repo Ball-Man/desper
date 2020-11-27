@@ -207,3 +207,20 @@ class CoroutineProcessor(esper.Processor):
                 self._active_queue.popleft()
             else:       # Do not rotate if last item was popped
                 self._active_queue.rotate(-1)
+
+
+class Prototype:
+    """Base class for ECS prototypes.
+
+    Define a type as a conglomerate of different components, with or
+    without arguments.
+    """
+    component_types = tuple()
+    init_methods = dict()
+    init_prefix = 'init_'
+
+    def __iter__(self):
+        return (self.init_methods.get(
+            comp_t,
+            getattr(self, f'{self.init_prefix}{comp_t.__name__}', comp_t))()
+            for comp_t in self.component_types)

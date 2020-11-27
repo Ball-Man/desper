@@ -129,3 +129,36 @@ def accept_none(resource_root, rel_path, resources):
 def accept_sounds(resource_root, rel_path, resources):
     if 'sounds' in rel_path:
         return pt.abspath(pt.join(resource_root, rel_path)),
+
+
+class ComponentArgs1:
+
+    def __init__(self, x):
+        self.x = x
+
+
+class ComponentArgs2:
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+class Prototype1(desper.Prototype):
+    component_types = ComponentA, ComponentB
+
+
+class Prototype2(desper.Prototype):
+    component_types = ComponentArgs1, ComponentArgs2, ComponentA
+
+    def __init__(self, x, y):
+        self.init_methods = {ComponentArgs2: self.init_comp2}
+
+        self.x = x
+        self.y = y
+
+    def init_ComponentArgs1(self):
+        return ComponentArgs1(self.x)
+
+    def init_comp2(self):
+        return ComponentArgs2(self.x, self.y)

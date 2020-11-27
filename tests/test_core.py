@@ -388,3 +388,17 @@ def test_coroutine_processor_free():
     for cor in coroutines:
         with pytest.raises(ValueError):
             proc.kill(cor)
+
+
+def test_prototypes(world):
+    entity = world.create_entity(*Prototype1())
+
+    assert world.try_component(entity, ComponentA) is not None
+    assert world.try_component(entity, ComponentB) is not None
+    assert world.try_component(entity, ComponentC) is None
+
+    entity2 = world.create_entity(*Prototype2(10, 11))
+
+    assert world.try_component(entity2, ComponentArgs1) is not None
+    assert world.try_component(entity2, ComponentArgs2) is not None
+    assert world.try_component(entity2, ComponentA) is not None
