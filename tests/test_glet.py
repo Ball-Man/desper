@@ -1,5 +1,6 @@
 import os.path as pt
 import os
+import collections
 from helpers import *
 from context import desper
 from desper import glet
@@ -90,6 +91,22 @@ def test_font_importer(gamemodel):
                            {glet.get_font_importer(): core.IdentityHandle})
 
     assert pyglet.font.have_font('The Godfather')
+
+
+def test_world_handle(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {glet.get_world_importer(): glet.WorldHandle})
+
+    w = gamemodel.res['worlds']['test.json'].get()
+    assert isinstance(w, esper.World)
+    assert len(w.get_component(collections.deque)) == 2
+    assert len(w.get_component(collections.Counter)) == 1
+
+    counter = w.component_for_entity(1, collections.Counter)
+    assert counter['x'] == 100
+
+    deque = w.component_for_entity(1, collections.deque)
+    assert deque == collections.deque([0, 1, 2, 3])
 
 
 def test_event_handler(gamemodel):

@@ -21,8 +21,8 @@ DEFAULT_MEDIA_EXTS = ('.wav', '.mp4', '.mp3', '.ogg')
 DEFAULT_FONT_LOCATION = 'fonts'
 DEFAULT_FONT_EXTS = ('.ttf', '.otf')
 
-DEFAULT_WORLD_LOCATION = 'worlds'
-DEFAULT_WORLD_EXTS = ('.json')
+DEFAULT_WORLDS_LOCATION = 'worlds'
+DEFAULT_WORLDS_EXTS = ('.json')
 
 
 def _pyglet_path(path):
@@ -164,6 +164,27 @@ def get_font_importer():
         return None
 
     return font_importer
+
+
+def get_world_importer():
+    """Get an importer function for worlds(:class:`WorldHandle`).
+
+    :return: A function usable as key in an `importer_dict`.
+    """
+    lambd = desper.get_resource_importer(DEFAULT_WORLDS_LOCATION,
+                                         DEFAULT_WORLDS_EXTS)
+
+    def decorated_lambda(root, rel, res):
+        ret = lambd(root, rel, res)
+        if ret is None:
+            return None
+
+        ret = list(ret)
+        ret.append(res)
+
+        return ret
+
+    return decorated_lambda
 
 
 class ImageHandle(desper.Handle):
@@ -309,6 +330,7 @@ class WorldHandle(desper.Handle):
     """
 
     def __init__(self, filename, res):
+        super().__init__()
         self._filename = filename
         self._res = res
 
@@ -338,5 +360,8 @@ class WorldHandle(desper.Handle):
                     if comp_type is None:
                         comp_type = find_module_resource(comp['type'])
 
-                    args = comp.get('args', {})
-                    w.add_component(instance['id'], comp_type(**args))
+                    args = comp.get('args', [])
+                    kwargs = comp.get('kwargs', {})
+                    w.add_component(instance['id'], comp_type(*args, **kwargs))
+
+        return w
