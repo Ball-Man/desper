@@ -1,0 +1,23 @@
+{
+  "options": {
+    "world_type": "esper.World"
+  },
+  "layers": [
+    {
+      "id": 1,
+      "comps": [
+        {
+          "type": "collections.Counter"
+        },
+      ]
+    },
+    {
+      "id": 3,
+      "comps": [
+        {
+          "type": "collections.Counter"
+        },
+      ]
+    }
+  ]
+}

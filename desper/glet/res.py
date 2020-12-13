@@ -1,5 +1,6 @@
 import os.path as pt
 import json
+import importlib
 
 import desper
 
@@ -19,6 +20,9 @@ DEFAULT_MEDIA_EXTS = ('.wav', '.mp4', '.mp3', '.ogg')
 
 DEFAULT_FONT_LOCATION = 'fonts'
 DEFAULT_FONT_EXTS = ('.ttf', '.otf')
+
+DEFAULT_WORLD_LOCATION = 'worlds'
+DEFAULT_WORLD_EXTS = ('.json')
 
 
 def _pyglet_path(path):
@@ -262,3 +266,77 @@ class MediaHandle(desper.Handle):
     def _load(self):
         """Implementation of the load function for media loading."""
         return pyglet.resource.media(self._filename, self._streamed)
+
+
+def find_module_resource(string):
+    """Resolve a string name representing a unique class or function."""
+    strings = string.split('.')
+
+    # Import the module
+    module = None
+    incomplete = True
+    for i, _ in enumerate(strings):
+        try:
+            module = importlib.import_module('.'.join(strings[0:i + 1]))
+        except ModuleNotFoundError:
+            incomplete = False
+            break
+
+    if incomplete:
+        raise ValueError('Given string resolves to a module, not to a class'
+                         ' or callable.')
+
+    # From the module import the subcomponents (classes, etc)
+    last_index = i
+    comp = module
+    for comp_str in strings[last_index:]:
+        comp = getattr(comp, comp_str)
+
+    if not callable(comp):
+        raise ValueError('Given string does not resolve to a class or '
+                         'callable')
+
+    return comp
+
+
+class WorldHandle(desper.Handle):
+    """Handle implementation for a `desper.World`.
+
+    This handle accepts a file(name). Components are specified by
+    name (package.submodule...Class), and the handle will try to import
+    the necessary packages/modules and finally retrieve the wanted
+    class.
+    """
+
+    def __init__(self, filename, res):
+        self._filename = filename
+        self._res = res
+
+    def _load(self):
+        """Implementation of the load function."""
+        with open(self._filename) as fin:
+            data = json.load(fin)
+
+        type_dict = {}      # Store type_name: class
+        world_counter = 0
+
+        # Get world type
+        w_string = data['options']['world_type']
+        w_type = find_module_resource(w_string)
+        type_dict[w_string] = w_type
+        w = w_type()
+
+        # Generate instances, while retrieving the correct types
+        for layer in data['layers']:
+            for instance in layer:
+                while world_counter < instance['id']:
+                    world_counter += 1
+                    w.create_entity()
+
+                for comp in instance['comps']:
+                    comp_type = type_dict.get(comp['type'])
+                    if comp_type is None:
+                        comp_type = find_module_resource(comp['type'])
+
+                    args = comp.get('args', {})
+                    w.add_component(instance['id'], comp_type(**args))
