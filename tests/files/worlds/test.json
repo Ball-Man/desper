@@ -2,29 +2,28 @@
   "options": {
     "world_type": "esper.World"
   },
-  "layers": [
-    [
-      {
-        "id": 1,
-        "comps": [
-          {
-            "type": "collections.Counter",
-            "kwargs": {"x": 100}
-          },
-          {
-            "type": "collections.deque",
-            "args": [[0, 1, 2, 3]]
-          }
-        ]
-      },
-      {
-        "id": 3,
-        "comps": [
-          {
-            "type": "collections.deque"
-          }
-        ]
-      }
-    ]
+
+  "instances": [
+    {
+      "id": 1,
+      "comps": [
+        {
+          "type": "collections.Counter",
+          "kwargs": {"x": 100}
+        },
+        {
+          "type": "collections.deque",
+          "args": [[0, 1, 2, 3]]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "comps": [
+        {
+          "type": "collections.deque"
+        }
+      ]
+    }
   ]
 }

@@ -420,20 +420,19 @@ class WorldHandle(desper.Handle):
         w = w_type()
 
         # Generate instances, while retrieving the correct types
-        for layer in data['layers']:
-            for instance in layer:
-                while world_counter < instance['id']:
-                    world_counter += 1
-                    w.create_entity()
+        for instance in data['instances']:
+            while world_counter < instance['id']:
+                world_counter += 1
+                w.create_entity()
 
-                for comp in instance['comps']:
-                    comp_type = self._resolve_type(comp['type'])
+            for comp in instance['comps']:
+                comp_type = self._resolve_type(comp['type'])
 
-                    args = comp.get('args', [])
-                    kwargs = comp.get('kwargs', {})
-                    w.add_component(
-                        instance['id'],
-                        self.component_initializers[comp_type](
-                            comp_type, instance, args, kwargs))
+                args = comp.get('args', [])
+                kwargs = comp.get('kwargs', {})
+                w.add_component(
+                    instance['id'],
+                    self.component_initializers[comp_type](
+                        comp_type, instance, args, kwargs))
 
         return w
