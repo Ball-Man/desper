@@ -336,6 +336,25 @@ class ResourceResolver:
         return comp
 
 
+def component_initializer(comp_type, instance, args, kwargs):
+    """Return an initialized component, given the type and arguments.
+
+    This function is made to be used as default value in
+    :py:attr:`WorldHandle.component_initializers`.
+
+    :param comp_type: The type of the component to be initialized.
+    :param instance: A dictionary containing the properties assigned
+                     to the instance of this component(by default, "id")
+                     is defined to be the entity numerical id.
+    :param args: List of arguments passed to this component from the
+                 json.
+    :param kwargs: Dictionary of keyword aguments passed to this
+                   component from the json.
+    :return: An initialized component.
+    """
+    return comp_type(*args, **kwargs)
+
+
 class WorldHandle(desper.Handle):
     """Handle implementation for a `desper.World`.
 
@@ -346,6 +365,19 @@ class WorldHandle(desper.Handle):
     """
     type_resolvers = collections.deque((ResourceResolver(),))
     """Stack of type resolvers."""
+
+    component_initializers = collections.defaultdict(
+        lambda: component_initializer)
+    """Dictionary of initializer functions for components.
+
+    Keys are types, values are functions. The default initializer for
+    missing types is :func:`component_initializer`.
+
+    A valid component initializer should accept the following arguments:
+    ``comp_type``, ``instance``, ``args``, ``kwargs``.
+
+    .. seealso:: :func:`component_initializer`.
+    """
 
     def __init__(self, filename, res):
         super().__init__()
@@ -399,6 +431,9 @@ class WorldHandle(desper.Handle):
 
                     args = comp.get('args', [])
                     kwargs = comp.get('kwargs', {})
-                    w.add_component(instance['id'], comp_type(*args, **kwargs))
+                    w.add_component(
+                        instance['id'],
+                        self.component_initializers[comp_type](
+                            comp_type, instance, args, kwargs))
 
         return w
