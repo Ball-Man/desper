@@ -1,0 +1,16 @@
+{
+  "options": {
+    "world_type": "esper.World"
+  },
+
+  "instances": [
+    {
+      "id": 1,
+      "comps": [
+        {
+          "type": "tests.helpers.BuiltinPrototype"
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import os.path as pt
+import collections
 
 
 from context import desper
@@ -162,3 +163,7 @@ class Prototype2(desper.Prototype):
 
     def init_comp2(self):
         return ComponentArgs2(self.x, self.y)
+
+
+class BuiltinPrototype(desper.Prototype):
+    component_types = collections.defaultdict, collections.deque

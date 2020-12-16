@@ -430,9 +430,14 @@ class WorldHandle(desper.Handle):
 
                 args = comp.get('args', [])
                 kwargs = comp.get('kwargs', {})
-                w.add_component(
-                    instance['id'],
-                    self.component_initializers[comp_type](
-                        comp_type, instance, args, kwargs))
+                comp = self.component_initializers[comp_type](
+                    comp_type, instance, args, kwargs)
+
+                # Support prototypes too
+                if isinstance(comp, desper.Prototype):
+                    for c in comp:
+                        w.add_component(instance['id'], c)
+                else:
+                    w.add_component(instance['id'], comp)
 
         return w

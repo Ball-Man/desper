@@ -109,6 +109,15 @@ def test_world_handle(gamemodel):
     assert deque == collections.deque([0, 1, 2, 3])
 
 
+def test_world_handle_proto(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {glet.get_world_importer(): glet.WorldHandle})
+
+    w = gamemodel.res['worlds']['proto.json'].get()
+    w.component_for_entity(1, collections.defaultdict)
+    w.component_for_entity(1, collections.deque)
+
+
 def test_event_handler(gamemodel):
     glet.event_handler.window = gamemodel.window
 
