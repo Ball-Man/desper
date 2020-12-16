@@ -1,6 +1,7 @@
 import os.path as pt
 import json
 import importlib
+import collections
 
 import desper
 
@@ -289,35 +290,50 @@ class MediaHandle(desper.Handle):
         return pyglet.resource.media(self._filename, self._streamed)
 
 
-def find_module_resource(string):
-    """Resolve a string name representing a unique class or function."""
-    strings = string.split('.')
+class ResourceResolver:
+    """Resolve a string name representing a unique class or function.
 
-    # Import the module
-    module = None
-    incomplete = True
-    for i, _ in enumerate(strings):
-        try:
-            module = importlib.import_module('.'.join(strings[0:i + 1]))
-        except ModuleNotFoundError:
-            incomplete = False
-            break
+    Callable, call passing a string in the format
+    "package.subpackage.etc.etc.Class". If found, Class is returned.
+    """
 
-    if incomplete:
-        raise ValueError('Given string resolves to a module, not to a class'
-                         ' or callable.')
+    def __init__(self):
+        self._cache = {}
 
-    # From the module import the subcomponents (classes, etc)
-    last_index = i
-    comp = module
-    for comp_str in strings[last_index:]:
-        comp = getattr(comp, comp_str)
+    def __call__(self, string):
+        # Pull from cache if possible
+        if self._cache.get(string) is not None:
+            return self._cache[string]
 
-    if not callable(comp):
-        raise ValueError('Given string does not resolve to a class or '
-                         'callable')
+        strings = string.split('.')
 
-    return comp
+        # Import the module
+        module = None
+        incomplete = True
+        for i, _ in enumerate(strings):
+            try:
+                module = importlib.import_module('.'.join(strings[0:i + 1]))
+            except ModuleNotFoundError:
+                incomplete = False
+                break
+
+        if incomplete:
+            raise ValueError('Given string resolves to a module, not to a '
+                             'class or callable.')
+
+        # From the module import the subcomponents (classes, etc)
+        last_index = i
+        comp = module
+        for comp_str in strings[last_index:]:
+            comp = getattr(comp, comp_str)
+
+        if not callable(comp):
+            raise ValueError('Given string does not resolve to a class or '
+                             'callable')
+
+        # Save in cache and return
+        self._cache[string] = comp
+        return comp
 
 
 class WorldHandle(desper.Handle):
@@ -328,24 +344,47 @@ class WorldHandle(desper.Handle):
     the necessary packages/modules and finally retrieve the wanted
     class.
     """
+    type_resolvers = collections.deque((ResourceResolver(),))
+    """Stack of type resolvers."""
 
     def __init__(self, filename, res):
         super().__init__()
         self._filename = filename
         self._res = res
 
+    def _resolve_type(self, string):
+        """Use the type resolver stack to retrieve a type from string.
+
+        If the resolver throws an exception or returns None, the
+        following resolver on the stack will be executed.
+
+        If no resolver is able to process the string, the last exception
+        from the last resolver will be thrown (if instead None is
+        returned, a TypeException is raised).
+        """
+        for resolver in reversed(self.type_resolvers):
+            try:
+                type_ = resolver(string)
+                if type_ is not None:
+                    return type_
+            except Exception as e:
+                # If the last resolver throws, throw it
+                if resolver == self.type_resolvers[0]:
+                    raise e
+
+            # If no exception is thrown and no type is resolved, throw
+            raise TypeError(f"Couldn't resolve type ${string}")
+
     def _load(self):
         """Implementation of the load function."""
         with open(self._filename) as fin:
             data = json.load(fin)
 
-        type_dict = {}      # Store type_name: class
         world_counter = 0
 
         # Get world type
         w_string = data['options']['world_type']
-        w_type = find_module_resource(w_string)
-        type_dict[w_string] = w_type
+        w_type = self._resolve_type(w_string)
         w = w_type()
 
         # Generate instances, while retrieving the correct types
@@ -356,9 +395,7 @@ class WorldHandle(desper.Handle):
                     w.create_entity()
 
                 for comp in instance['comps']:
-                    comp_type = type_dict.get(comp['type'])
-                    if comp_type is None:
-                        comp_type = find_module_resource(comp['type'])
+                    comp_type = self._resolve_type(comp['type'])
 
                     args = comp.get('args', [])
                     kwargs = comp.get('kwargs', {})
