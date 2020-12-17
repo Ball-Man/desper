@@ -115,19 +115,19 @@ class CoroutineComponent:
             yield 3
 
 
-def accept_all(root, path, res):
+def accept_all(root, path, model):
     return pt.abspath(pt.join(root, path)),
 
 
-def accept_all_2(root, path, res):
+def accept_all_2(root, path, model):
     return pt.abspath(pt.join(root, path)),
 
 
-def accept_none(resource_root, rel_path, resources):
+def accept_none(resource_root, rel_path, model):
     return None
 
 
-def accept_sounds(resource_root, rel_path, resources):
+def accept_sounds(resource_root, rel_path, model):
     if 'sounds' in rel_path:
         return pt.abspath(pt.join(resource_root, rel_path)),
 

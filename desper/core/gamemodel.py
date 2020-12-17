@@ -27,8 +27,8 @@ class GameModel:
     LAMBDA_SIG = LooseSignature(
         [insp.Parameter('resource_root', insp.Parameter.POSITIONAL_OR_KEYWORD),
          insp.Parameter('rel_path', insp.Parameter.POSITIONAL_OR_KEYWORD),
-         insp.Parameter('resources', insp.Parameter.POSITIONAL_OR_KEYWORD)])
-    """``(resource_root: string, rel_path: string, resources: dict) -> tuple``
+         insp.Parameter('model', insp.Parameter.POSITIONAL_OR_KEYWORD)])
+    """``(resource_root: string, rel_path: string, model: GameModel) -> tuple``
 
     Where `resource_root` will be populated by the absolute path to
     one of the resource directories(an element of `dir`),
@@ -179,7 +179,7 @@ class GameModel:
                         if abs_path in used_paths:
                             break
 
-                        params = lam(pt.abspath(dirpath), item, self.res)
+                        params = lam(pt.abspath(dirpath), item, self)
                         if params is not None:
                             # Check if extensions are kept or ignored
                             if options['resource_extensions']:

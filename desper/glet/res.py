@@ -150,7 +150,7 @@ def get_font_importer():
     location = DEFAULT_FONT_LOCATION
     accepted_exts = DEFAULT_FONT_EXTS
 
-    def font_importer(root, rel_path, resources):
+    def font_importer(root, rel_path, model):
         """Import font file if accepted.
 
         param root: The root resource directory.
@@ -175,13 +175,13 @@ def get_world_importer():
     lambd = desper.get_resource_importer(DEFAULT_WORLDS_LOCATION,
                                          DEFAULT_WORLDS_EXTS)
 
-    def decorated_lambda(root, rel, res):
-        ret = lambd(root, rel, res)
+    def decorated_lambda(root, rel_path, model):
+        ret = lambd(root, rel_path, model)
         if ret is None:
             return None
 
         ret = list(ret)
-        ret.append(res)
+        ret.append(model)
 
         return ret
 
@@ -379,10 +379,10 @@ class WorldHandle(desper.Handle):
     .. seealso:: :func:`component_initializer`.
     """
 
-    def __init__(self, filename, res):
+    def __init__(self, filename, model):
         super().__init__()
         self._filename = filename
-        self._res = res
+        self._model = model
 
     def _resolve_type(self, string):
         """Use the type resolver stack to retrieve a type from string.

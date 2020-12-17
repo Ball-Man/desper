@@ -20,7 +20,7 @@ def get_resource_importer(location, accepted_exts):
     :param accepted_exts: An iterable of extensions recognized as valid
                           resource file.
     """
-    def importer(root, rel_path, resources):
+    def importer(root, rel_path, model):
         """Return the joined path `root` + `rel_path` if accepted.
 
         :param root: The root resource directory.
