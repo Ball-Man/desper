@@ -2,6 +2,7 @@ import os.path as pt
 import json
 import importlib
 import collections
+import re
 
 import desper
 
@@ -24,6 +25,7 @@ DEFAULT_FONT_EXTS = ('.ttf', '.otf')
 
 DEFAULT_WORLDS_LOCATION = 'worlds'
 DEFAULT_WORLDS_EXTS = ('.json')
+RESOURCE_STRING_REGEX = re.compile(r'\$\{(.+)\}')
 
 
 def _pyglet_path(path):
@@ -40,7 +42,7 @@ def _pyglet_path(path):
     return pt.relpath(path, pt.curdir).replace(pt.sep, '/')
 
 
-def get_resource_from_path(res, rel_path, default=None):
+def resource_from_path(res, rel_path, default=None):
     """Get a specific resource :class:`Handle` from a res dictionary.
 
     The given path should be relative to one of the resource directories
@@ -63,11 +65,14 @@ def get_resource_from_path(res, rel_path, default=None):
     if not desper.options['resource_extensions']:
         rel_path = pt.splitext(rel_path)[0]
 
+    p = res
     for path in rel_path.split('/'):
-        p = res.get(path, None)
+        p = p.get(path, None)
 
         if p is None:
             return default
+
+    return p
 
 
 def get_image_importer():
@@ -336,7 +341,7 @@ class ResourceResolver:
         return comp
 
 
-def component_initializer(comp_type, instance, args, kwargs):
+def component_initializer(comp_type, instance, args, kwargs, model):
     """Return an initialized component, given the type and arguments.
 
     This function is made to be used as default value in
@@ -350,9 +355,25 @@ def component_initializer(comp_type, instance, args, kwargs):
                  json.
     :param kwargs: Dictionary of keyword aguments passed to this
                    component from the json.
+    :param model: Instance of :class:`GameModel`.
     :return: An initialized component.
     """
-    return comp_type(*args, **kwargs)
+    def args_map(x):
+        if type(x) is not str:
+            return x
+
+        match = RESOURCE_STRING_REGEX.fullmatch(x)
+        if match is None:
+            return x
+
+        handle = resource_from_path(model.res, match.group(1))
+        if handle is None:
+            raise IndexError(f"Couldn't find resource named {x}")
+
+        return handle.get()
+
+    return comp_type(*map(args_map, args),
+                     **{k: args_map(v) for k, v in kwargs.items()})
 
 
 class WorldHandle(desper.Handle):
@@ -374,7 +395,7 @@ class WorldHandle(desper.Handle):
     missing types is :func:`component_initializer`.
 
     A valid component initializer should accept the following arguments:
-    ``comp_type``, ``instance``, ``args``, ``kwargs``.
+    ``comp_type``, ``instance``, ``args``, ``kwargs``, ``model``.
 
     .. seealso:: :func:`component_initializer`.
     """
@@ -431,7 +452,7 @@ class WorldHandle(desper.Handle):
                 args = comp.get('args', [])
                 kwargs = comp.get('kwargs', {})
                 comp = self.component_initializers[comp_type](
-                    comp_type, instance, args, kwargs)
+                    comp_type, instance, args, kwargs, self._model)
 
                 # Support prototypes too
                 if isinstance(comp, desper.Prototype):

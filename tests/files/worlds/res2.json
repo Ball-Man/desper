@@ -1,0 +1,17 @@
+{
+  "options": {
+    "world_type": "esper.World"
+  },
+
+  "instances": [
+    {
+      "id": 10,
+      "comps": [
+        {
+          "type": "tests.helpers.ComponentArgs1",
+          "args": ["${media/sdgasdg}"]
+        }
+      ]
+    }
+  ]
+}

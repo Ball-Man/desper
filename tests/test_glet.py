@@ -6,6 +6,8 @@ from context import desper
 from desper import glet
 from desper import core
 
+import tests
+
 import pytest
 import pyglet
 
@@ -116,6 +118,20 @@ def test_world_handle_proto(gamemodel):
     w = gamemodel.res['worlds']['proto.json'].get()
     w.component_for_entity(1, collections.defaultdict)
     w.component_for_entity(1, collections.deque)
+
+
+def test_world_handle_res_resolve(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {glet.get_media_importer(): glet.MediaHandle,
+                            glet.get_world_importer(): glet.WorldHandle})
+
+    w = gamemodel.res['worlds']['res.json'].get()
+    comp = w.component_for_entity(10, tests.helpers.ComponentArgs1)
+
+    assert isinstance(comp.x, pyglet.media.Source)
+
+    with pytest.raises(IndexError):
+        w = gamemodel.res['worlds']['res2.json'].get()
 
 
 def test_event_handler(gamemodel):
