@@ -448,18 +448,8 @@ class WorldHandle(desper.Handle):
     type_resolvers = ResolverStack((ResourceResolver(),))
     """Stack of type resolvers."""
 
-    component_initializers = collections.defaultdict(
-        lambda: component_initializer)
-    """Dictionary of initializer functions for components.
-
-    Keys are types, values are functions. The default initializer for
-    missing types is :func:`component_initializer`.
-
-    A valid component initializer should accept the following arguments:
-    ``comp_type``, ``instance``, ``args``, ``kwargs``, ``model``.
-
-    .. seealso:: :func:`component_initializer`.
-    """
+    component_initializers = ResolverStack((component_initializer,))
+    """Stack of component_initializers."""
 
     def __init__(self, filename, model):
         super().__init__()
@@ -489,7 +479,7 @@ class WorldHandle(desper.Handle):
 
                 args = comp.get('args', [])
                 kwargs = comp.get('kwargs', {})
-                comp = self.component_initializers[comp_type](
+                comp = self.component_initializers(
                     comp_type, instance, args, kwargs, self._model)
 
                 # Support prototypes too
