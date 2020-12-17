@@ -376,6 +376,67 @@ def component_initializer(comp_type, instance, args, kwargs, model):
                      **{k: args_map(v) for k, v in kwargs.items()})
 
 
+class ResolverStack:
+    """Stack of callables, used to parse specific data.
+
+    When calling a ResolverStack(operator ``()``) all the arguments
+    are passed to the internal callables(inside the stack).
+    If one of the callables returns a valid value, the value is returned
+    from the ResolverStack call operation. If an internal callable
+    returns ``None`` or raises an exception, the following one is called.
+    All exceptions are therefore captured by this class, which will only
+    raise the first exception coming from the last available callable
+    (last one in the stack).
+
+    If the final callable can't resolve the input, but raises no
+    exception(returns ``None``), or the stack is empty, an
+    ``IndexError`` is raised.
+    """
+
+    def __init__(self, iterable=tuple()):
+        self._stack = collections.deque(iterable)
+
+    def __call__(self, *args, **kwargs):
+        for resolver in reversed(self._stack):
+            try:
+                result = resolver(*args, **kwargs)
+                if result is not None:
+                    return result
+            except Exception as e:
+                # If the last resolver throws, throw it
+                if resolver == self._stack[0]:
+                    raise e
+
+            # If no exception is thrown and no type is resolved, throw
+            raise IndexError("No resolver was found for the input: "
+                             f"{args}, {kwargs}")
+
+    def push(self, resolver):
+        """Push a resolver on top of the stack.
+
+        :param resolver: The callable to be added.
+        :raises TypeError: If ``resolver`` is not callable.
+        """
+        if not callable(resolver):
+            raise TypeError()
+
+        self._stack.append(resolver)
+
+    def pop(self):
+        """Pop the last resolver from the head of the stack.
+
+        :return: The popped item.
+        """
+        return self._stack.pop()
+
+    def clear(self):
+        """Empty the stack."""
+        self._stack.clear()
+
+    def __len__(self):
+        return len(self._stack)
+
+
 class WorldHandle(desper.Handle):
     """Handle implementation for a `desper.World`.
 
@@ -384,7 +445,7 @@ class WorldHandle(desper.Handle):
     the necessary packages/modules and finally retrieve the wanted
     class.
     """
-    type_resolvers = collections.deque((ResourceResolver(),))
+    type_resolvers = ResolverStack((ResourceResolver(),))
     """Stack of type resolvers."""
 
     component_initializers = collections.defaultdict(
@@ -405,29 +466,6 @@ class WorldHandle(desper.Handle):
         self._filename = filename
         self._model = model
 
-    def _resolve_type(self, string):
-        """Use the type resolver stack to retrieve a type from string.
-
-        If the resolver throws an exception or returns None, the
-        following resolver on the stack will be executed.
-
-        If no resolver is able to process the string, the last exception
-        from the last resolver will be thrown (if instead None is
-        returned, a TypeException is raised).
-        """
-        for resolver in reversed(self.type_resolvers):
-            try:
-                type_ = resolver(string)
-                if type_ is not None:
-                    return type_
-            except Exception as e:
-                # If the last resolver throws, throw it
-                if resolver == self.type_resolvers[0]:
-                    raise e
-
-            # If no exception is thrown and no type is resolved, throw
-            raise TypeError(f"Couldn't resolve type ${string}")
-
     def _load(self):
         """Implementation of the load function."""
         with open(self._filename) as fin:
@@ -437,7 +475,7 @@ class WorldHandle(desper.Handle):
 
         # Get world type
         w_string = data['options']['world_type']
-        w_type = self._resolve_type(w_string)
+        w_type = self.type_resolvers(w_string)
         w = w_type()
 
         # Generate instances, while retrieving the correct types
@@ -447,7 +485,7 @@ class WorldHandle(desper.Handle):
                 w.create_entity()
 
             for comp in instance['comps']:
-                comp_type = self._resolve_type(comp['type'])
+                comp_type = self.type_resolvers(comp['type'])
 
                 args = comp.get('args', [])
                 kwargs = comp.get('kwargs', {})
