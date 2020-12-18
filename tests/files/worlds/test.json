@@ -25,5 +25,11 @@
         }
       ]
     }
+  ],
+
+  "processors": [
+    {
+      "type": "esper.Processor"
+    }
   ]
 }

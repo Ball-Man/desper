@@ -363,22 +363,43 @@ def component_initializer(comp_type, args, kwargs, instance, world, model):
     return comp_type(*args, **kwargs)
 
 
-def resources_initializer(type_, args, kwargs, instance, world, model):
-    """Substitute resource strings with the actual resources.
+def processor_initializer(proc_type, args, kwargs, world, model):
+    """Return an initialized processor, given the type and arguments.
 
     This function is made to be used in
-    :py:attr:`WorldHandle.component_initializers`.
+    :py:attr:`WorldHandle.processor_initializers`.
 
     :param comp_type: The type of the component to be initialized.
+    :param args: List of arguments passed to this processor from the
+                 json.
+    :param kwargs: Dictionary of keyword aguments passed to this
+                   processor from the json.
+    :param world: Instance of :class:`esper.World` of which this
+                  processor will be part.
+    :param model: Instance of :class:`desper.GameModel`.
+    :return: An initialized component.
+    """
+    return proc_type(*args, **kwargs)
+
+
+def resources_initializer(args, kwargs, model, **kwa):
+    """Substitute resource strings with the actual resources.
+
+    Resources matching the regex defined in
+    :py:attr:`RESOURCE_STRING_REGEX` will be translated into the
+    respective resources (from the model resources dictionary).
+
+    e.g. A parameter in the form ${sprite/1.png} will be translated into
+    the resource in model.res['sprite']['1.png'].
+
+    This function is made to be used in
+    :py:attr:`WorldHandle.component_initializers` and in
+    :py:attr:`WorldHandle.processor_initializers`.
+
     :param args: List of arguments passed to this component from the
                  json.
     :param kwargs: Dictionary of keyword aguments passed to this
                    component from the json.
-    :param instance: A dictionary containing the properties assigned
-                     to the instance of this component(by default, "id")
-                     is defined to be the entity numerical id.
-    :param world: Instance of :class:`esper.World` of which this
-                  component will be part.
     :param model: Instance of :class:`desper.GameModel`.
     :return: None, control is passed to the following resolver
     """
@@ -464,13 +485,20 @@ class WorldHandle(desper.Handle):
     name (package.submodule...Class), and the handle will try to import
     the necessary packages/modules and finally retrieve the wanted
     class.
+
+    A similar approach is used in order to import
+    :class:`esper.Processor`s.
     """
     type_resolvers = ResolverStack((ResourceResolver(),))
     """Stack of type resolvers."""
 
     component_initializers = ResolverStack((component_initializer,
                                             resources_initializer))
-    """Stack of component_initializers."""
+    """Stack of component initializers."""
+
+    processor_initializers = ResolverStack((processor_initializer,
+                                            resources_initializer))
+    """Stack of processor initializers."""
 
     def __init__(self, filename, model):
         super().__init__()
@@ -489,8 +517,19 @@ class WorldHandle(desper.Handle):
         w_type = self.type_resolvers(w_string)
         w = w_type()
 
+        # Generate processors
+        for processor in data.get('processors', []):
+            proc_type = self.type_resolvers(processor['type'])
+            args = processor.get('args', [])
+            kwargs = processor.get('kwargs', {})
+
+            proc_inst = self.processor_initializers(
+                proc_type=proc_type, args=args, kwargs=kwargs, world=w,
+                model=self._model)
+            w.add_processor(proc_inst)
+
         # Generate instances, while retrieving the correct types
-        for instance in data['instances']:
+        for instance in data.get('instances', []):
             while world_counter < instance['id']:
                 world_counter += 1
                 w.create_entity()
@@ -500,15 +539,16 @@ class WorldHandle(desper.Handle):
 
                 args = comp.get('args', [])
                 kwargs = comp.get('kwargs', {})
-                comp = self.component_initializers(
-                    comp_type, args, kwargs, instance, w, self._model)
+                comp_inst = self.component_initializers(
+                    comp_type=comp_type, args=args, kwargs=kwargs,
+                    instance=instance, world=w, model=self._model)
 
                 # Support prototypes too
-                if isinstance(comp, desper.Prototype):
-                    for c in comp:
+                if isinstance(comp_inst, desper.Prototype):
+                    for c in comp_inst:
                         w.add_component(instance['id'], c)
                 else:
-                    w.add_component(instance['id'], comp)
+                    w.add_component(instance['id'], comp_inst)
 
         return w
 

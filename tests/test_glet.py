@@ -110,6 +110,8 @@ def test_world_handle(gamemodel):
     deque = w.component_for_entity(1, collections.deque)
     assert deque == collections.deque([0, 1, 2, 3])
 
+    assert w.get_processor(esper.Processor) is not None
+
 
 def test_world_handle_proto(gamemodel):
     gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
