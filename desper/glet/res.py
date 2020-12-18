@@ -344,7 +344,7 @@ class ResourceResolver:
 def component_initializer(comp_type, args, kwargs, instance, world, model):
     """Return an initialized component, given the type and arguments.
 
-    This function is made to be used as default value in
+    This function is made to be used in
     :py:attr:`WorldHandle.component_initializers`.
 
     :param comp_type: The type of the component to be initialized.
@@ -360,6 +360,28 @@ def component_initializer(comp_type, args, kwargs, instance, world, model):
     :param model: Instance of :class:`desper.GameModel`.
     :return: An initialized component.
     """
+    return comp_type(*args, **kwargs)
+
+
+def resources_initializer(type_, args, kwargs, instance, world, model):
+    """Substitute resource strings with the actual resources.
+
+    This function is made to be used in
+    :py:attr:`WorldHandle.component_initializers`.
+
+    :param comp_type: The type of the component to be initialized.
+    :param args: List of arguments passed to this component from the
+                 json.
+    :param kwargs: Dictionary of keyword aguments passed to this
+                   component from the json.
+    :param instance: A dictionary containing the properties assigned
+                     to the instance of this component(by default, "id")
+                     is defined to be the entity numerical id.
+    :param world: Instance of :class:`esper.World` of which this
+                  component will be part.
+    :param model: Instance of :class:`desper.GameModel`.
+    :return: None, control is passed to the following resolver
+    """
     def args_map(x):
         if type(x) is not str:
             return x
@@ -374,8 +396,10 @@ def component_initializer(comp_type, args, kwargs, instance, world, model):
 
         return handle.get()
 
-    return comp_type(*map(args_map, args),
-                     **{k: args_map(v) for k, v in kwargs.items()})
+    args[:] = map(args_map, args)
+    kwargs.update({k: args_map(v) for k, v in kwargs.items()})
+
+    return None
 
 
 class ResolverStack:
@@ -385,10 +409,8 @@ class ResolverStack:
     are passed to the internal callables(inside the stack).
     If one of the callables returns a valid value, the value is returned
     from the ResolverStack call operation. If an internal callable
-    returns ``None`` or raises an exception, the following one is called.
-    All exceptions are therefore captured by this class, which will only
-    raise the first exception coming from the last available callable
-    (last one in the stack).
+    returns ``None``, the following one is called.
+    Exceptions will halt the process (they're not captured in any way).
 
     If the final callable can't resolve the input, but raises no
     exception(returns ``None``), or the stack is empty, an
@@ -400,15 +422,10 @@ class ResolverStack:
 
     def __call__(self, *args, **kwargs):
         for resolver in reversed(self._stack):
-            try:
-                print(resolver)
-                result = resolver(*args, **kwargs)
-                if result is not None:
-                    return result
-            except Exception as e:
-                # If the last resolver throws, throw it
-                if resolver == self._stack[0]:
-                    raise e
+            print(resolver)
+            result = resolver(*args, **kwargs)
+            if result is not None:
+                return result
 
         # If no exception is thrown and no type is resolved, throw
         raise IndexError("No resolver was found for the input: "
@@ -451,7 +468,8 @@ class WorldHandle(desper.Handle):
     type_resolvers = ResolverStack((ResourceResolver(),))
     """Stack of type resolvers."""
 
-    component_initializers = ResolverStack((component_initializer,))
+    component_initializers = ResolverStack((component_initializer,
+                                            resources_initializer))
     """Stack of component_initializers."""
 
     def __init__(self, filename, model):
@@ -519,4 +537,5 @@ def glet_comp_initializer(comp_type, args, kwargs, instance, world, model):
 class GletWorldHandle(WorldHandle):
     """Custom WorldHandle setup to better load pyglet components."""
     component_initializers = ResolverStack((component_initializer,
+                                            resources_initializer,
                                             glet_comp_initializer))
