@@ -341,21 +341,23 @@ class ResourceResolver:
         return comp
 
 
-def component_initializer(comp_type, instance, args, kwargs, model):
+def component_initializer(comp_type, args, kwargs, instance, world, model):
     """Return an initialized component, given the type and arguments.
 
     This function is made to be used as default value in
     :py:attr:`WorldHandle.component_initializers`.
 
     :param comp_type: The type of the component to be initialized.
-    :param instance: A dictionary containing the properties assigned
-                     to the instance of this component(by default, "id")
-                     is defined to be the entity numerical id.
     :param args: List of arguments passed to this component from the
                  json.
     :param kwargs: Dictionary of keyword aguments passed to this
                    component from the json.
-    :param model: Instance of :class:`GameModel`.
+    :param instance: A dictionary containing the properties assigned
+                     to the instance of this component(by default, "id")
+                     is defined to be the entity numerical id.
+    :param world: Instance of :class:`esper.World` of which this
+                  component will be part.
+    :param model: Instance of :class:`desper.GameModel`.
     :return: An initialized component.
     """
     def args_map(x):
@@ -480,7 +482,7 @@ class WorldHandle(desper.Handle):
                 args = comp.get('args', [])
                 kwargs = comp.get('kwargs', {})
                 comp = self.component_initializers(
-                    comp_type, instance, args, kwargs, self._model)
+                    comp_type, args, kwargs, instance, w, self._model)
 
                 # Support prototypes too
                 if isinstance(comp, desper.Prototype):
