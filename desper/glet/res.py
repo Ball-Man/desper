@@ -401,6 +401,7 @@ class ResolverStack:
     def __call__(self, *args, **kwargs):
         for resolver in reversed(self._stack):
             try:
+                print(resolver)
                 result = resolver(*args, **kwargs)
                 if result is not None:
                     return result
@@ -409,9 +410,9 @@ class ResolverStack:
                 if resolver == self._stack[0]:
                     raise e
 
-            # If no exception is thrown and no type is resolved, throw
-            raise IndexError("No resolver was found for the input: "
-                             f"{args}, {kwargs}")
+        # If no exception is thrown and no type is resolved, throw
+        raise IndexError("No resolver was found for the input: "
+                         f"{args}, {kwargs}")
 
     def push(self, resolver):
         """Push a resolver on top of the stack.
@@ -492,3 +493,30 @@ class WorldHandle(desper.Handle):
                     w.add_component(instance['id'], comp)
 
         return w
+
+
+def glet_comp_initializer(comp_type, args, kwargs, instance, world, model):
+    """Manage arguments in the correct way for :mod:`pyglet` components.
+
+    This function is made to be used as resolver in the stack
+    :py:attr:`WorldHandle.component_initializers`.
+
+    No actual component is returned. Instead, None is returned, but the
+    kwargs are parsed so that ``batch`` and ``groups`` are correctly
+    resolved by the default initializer.
+    """
+    if issubclass(comp_type, pyglet.sprite.Sprite):
+        # Set batch for the sprite
+        kwargs['batch'] = model.get_batch(world)
+
+        # Retrieve order group if present
+        if 'group' in kwargs:
+            kwargs['group'] = model.get_order_group(kwargs['group'])
+
+    return None
+
+
+class GletWorldHandle(WorldHandle):
+    """Custom WorldHandle setup to better load pyglet components."""
+    component_initializers = ResolverStack((component_initializer,
+                                            glet_comp_initializer))

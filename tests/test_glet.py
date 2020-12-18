@@ -134,6 +134,21 @@ def test_world_handle_res_resolve(gamemodel):
         w = gamemodel.res['worlds']['res2.json'].get()
 
 
+def test_glet_world_handle_importer(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {glet.get_animation_importer():
+                            glet.AnimationHandle,
+                            glet.get_world_importer(): glet.GletWorldHandle})
+
+    w = gamemodel.res['worlds']['glet.json'].get()
+    gamemodel.switch(gamemodel.res['worlds']['glet.json'])
+    comp = w.get_component(pyglet.sprite.Sprite)[0][1]
+
+    assert type(comp.image) is pyglet.image.Animation
+    assert comp.batch == gamemodel.get_batch()
+    assert comp.group == gamemodel.get_order_group(10)
+
+
 def test_event_handler(gamemodel):
     glet.event_handler.window = gamemodel.window
 

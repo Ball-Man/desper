@@ -1,0 +1,18 @@
+{
+  "options": {
+    "world_type": "esper.World"
+  },
+
+  "instances": [
+    {
+      "id": 1,
+      "comps": [
+        {
+          "type": "pyglet.sprite.Sprite",
+          "args": ["${sprites/anim.json}"],
+          "kwargs": { "group": 10 }
+        }
+      ]
+    }
+  ]
+}
