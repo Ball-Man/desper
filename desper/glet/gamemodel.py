@@ -121,7 +121,7 @@ class GletGameModel(desper.GameModel):
         pyglet.clock.schedule(self._iteration)
         pyglet.app.run()
 
-    def switch(self, world_handle, reset=False):
+    def switch(self, world_handle, cur_reset=False, dest_reset=False):
         """Switch to a new world.
 
         Optionally, reset the current world handle before leaving.
@@ -131,9 +131,12 @@ class GletGameModel(desper.GameModel):
                            :class:`esper.World` implementation.
         :param world_handle: The world handle instance to game should
                       switch.
-        :param reset: Whether the current world handle should be.
+        :param cur_reset: Whether the current world handle should be
+                          reset before switching.
+        :param dest_reset: Whether the destination world handle should
+                           be reset before switching.
         """
-        super().switch(world_handle, reset)
+        super().switch(world_handle, cur_reset, dest_reset)
 
         self.get_batch()        # Cache a new batch for the cur World
 

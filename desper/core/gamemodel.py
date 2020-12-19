@@ -226,7 +226,7 @@ class GameModel:
         """Get the world currently executed in the main loop."""
         return self._current_world
 
-    def switch(self, world_handle, reset=False):
+    def switch(self, world_handle, cur_reset=False, dest_reset=False):
         """Switch to a new world.
 
         Optionally, reset the current world handle before leaving.
@@ -236,12 +236,19 @@ class GameModel:
                            :class:`esper.World` implementation.
         :param world_handle: The world handle instance to game should
                       switch.
-        :param reset: Whether the current world handle should be reset.
+        :param cur_reset: Whether the current world handle should be
+                          reset before switching.
+        :param dest_reset: Whether the destination world handle should
+                           be reset before switching.
         """
         if not isinstance(world_handle, Handle):
             raise TypeError
-        if reset and self._current_world is not None:
+
+        # Reset if requested
+        if cur_reset and self._current_world is not None:
             self._current_world_handle.clear()
+        if dest_reset:
+            world_handle.clear()
 
         self._current_world_handle = world_handle
         self._current_world = world_handle.get()
