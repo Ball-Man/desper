@@ -99,6 +99,9 @@ class GletGameModel(desper.GameModel):
 
     def _iteration(self, dt):
         """Used as iteration inside the main loop."""
+        if self._waiting_world_handle is not None:
+            self._finalize_switch()
+
         # Render clear
         self.window.clear()
 
@@ -121,7 +124,8 @@ class GletGameModel(desper.GameModel):
         pyglet.clock.schedule(self._iteration)
         pyglet.app.run()
 
-    def switch(self, world_handle, cur_reset=False, dest_reset=False):
+    def switch(self, world_handle, cur_reset=False, dest_reset=False,
+               immediate=False):
         """Switch to a new world.
 
         Optionally, reset the current world handle before leaving.
@@ -135,8 +139,22 @@ class GletGameModel(desper.GameModel):
                           reset before switching.
         :param dest_reset: Whether the destination world handle should
                            be reset before switching.
+        :param immediate: If set to ``True``, :py:attr:`current_world`
+                          and :py:attr:`current_world_handle` will be
+                          immediately set to the new values.
+                          If set to ``False``, the attributes will be
+                          set to the new values at the beginning of the
+                          next game iteration.
+                          Be aware that switching immediately will
+                          cause any other execution in the current
+                          iteration that relies on
+                          :py:attr:`current_world` (or its handle)
+                          to retrieve misleading information(they will
+                          basically believe for that frame of time that
+                          their current world is the destination one,
+                          while being part of the previous).
         """
-        super().switch(world_handle, cur_reset, dest_reset)
+        super().switch(world_handle, cur_reset, dest_reset, immediate)
 
         self.get_batch()        # Cache a new batch for the cur World
 

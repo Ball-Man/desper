@@ -18,10 +18,10 @@ def world():
 @pytest.fixture
 def gamemodel():
     model = core.GameModel()
-    w = core.AbstractWorld()
+    model.res['testworld'] = WorldHandle()
+    w = model.res['testworld'].get()
     w.add_processor(core.AbstractProcessor())
-    model.res['testworld'] = WorldHandle(w)
-    model.switch(model.res['testworld'])
+    model.switch(model.res['testworld'], immediate=True)
     return model
 
 # Test functions
@@ -188,24 +188,39 @@ def test_gamemodel_quit_loop(gamemodel):
     assert w.component_for_entity(entity, ModelComponent).var == 11
 
 
-def test_gamemodel_switch(gamemodel, world):
+def test_gamemodel_switch(gamemodel):
     gamemodel.res['testworld'].get().create_entity(ModelComponent())
-    gamemodel.res['testworld2'] = WorldHandle(world)
+    gamemodel.res['testworld2'] = WorldHandle()
+    testworld = gamemodel.current_world
+    testworld2 = gamemodel.res['testworld2'].get()
 
     component = ModelComponent()
-    world.create_entity(component)
-    world.add_processor(core.AbstractProcessor())
+    testworld2.create_entity(component)
+    testworld2.add_processor(core.AbstractProcessor())
 
+    assert gamemodel.res['testworld'].get() == testworld
     assert gamemodel.current_world_handle == gamemodel.res['testworld']
     assert gamemodel.current_world == gamemodel.res['testworld'].get()
     gamemodel.loop()
 
     assert component.var == 0
+    gamemodel.switch(gamemodel.res['testworld2'], cur_reset=True,
+                     immediate=True)
+    assert gamemodel.res['testworld'].get() != testworld
 
-    gamemodel.switch(gamemodel.res['testworld2'])
     assert gamemodel.current_world_handle == gamemodel.res['testworld2']
     assert gamemodel.current_world == gamemodel.res['testworld2'].get()
     gamemodel.loop()
+
+    gamemodel.switch(gamemodel.res['testworld'])
+    gamemodel.res['testworld'].get().add_processor(core.AbstractProcessor())
+    gamemodel.res['testworld'].get().create_entity(ModelComponent())
+    assert gamemodel.current_world_handle == gamemodel.res['testworld2']
+    assert gamemodel.current_world == gamemodel.res['testworld2'].get()
+    gamemodel.loop()
+
+    assert gamemodel.current_world_handle == gamemodel.res['testworld']
+    assert gamemodel.current_world == gamemodel.res['testworld'].get()
 
     assert component.var == 11
 

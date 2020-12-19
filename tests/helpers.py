@@ -87,12 +87,8 @@ class TextHandle(desper.Handle):
 
 class WorldHandle(desper.Handle):
 
-    def __init__(self, w):
-        super().__init__()
-        self._w = w
-
     def _load(self):
-        return self._w
+        return desper.AbstractWorld()
 
 
 class CoroutineComponent:

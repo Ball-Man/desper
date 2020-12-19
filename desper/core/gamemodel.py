@@ -42,6 +42,17 @@ class GameModel:
     iterable containing the parameters passed to the Handle
     constructor otherwise."""
 
+    # Used for switching
+    _waiting_world_handle = None
+    _waiting_cur_reset = False
+    _waiting_dest_reset = False
+
+    _current_world = None
+    _current_world_handle = None
+
+    # Used to quit the loop
+    quit = False
+
     def __init__(self, dirs=[], importer_dict={}):
         """Construct a new GameModel from an importer dictionary.
 
@@ -66,10 +77,6 @@ class GameModel:
         :param importer_dict: A dictionary that associates regex
                               patterns to Handle implementations.
         """
-        self._current_world = None
-        self._current_world_handle = None
-        self.quit = False
-
         self.res = {}
         if dirs:
             self.init_handles(dirs, importer_dict)
@@ -214,6 +221,9 @@ class GameModel:
         self.quit = False
 
         while not self.quit:
+            if self._waiting_world_handle is not None:
+                self._finalize_switch()
+
             self._current_world.process(self)
 
     @property
@@ -226,7 +236,8 @@ class GameModel:
         """Get the world currently executed in the main loop."""
         return self._current_world
 
-    def switch(self, world_handle, cur_reset=False, dest_reset=False):
+    def switch(self, world_handle, cur_reset=False, dest_reset=False,
+               immediate=False):
         """Switch to a new world.
 
         Optionally, reset the current world handle before leaving.
@@ -240,15 +251,44 @@ class GameModel:
                           reset before switching.
         :param dest_reset: Whether the destination world handle should
                            be reset before switching.
+        :param immediate: If set to ``True``, :py:attr:`current_world`
+                          and :py:attr:`current_world_handle` will be
+                          immediately set to the new values.
+                          If set to ``False``, the attributes will be
+                          set to the new values at the beginning of the
+                          next game iteration.
+                          Be aware that switching immediately will
+                          cause any other execution in the current
+                          iteration that relies on
+                          :py:attr:`current_world` (or its handle)
+                          to retrieve misleading information(they will
+                          basically believe for that frame of time that
+                          their current world is the destination one,
+                          while being part of the previous).
         """
         if not isinstance(world_handle, Handle):
             raise TypeError
 
-        # Reset if requested
-        if cur_reset and self._current_world is not None:
-            self._current_world_handle.clear()
-        if dest_reset:
-            world_handle.clear()
+        # Prepare in case it's not immediate
+        self._waiting_world_handle = world_handle
+        self._waiting_cur_reset = cur_reset
+        self._waiting_dest_reset = dest_reset
 
-        self._current_world_handle = world_handle
-        self._current_world = world_handle.get()
+        if immediate:
+            self._finalize_switch()
+
+    def _finalize_switch(self):
+        """Finalize a world switch initiated by :py:meth:`switch`.
+
+        This method is to be used inside :py:meth:`loop` to finalize
+        a switch in case it was set to be `not` immediate.
+        """
+        # Reset if requested
+        if self._waiting_cur_reset and self._current_world is not None:
+            self._current_world_handle.clear()
+        if self._waiting_dest_reset:
+            self._waiting_world_handle.clear()
+
+        self._current_world_handle = self._waiting_world_handle
+        self._waiting_world_handle = None
+        self._current_world = self._current_world_handle.get()

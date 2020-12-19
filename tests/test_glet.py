@@ -27,10 +27,10 @@ def world():
 @pytest.fixture
 def gamemodel():
     model = glet.GletGameModel()
-    w = core.AbstractWorld()
+    model.res['testworld'] = WorldHandle()
+    w = model.res['testworld'].get()
     w.add_processor(core.AbstractProcessor())
-    model.res['testworld'] = WorldHandle(w)
-    model.switch(model.res['testworld'])
+    model.switch(model.res['testworld'], immediate=True)
     return model
 
 
@@ -143,7 +143,7 @@ def test_glet_world_handle_importer(gamemodel):
                             glet.get_world_importer(): glet.GletWorldHandle})
 
     w = gamemodel.res['worlds']['glet.json'].get()
-    gamemodel.switch(gamemodel.res['worlds']['glet.json'])
+    gamemodel.switch(gamemodel.res['worlds']['glet.json'], immediate=True)
     comp = w.get_component(pyglet.sprite.Sprite)[0][1]
 
     assert type(comp.image) is pyglet.image.Animation
