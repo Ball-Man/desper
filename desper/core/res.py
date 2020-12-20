@@ -53,6 +53,12 @@ class Handle:
         """Construct an empty handle."""
         self._value = None
 
+    def __del__(self):
+        self.clear()
+
+    def __getattr__(self, name):
+        return getattr(self.get(), name)
+
     def _load(self):
         """Base method for resource loading.
 
