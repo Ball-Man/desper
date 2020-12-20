@@ -87,6 +87,10 @@ class Handle:
         """
         self._value = None
 
+    @property
+    def loaded(self):
+        return self._value is not None
+
 
 class IdentityHandle(Handle):
     """Special kind of :class:`Handle` that returns the given value.

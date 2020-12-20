@@ -156,6 +156,19 @@ class GletGameModel(desper.GameModel):
         """
         super().switch(world_handle, cur_reset, dest_reset, immediate)
 
+    def _finalize_switch(self):
+        # Clear batches
+        if self._waiting_cur_reset and self._current_world in self._batches:
+            del self._batches[self._current_world]
+        if self._waiting_dest_reset \
+           and self._waiting_world_handle is not None \
+           and self._waiting_world_handle.loaded \
+           and self._waiting_world_handle.get() in self._batches:
+            dest_world = self._waiting_world_handle.get()
+            del self._batches[dest_world]
+
+        super()._finalize_switch()
+
         self.get_batch()        # Cache a new batch for the cur World
 
 

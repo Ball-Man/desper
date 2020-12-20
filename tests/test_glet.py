@@ -48,6 +48,29 @@ def test_gamemodel_quit_loop(gamemodel):
     assert w.component_for_entity(entity, ModelComponent).var == 11
 
 
+def test_gamemodel_switch(gamemodel):
+    testworld = gamemodel.current_world
+    testworld.create_entity(ModelComponent())
+    testworld2_hand = WorldHandle()
+    testworld2 = testworld2_hand.get()
+    testworld2.create_entity(ModelComponent())
+    testworld2.add_processor(core.AbstractProcessor())
+
+    batch1 = gamemodel.get_batch(testworld)
+    batch2 = gamemodel.get_batch(testworld2)
+
+    gamemodel.switch(testworld2_hand, immediate=True, cur_reset=True)
+
+    assert batch2 is gamemodel.get_batch()
+    assert batch1 is not gamemodel.get_batch(testworld)
+
+    gamemodel.switch(testworld2_hand, immediate=True, dest_reset=True)
+
+    assert batch2 is not gamemodel.get_batch()
+
+    gamemodel.loop()
+
+
 def test_active_sprite_processor(gamemodel, sprite):
     w = gamemodel.current_world
     w.add_processor(glet.ActiveSpriteProcessor())
