@@ -2,6 +2,7 @@ import glob
 import os
 import os.path as pt
 import inspect as insp
+import collections.abc
 from functools import reduce
 
 from .res import Handle
@@ -114,7 +115,22 @@ class GameModel:
         :param importer_dict: A dictionary that associates lamdas to
                               Handle implementations.
         """
-        self.res.update(self._init_handles(dirs, importer_dict))
+        stack = []
+        stack.append((self.res, self._init_handles(dirs, importer_dict)))
+        while stack:
+            p, new = stack.pop()
+            items = p.items()
+
+            for k, v in list(new.items()):
+                # Add missing keys and substitute leaves
+                if k not in p \
+                or k in p and not isinstance(v, collections.abc.Mapping):
+                    p[k] = v
+                # DFS on nested dictionaries
+                elif k in p and isinstance(p[k], collections.abc.Mapping) \
+                     and isinstance(v, collections.abc.Mapping):
+                    stack.append((p[k], v))
+
 
     def _init_handles(self, dirs, importer_dict):
         """Init a handle structure for resources and return it.

@@ -179,6 +179,22 @@ def test_gamemodel_res_no_extensions(gamemodel):
         gamemodel.res['sounds.txt']
 
 
+def test_gamemodel_init_handles(gamemodel):
+    dirs = [pt.join(pt.dirname(__file__), 'files')]
+    importer_dict = {accept_all: core.IdentityHandle}
+    gamemodel.init_handles(dirs, importer_dict)
+
+    gamemodel.res['gamemodel_res']['test.txt']
+    with pytest.raises(KeyError):
+        gamemodel.res['gamemodel_res']['test2.txt']
+
+    dirs = [pt.join(pt.dirname(__file__), pt.join('files', 'fakefiles'))]
+    gamemodel.init_handles(dirs, importer_dict)
+
+    gamemodel.res['gamemodel_res']['test.txt']
+    gamemodel.res['gamemodel_res']['test2.txt']
+
+
 def test_gamemodel_quit_loop(gamemodel):
     w = gamemodel.current_world_handle.get()
     entity = w.create_entity(ModelComponent())
