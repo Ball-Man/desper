@@ -252,7 +252,7 @@ def test_importer_dict_builder(gamemodel):
     dic = core.importer_dict_builder.add_rule(accept_all, SquareHandle, 1) \
                                     .add_rule(accept_all_2, TextHandle, 0) \
                                     .build()
-    print(dic)
+
     gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files' + pt.sep
                             + 'gamemodel_res')],
                            dic)

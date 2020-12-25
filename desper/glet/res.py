@@ -444,7 +444,6 @@ class ResolverStack:
 
     def __call__(self, *args, **kwargs):
         for resolver in reversed(self._stack):
-            print(resolver)
             result = resolver(*args, **kwargs)
             if result is not None:
                 return result
