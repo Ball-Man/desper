@@ -3,6 +3,7 @@ import json
 import importlib
 import collections
 import re
+import gc
 
 import desper
 
@@ -551,6 +552,14 @@ class WorldHandle(desper.Handle):
                     w.add_component(instance['id'], comp_inst)
 
         return w
+
+    def clear(self):
+        if self._value is not None:
+            self._value.clear_database()
+            gc.collect()
+
+        super().clear()
+
 
 
 def glet_comp_initializer(comp_type, args, kwargs, instance, world, model):
