@@ -172,18 +172,3 @@ def test_glet_world_handle_importer(gamemodel):
     assert type(comp.image) is pyglet.image.Animation
     assert comp.batch == gamemodel.get_batch()
     assert comp.group == gamemodel.get_order_group(10)
-
-
-def test_event_handler(gamemodel):
-    glet.event_handler.window = gamemodel.window
-
-    @glet.event_handler
-    class TestHandler:
-        pass
-
-    assert callable(TestHandler)
-
-    glet.event_handler.window = None
-
-    with pytest.raises(TypeError):
-        TestHandler()
