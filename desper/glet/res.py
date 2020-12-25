@@ -511,8 +511,6 @@ class WorldHandle(desper.Handle):
         with open(self._filename) as fin:
             data = json.load(fin)
 
-        world_counter = 0
-
         # Get world type
         w_string = data['options']['world_type']
         w_type = self.type_resolvers(w_string)
@@ -529,12 +527,15 @@ class WorldHandle(desper.Handle):
                 model=self._model)
             w.add_processor(proc_inst)
 
+        # Generate all entity ids to the max value (to avoid collisions)
+        tmp_entity = 0
+        max_entity_id = max(data.get('instances'),
+                            key=lambda inst: inst['id'])['id']
+        while tmp_entity < max_entity_id:
+            tmp_entity = w.create_entity()
+
         # Generate instances, while retrieving the correct types
         for instance in data.get('instances', []):
-            while world_counter < instance['id']:
-                world_counter += 1
-                w.create_entity()
-
             for comp in instance['comps']:
                 comp_type = self.type_resolvers(comp['type'])
 
