@@ -1,5 +1,6 @@
 import desper
 import desper.glet.keyboard as kbd
+import desper.glet.mouse as mouse
 
 import pyglet
 
@@ -18,7 +19,7 @@ class GletGameModel(desper.GameModel):
     """
 
     def __init__(self, dirs=[], importer_dict={}, window=None,
-                 event_handlers=(kbd.on_key_press, kbd.on_key_release)):
+                 event_handlers=(kbd.state, mouse.state)):
         """Construct a new GletGameModel.
 
         For more info about `importer_dict` and `dirs` see
