@@ -156,12 +156,15 @@ def test_gamemodel_res(gamemodel):
     assert gamemodel.res['sounds.txt'].get() == check_string
     with pytest.raises(KeyError):
         gamemodel.res['test.txt']
+    with pytest.raises(KeyError):
+        gamemodel.res['empty']
 
     # Try importing everything
     import_dict = {accept_all: TextHandle}
     gamemodel.init_handles(dirs, import_dict)
 
     assert type(gamemodel.res['test.txt']) is TextHandle
+    assert type(gamemodel.res['empty']['nofile']) is TextHandle
 
 
 def test_gamemodel_res_no_extensions(gamemodel):

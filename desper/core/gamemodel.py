@@ -224,6 +224,25 @@ class GameModel:
                 elif subitem != split[-1]:
                     p = p.setdefault(subitem, {})
 
+        # Remove empty dictionaries
+        pre_stack = []
+        post_stack = []
+        pre_stack.append(res)
+
+        # Setup postvisit
+        while pre_stack:
+            p = pre_stack.pop()
+            if isinstance(p, collections.abc.Mapping):
+                post_stack.append(p)
+                pre_stack += p.values()
+
+        while post_stack:
+            p = post_stack.pop()
+            for k, v in list(p.items()):
+                # Delete empty dictionaries from the parent
+                if not v:
+                    del p[k]
+
         return res
 
     def loop(self):
