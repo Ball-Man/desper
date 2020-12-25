@@ -1,9 +1,5 @@
 import os.path as pt
 import json
-import importlib
-import collections
-import re
-import gc
 
 import desper
 
@@ -24,10 +20,6 @@ DEFAULT_MEDIA_EXTS = ('.wav', '.mp4', '.mp3', '.ogg')
 DEFAULT_FONT_LOCATION = 'fonts'
 DEFAULT_FONT_EXTS = ('.ttf', '.otf')
 
-DEFAULT_WORLDS_LOCATION = 'worlds'
-DEFAULT_WORLDS_EXTS = ('.json')
-RESOURCE_STRING_REGEX = re.compile(r'\$\{(.+)\}')
-
 
 def _pyglet_path(path):
     """Manipulate path to match pyglet.resource requirements.
@@ -41,39 +33,6 @@ def _pyglet_path(path):
     :return: A path usable with pyglet.resource.
     """
     return pt.relpath(path, pt.curdir).replace(pt.sep, '/')
-
-
-def resource_from_path(res, rel_path, default=None):
-    """Get a specific resource :class:`Handle` from a res dictionary.
-
-    The given path should be relative to one of the resource directories
-    chosen when initializing the :class:`GameModel`.
-
-    :param res: A resource dictionary (presumably from a
-                :class:`GameModel`).
-    :param rel_path: Relative path from one of the resources root
-                     directory(chosen when initializing the
-                     :class:`GameModel`).
-    :param default: The default returned value if the queried
-                    :class:`Handle` doesn't exist. Defaults to ``None``.
-    :return: The :class:`Handle` loaded from the given `rel_path` if
-             exists, `default` otherwise.
-    """
-    # Convert to posix path if needed
-    rel_path = rel_path.replace(pt.sep, '/')
-
-    # Remove extension if required
-    if not desper.options['resource_extensions']:
-        rel_path = pt.splitext(rel_path)[0]
-
-    p = res
-    for path in rel_path.split('/'):
-        p = p.get(path, None)
-
-        if p is None:
-            return default
-
-    return p
 
 
 def get_image_importer():
@@ -171,27 +130,6 @@ def get_font_importer():
         return None
 
     return font_importer
-
-
-def get_world_importer():
-    """Get an importer function for worlds(:class:`WorldHandle`).
-
-    :return: A function usable as key in an `importer_dict`.
-    """
-    lambd = desper.get_resource_importer(DEFAULT_WORLDS_LOCATION,
-                                         DEFAULT_WORLDS_EXTS)
-
-    def decorated_lambda(root, rel_path, model):
-        ret = lambd(root, rel_path, model)
-        if ret is None:
-            return None
-
-        ret = list(ret)
-        ret.append(model)
-
-        return ret
-
-    return decorated_lambda
 
 
 class ImageHandle(desper.Handle):
@@ -296,272 +234,6 @@ class MediaHandle(desper.Handle):
         return pyglet.resource.media(self._filename, self._streamed)
 
 
-class ResourceResolver:
-    """Resolve a string name representing a unique class or function.
-
-    Callable, call passing a string in the format
-    "package.subpackage.etc.etc.Class". If found, Class is returned.
-    """
-
-    def __init__(self):
-        self._cache = {}
-
-    def __call__(self, string):
-        # Pull from cache if possible
-        if self._cache.get(string) is not None:
-            return self._cache[string]
-
-        strings = string.split('.')
-
-        # Import the module
-        module = None
-        incomplete = True
-        for i, _ in enumerate(strings):
-            try:
-                module = importlib.import_module('.'.join(strings[0:i + 1]))
-            except ModuleNotFoundError:
-                incomplete = False
-                break
-
-        if incomplete:
-            raise ValueError('Given string resolves to a module, not to a '
-                             'class or callable.')
-
-        # From the module import the subcomponents (classes, etc)
-        last_index = i
-        comp = module
-        for comp_str in strings[last_index:]:
-            comp = getattr(comp, comp_str)
-
-        if not callable(comp):
-            raise ValueError('Given string does not resolve to a class or '
-                             'callable')
-
-        # Save in cache and return
-        self._cache[string] = comp
-        return comp
-
-
-def component_initializer(comp_type, args, kwargs, instance, world, model):
-    """Return an initialized component, given the type and arguments.
-
-    This function is made to be used in
-    :py:attr:`WorldHandle.component_initializers`.
-
-    :param comp_type: The type of the component to be initialized.
-    :param args: List of arguments passed to this component from the
-                 json.
-    :param kwargs: Dictionary of keyword aguments passed to this
-                   component from the json.
-    :param instance: A dictionary containing the properties assigned
-                     to the instance of this component(by default, "id")
-                     is defined to be the entity numerical id.
-    :param world: Instance of :class:`esper.World` of which this
-                  component will be part.
-    :param model: Instance of :class:`desper.GameModel`.
-    :return: An initialized component.
-    """
-    return comp_type(*args, **kwargs)
-
-
-def processor_initializer(proc_type, args, kwargs, world, model):
-    """Return an initialized processor, given the type and arguments.
-
-    This function is made to be used in
-    :py:attr:`WorldHandle.processor_initializers`.
-
-    :param comp_type: The type of the component to be initialized.
-    :param args: List of arguments passed to this processor from the
-                 json.
-    :param kwargs: Dictionary of keyword aguments passed to this
-                   processor from the json.
-    :param world: Instance of :class:`esper.World` of which this
-                  processor will be part.
-    :param model: Instance of :class:`desper.GameModel`.
-    :return: An initialized component.
-    """
-    return proc_type(*args, **kwargs)
-
-
-def resources_initializer(args, kwargs, model, **kwa):
-    """Substitute resource strings with the actual resources.
-
-    Resources matching the regex defined in
-    :py:attr:`RESOURCE_STRING_REGEX` will be translated into the
-    respective resources (from the model resources dictionary).
-
-    e.g. A parameter in the form ${sprite/1.png} will be translated into
-    the resource in model.res['sprite']['1.png'].
-
-    This function is made to be used in
-    :py:attr:`WorldHandle.component_initializers` and in
-    :py:attr:`WorldHandle.processor_initializers`.
-
-    :param args: List of arguments passed to this component from the
-                 json.
-    :param kwargs: Dictionary of keyword aguments passed to this
-                   component from the json.
-    :param model: Instance of :class:`desper.GameModel`.
-    :return: None, control is passed to the following resolver
-    """
-    def args_map(x):
-        if type(x) is not str:
-            return x
-
-        match = RESOURCE_STRING_REGEX.fullmatch(x)
-        if match is None:
-            return x
-
-        handle = resource_from_path(model.res, match.group(1))
-        if handle is None:
-            raise IndexError(f"Couldn't find resource named {x}")
-
-        return handle.get()
-
-    args[:] = map(args_map, args)
-    kwargs.update({k: args_map(v) for k, v in kwargs.items()})
-
-    return None
-
-
-class ResolverStack:
-    """Stack of callables, used to parse specific data.
-
-    When calling a ResolverStack(operator ``()``) all the arguments
-    are passed to the internal callables(inside the stack).
-    If one of the callables returns a valid value, the value is returned
-    from the ResolverStack call operation. If an internal callable
-    returns ``None``, the following one is called.
-    Exceptions will halt the process (they're not captured in any way).
-
-    If the final callable can't resolve the input, but raises no
-    exception(returns ``None``), or the stack is empty, an
-    ``IndexError`` is raised.
-    """
-
-    def __init__(self, iterable=tuple()):
-        self._stack = collections.deque(iterable)
-
-    def __call__(self, *args, **kwargs):
-        for resolver in reversed(self._stack):
-            result = resolver(*args, **kwargs)
-            if result is not None:
-                return result
-
-        # If no exception is thrown and no type is resolved, throw
-        raise IndexError("No resolver was found for the input: "
-                         f"{args}, {kwargs}")
-
-    def push(self, resolver):
-        """Push a resolver on top of the stack.
-
-        :param resolver: The callable to be added.
-        :raises TypeError: If ``resolver`` is not callable.
-        """
-        if not callable(resolver):
-            raise TypeError()
-
-        self._stack.append(resolver)
-
-    def pop(self):
-        """Pop the last resolver from the head of the stack.
-
-        :return: The popped item.
-        """
-        return self._stack.pop()
-
-    def clear(self):
-        """Empty the stack."""
-        self._stack.clear()
-
-    def __len__(self):
-        return len(self._stack)
-
-
-class WorldHandle(desper.Handle):
-    """Handle implementation for a `desper.World`.
-
-    This handle accepts a file(name). Components are specified by
-    name (package.submodule...Class), and the handle will try to import
-    the necessary packages/modules and finally retrieve the wanted
-    class.
-
-    A similar approach is used in order to import
-    :class:`esper.Processor`s.
-    """
-    type_resolvers = ResolverStack((ResourceResolver(),))
-    """Stack of type resolvers."""
-
-    component_initializers = ResolverStack((component_initializer,
-                                            resources_initializer))
-    """Stack of component initializers."""
-
-    processor_initializers = ResolverStack((processor_initializer,
-                                            resources_initializer))
-    """Stack of processor initializers."""
-
-    def __init__(self, filename, model):
-        super().__init__()
-        self._filename = filename
-        self._model = model
-
-    def _load(self):
-        """Implementation of the load function."""
-        with open(self._filename) as fin:
-            data = json.load(fin)
-
-        # Get world type
-        w_string = data['options']['world_type']
-        w_type = self.type_resolvers(w_string)
-        w = w_type()
-
-        # Generate processors
-        for processor in data.get('processors', []):
-            proc_type = self.type_resolvers(processor['type'])
-            args = processor.get('args', [])
-            kwargs = processor.get('kwargs', {})
-
-            proc_inst = self.processor_initializers(
-                proc_type=proc_type, args=args, kwargs=kwargs, world=w,
-                model=self._model)
-            w.add_processor(proc_inst)
-
-        # Generate all entity ids to the max value (to avoid collisions)
-        tmp_entity = 0
-        max_entity_id = max(data.get('instances'),
-                            key=lambda inst: inst['id'])['id']
-        while tmp_entity < max_entity_id:
-            tmp_entity = w.create_entity()
-
-        # Generate instances, while retrieving the correct types
-        for instance in data.get('instances', []):
-            for comp in instance['comps']:
-                comp_type = self.type_resolvers(comp['type'])
-
-                args = comp.get('args', [])
-                kwargs = comp.get('kwargs', {})
-                comp_inst = self.component_initializers(
-                    comp_type=comp_type, args=args, kwargs=kwargs,
-                    instance=instance, world=w, model=self._model)
-
-                # Support prototypes too
-                if isinstance(comp_inst, desper.Prototype):
-                    for c in comp_inst:
-                        w.add_component(instance['id'], c)
-                else:
-                    w.add_component(instance['id'], comp_inst)
-
-        return w
-
-    def clear(self):
-        if self._value is not None:
-            self._value.clear_database()
-            gc.collect()
-
-        super().clear()
-
-
-
 def glet_comp_initializer(comp_type, args, kwargs, instance, world, model):
     """Manage arguments in the correct way for :mod:`pyglet` components.
 
@@ -583,8 +255,8 @@ def glet_comp_initializer(comp_type, args, kwargs, instance, world, model):
     return None
 
 
-class GletWorldHandle(WorldHandle):
+class GletWorldHandle(desper.WorldHandle):
     """Custom WorldHandle setup to better load pyglet components."""
-    component_initializers = ResolverStack((component_initializer,
-                                            resources_initializer,
-                                            glet_comp_initializer))
+    component_initializers = desper.ResolverStack(
+        (desper.component_initializer, desper.resources_initializer,
+         glet_comp_initializer))

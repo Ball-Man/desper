@@ -118,52 +118,11 @@ def test_font_importer(gamemodel):
     assert pyglet.font.have_font('The Godfather')
 
 
-def test_world_handle(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {glet.get_world_importer(): glet.WorldHandle})
-
-    w = gamemodel.res['worlds']['test.json'].get()
-    assert isinstance(w, esper.World)
-    assert len(w.get_component(collections.deque)) == 2
-    assert len(w.get_component(collections.Counter)) == 1
-
-    counter = w.component_for_entity(1, collections.Counter)
-    assert counter['x'] == 100
-
-    deque = w.component_for_entity(1, collections.deque)
-    assert deque == collections.deque([0, 1, 2, 3])
-
-    assert w.get_processor(esper.Processor) is not None
-
-
-def test_world_handle_proto(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {glet.get_world_importer(): glet.WorldHandle})
-
-    w = gamemodel.res['worlds']['proto.json'].get()
-    w.component_for_entity(1, collections.defaultdict)
-    w.component_for_entity(1, collections.deque)
-
-
-def test_world_handle_res_resolve(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {glet.get_media_importer(): glet.MediaHandle,
-                            glet.get_world_importer(): glet.WorldHandle})
-
-    w = gamemodel.res['worlds']['res.json'].get()
-    comp = w.component_for_entity(10, tests.helpers.ComponentArgs1)
-
-    assert isinstance(comp.x, pyglet.media.Source)
-
-    with pytest.raises(IndexError):
-        w = gamemodel.res['worlds']['res2.json'].get()
-
-
 def test_glet_world_handle_importer(gamemodel):
     gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
                            {glet.get_animation_importer():
                             glet.AnimationHandle,
-                            glet.get_world_importer(): glet.GletWorldHandle})
+                            core.get_world_importer(): glet.GletWorldHandle})
 
     w = gamemodel.res['worlds']['glet.json'].get()
     gamemodel.switch(gamemodel.res['worlds']['glet.json'], immediate=True)

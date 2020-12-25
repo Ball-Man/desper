@@ -9,7 +9,7 @@
       "comps": [
         {
           "type": "tests.helpers.ComponentArgs1",
-          "args": ["${media/volt.wav}"]
+          "args": ["${gamemodel_res/sounds.txt}"]
         }
       ]
     }

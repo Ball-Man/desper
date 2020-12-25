@@ -2,6 +2,7 @@ import os
 import os.path as pt
 import inspect
 
+import tests
 from helpers import *
 from context import desper
 from desper import core
@@ -436,3 +437,44 @@ def test_prototypes(world):
     assert world.try_component(entity2, ComponentArgs1) is not None
     assert world.try_component(entity2, ComponentArgs2) is not None
     assert world.try_component(entity2, ComponentA) is not None
+
+
+def test_world_handle(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {core.get_world_importer(): core.WorldHandle})
+
+    w = gamemodel.res['worlds']['test.json'].get()
+    assert isinstance(w, esper.World)
+    assert len(w.get_component(collections.deque)) == 2
+    assert len(w.get_component(collections.Counter)) == 1
+
+    counter = w.component_for_entity(1, collections.Counter)
+    assert counter['x'] == 100
+
+    deque = w.component_for_entity(1, collections.deque)
+    assert deque == collections.deque([0, 1, 2, 3])
+
+    assert w.get_processor(esper.Processor) is not None
+
+
+def test_world_handle_proto(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {core.get_world_importer(): core.WorldHandle})
+
+    w = gamemodel.res['worlds']['proto.json'].get()
+    w.component_for_entity(1, collections.defaultdict)
+    w.component_for_entity(1, collections.deque)
+
+
+def test_world_handle_res_resolve(gamemodel):
+    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
+                           {accept_sounds: TextHandle,
+                            core.get_world_importer(): core.WorldHandle})
+
+    w = gamemodel.res['worlds']['res.json'].get()
+    comp = w.component_for_entity(10, tests.helpers.ComponentArgs1)
+
+    assert isinstance(comp.x, str)
+
+    with pytest.raises(IndexError):
+        w = gamemodel.res['worlds']['res2.json'].get()
