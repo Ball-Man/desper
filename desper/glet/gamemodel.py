@@ -1,8 +1,15 @@
+import os.path as pt
+import __main__
+
 import desper
+import desper.glet as dg
 import desper.glet.keyboard as kbd
 import desper.glet.mouse as mouse
 
 import pyglet
+
+
+DEFAULT_RES_ROOT = 'res'
 
 
 class GletGameModel(desper.GameModel):
@@ -19,7 +26,7 @@ class GletGameModel(desper.GameModel):
     """
 
     def __init__(self, dirs=[], importer_dict={}, window=None,
-                 event_handlers=(kbd.state, mouse.state)):
+                 event_handlers=(kbd.state, mouse.state), fps=60):
         """Construct a new GletGameModel.
 
         For more info about `importer_dict` and `dirs` see
@@ -46,6 +53,8 @@ class GletGameModel(desper.GameModel):
         self.window = window    # `pyglet.window.Window` instance
 
         self.window.set_handlers(*event_handlers)
+
+        self.fps = 60
 
         # Dict of `pyglet.graphics.Batch`. All the game render should
         # be added to this batches to optimize performance.
@@ -112,9 +121,6 @@ class GletGameModel(desper.GameModel):
         if self._waiting_world_handle is not None:
             self._finalize_switch()
 
-        # Render clear
-        self.window.clear()
-
         self._current_world.process(self)
 
         # print(pyglet.clock.get_fps())
@@ -122,6 +128,11 @@ class GletGameModel(desper.GameModel):
         if self.quit:
             self.quit = False
             pyglet.app.exit()
+
+    def _draw(self):
+        self.window.clear()
+        if self._current_world is not None:
+            self.get_batch(self._current_world).draw()
 
     def loop(self):
         """Start the main loop.
@@ -131,7 +142,12 @@ class GletGameModel(desper.GameModel):
 
         :raises AttributeError: If the current world isn't initialized.
         """
-        pyglet.clock.schedule(self._iteration)
+        self.window.set_handler('on_draw', self._draw)
+        if self.fps is None or self.fps <= 0:
+            pyglet.clock.schedule(self._iteration)
+        else:
+            pyglet.clock.schedule_interval(self._iteration, 1 / self.fps)
+
         pyglet.app.run()
 
     def switch(self, world_handle, cur_reset=False, dest_reset=False,
@@ -180,3 +196,32 @@ class GletGameModel(desper.GameModel):
         super()._finalize_switch()
 
         self.get_batch()        # Cache a new batch for the cur World
+
+
+class DefaultGletGameModel(GletGameModel):
+    """Default implementation of GameModel for pyglet.
+
+    This model defines by default a project structure that loads
+    pyglet media files, static images, animations, fonts and worlds
+    from the ``res`` directory (the default subdirectories names are
+    specified in :py:mod:`).
+    The directory is automatically searched at the game project's root.
+
+    A ``pyglet.window.Window`` is the only required addition.
+
+    FPS is automatically fixed to 60 by default.
+    """
+
+    def __init__(self, window, fps=60):
+        importer_dict = desper.importer_dict_builder \
+            .add_rule(dg.get_font_importer(), desper.IdentityHandle) \
+            .add_rule(dg.get_animation_importer(), dg.AnimationHandle) \
+            .add_rule(dg.get_image_importer(), dg.ImageHandle) \
+            .add_rule(dg.get_media_importer(), dg.MediaHandle) \
+            .add_rule(desper.get_world_importer(), dg.GletWorldHandle, 1) \
+            .build()
+
+        super().__init__(window=window, fps=fps,
+                         dirs=[pt.join(pt.dirname(__main__.__file__),
+                                       DEFAULT_RES_ROOT)],
+                         importer_dict=importer_dict)
