@@ -54,7 +54,7 @@ class GletGameModel(desper.GameModel):
 
         self.window.set_handlers(*event_handlers)
 
-        self.fps = 60
+        self.fps = fps
 
         # Dict of `pyglet.graphics.Batch`. All the game render should
         # be added to this batches to optimize performance.
