@@ -131,8 +131,28 @@ class GletGameModel(desper.GameModel):
 
     def _draw(self):
         self.window.clear()
+
+        # Render all cameras
         if self._current_world is not None:
-            self.get_batch(self._current_world).draw()
+            batch = self.get_batch(self._current_world)
+            for _, (pos, camera) in self._current_world \
+                    .get_components(dg.Position, dg.Camera):
+                # Transform according to camera
+                pyglet.gl.glTranslatef(-pos.x * camera.zoom,
+                                       -pos.y * camera.zoom, 0)
+                pyglet.gl.glScalef(camera.zoom, camera.zoom, 1)
+                if camera.viewport is not None:
+                    pyglet.gl.glViewport(*camera.viewport)
+
+                batch.draw()      # Actual draw
+
+                # Transform back
+                if camera.viewport is not None:
+                    pyglet.gl.glViewport(0, 0, self.window.width,
+                                         self.window.height)
+                pyglet.gl.glScalef(1 / camera.zoom, 1 / camera.zoom, 1)
+                pyglet.gl.glTranslatef(pos.x * camera.zoom,
+                                       pos.y * camera.zoom, 0)
 
     def loop(self):
         """Start the main loop.
@@ -143,6 +163,7 @@ class GletGameModel(desper.GameModel):
         :raises AttributeError: If the current world isn't initialized.
         """
         self.window.set_handler('on_draw', self._draw)
+
         if self.fps is None or self.fps <= 0:
             pyglet.clock.schedule(self._iteration)
         else:
