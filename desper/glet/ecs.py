@@ -38,6 +38,56 @@ class ActiveSpriteProcessor(esper.Processor):
                 sprite.position = (pos.x, pos.y)
 
 
+class ActivePositionProcessor(esper.Processor):
+    """ECS system that manages active updates for positional components.
+
+    Many components have a position of their own (x, y, eventually a z),
+    and updating all the positions when necessary can be a pain.
+    This processor updates all the given components types (accepted by
+    the constructor) according to the :class:`Position` instance of
+    their entity.
+
+    Of course, if no :class:`Position` component is present for an
+    entity, no updates will be done for that specific entity.
+
+    The updated attributes are 'x' and 'y' (if specified in the
+    constructor, 'z' too), so be sure that the wanted components
+    do have these attributes. These names can be customized in the
+    constructor.
+
+    To update :class:`pyglet.sprite.Sprite` components
+    :class:`ActiveSpriteProcessor` is recommended (more efficient).
+    """
+
+    def __init__(self, *args, x_name='x', y_name='y', z_name='z',
+                 compute_z=False):
+        self.to_update_types = args
+        self.x_name = x_name
+        self.y_name = y_name
+        self.z_name = z_name
+
+        self.compute_z = compute_z
+
+    def process(self, *args):
+        for ent, comps in self.world.get_components(Position,
+                                                    *self.to_update_types):
+            pos = comps[0]
+            cc = comps[1:]
+
+            # Update positions
+            for comp in cc:
+                if (pos.x, pos.y) != (getattr(comp, self.x_name),
+                                      getattr(comp, self.y_name)):
+                    setattr(comp, self.x_name, pos.x)
+                    setattr(comp, self.y_name, pos.y)
+
+            # Update z
+            if self.compute_z:
+                for comp in cc:
+                    if pos.z != getattr(comp, self.z_name):
+                        setattr(comp, self.z_name, pos.z)
+
+
 class Camera:
     """ECS component used to define a rendering camera."""
 

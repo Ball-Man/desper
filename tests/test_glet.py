@@ -86,6 +86,29 @@ def test_active_sprite_processor(gamemodel, sprite):
     assert pos.y == spr.y
 
 
+def test_active_position_processor(gamemodel, sprite):
+    w = gamemodel.current_world
+    w.add_processor(glet.ActivePositionProcessor(pyglet.sprite.Sprite))
+    w.add_processor(glet.ActivePositionProcessor(
+        AbnormalPosition, x_name='xx', y_name='yy', z_name='zz',
+        compute_z=True))
+
+    entity = w.create_entity(glet.Position(50, 50, 50), sprite,
+                             AbnormalPosition(), ModelComponent())
+
+    gamemodel.loop()
+
+    pos = w.component_for_entity(entity, glet.Position)
+    spr = w.component_for_entity(entity, pyglet.sprite.Sprite)
+    assert pos.x == spr.x
+    assert pos.y == spr.y
+
+    abn_pos = w.component_for_entity(entity, AbnormalPosition)
+    assert pos.x == abn_pos.xx
+    assert pos.y == abn_pos.yy
+    assert pos.z == abn_pos.zz
+
+
 def test_image_handle(gamemodel):
     gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
                            {glet.get_image_importer(): glet.ImageHandle})

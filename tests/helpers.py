@@ -163,3 +163,9 @@ class Prototype2(desper.Prototype):
 
 class BuiltinPrototype(desper.Prototype):
     component_types = collections.defaultdict, collections.deque
+
+
+class AbnormalPosition:
+    xx = 0
+    yy = 0
+    zz = 0
