@@ -8,7 +8,7 @@ setup(name='desper',
                    'Intended Audience :: Developers',
                    'Programming Language :: Python :: 3 :: Only',
                    'Topic :: Games/Entertainment'],
-      version='0.1',
+      version='0.2',
       description='A Python3 game development toolkit, based on open source '
                   + 'projects.',
       long_description=README,
