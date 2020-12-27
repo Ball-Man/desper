@@ -244,7 +244,9 @@ def glet_comp_initializer(comp_type, args, kwargs, instance, world, model):
     kwargs are parsed so that ``batch`` and ``groups`` are correctly
     resolved by the default initializer.
     """
-    if issubclass(comp_type, pyglet.sprite.Sprite):
+    if issubclass(comp_type, pyglet.sprite.Sprite) \
+       or issubclass(comp_type, pyglet.shapes._ShapeBase) \
+       or issubclass(comp_type, pyglet.text.layout.TextLayout):
         # Set batch for the sprite
         kwargs['batch'] = model.get_batch(world)
 
