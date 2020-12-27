@@ -473,8 +473,13 @@ def test_world_handle_res_resolve(gamemodel):
 
     w = gamemodel.res['worlds']['res.json'].get()
     comp = w.component_for_entity(10, tests.helpers.ComponentArgs1)
-
     assert isinstance(comp.x, str)
+
+    comp = w.component_for_entity(11, tests.helpers.ComponentArgs1)
+    assert comp.x is collections.deque
+
+    comp = w.component_for_entity(12, tests.helpers.ComponentArgs1)
+    assert isinstance(comp.x, core.GameModel)
 
     with pytest.raises(IndexError):
         w = gamemodel.res['worlds']['res2.json'].get()

@@ -12,6 +12,24 @@
           "args": ["${gamemodel_res/sounds.txt}"]
         }
       ]
+    },
+    {
+      "id": 11,
+      "comps": [
+        {
+          "type": "tests.helpers.ComponentArgs1",
+          "args": ["$type{collections.deque}"]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "comps": [
+        {
+          "type": "tests.helpers.ComponentArgs1",
+          "args": ["$model"]
+        }
+      ]
     }
   ]
 }

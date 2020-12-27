@@ -12,6 +12,8 @@ from typing import Any
 import desper
 
 RESOURCE_STRING_REGEX = re.compile(r'\$\{(.+)\}')
+TYPE_STRING_REGEX = re.compile(r'\$type\{(.+)\}')
+MODEL_STRING_REGEX = re.compile(r'\$model')
 DEFAULT_WORLDS_LOCATION = 'worlds'
 DEFAULT_WORLDS_EXTS = ('.json')
 
@@ -265,7 +267,7 @@ def resource_from_path(res, rel_path, default=None):
     return p
 
 
-class ResourceResolver:
+class ModuleResourceResolver:
     """Resolve a string name representing a unique class or function.
 
     Callable, call passing a string in the format
@@ -359,6 +361,14 @@ def resources_initializer(args, kwargs, model, **kwa):
     :py:attr:`RESOURCE_STRING_REGEX` will be translated into the
     respective resources (from the model resources dictionary).
 
+    Attributes matching the regex defined in
+    :py:attr:`TYPE_STRING_REGEX` will be translated into respective
+    class types using :class:`ModuleResourceResolver`.
+
+    Attributes matching the regex defined in
+    :py:attr:`MODEL_STRING_REGEX` will be translated into the current
+    :class:`GameModel` instance.
+
     e.g. A parameter in the form ${sprite/1.png} will be translated into
     the resource in model.res['sprite']['1.png'].
 
@@ -377,6 +387,17 @@ def resources_initializer(args, kwargs, model, **kwa):
         if type(x) is not str:
             return x
 
+        # Match for class types
+        match = TYPE_STRING_REGEX.fullmatch(x)
+        if match is not None:
+            return ModuleResourceResolver()(match.group(1))
+
+        # Match for model
+        match = MODEL_STRING_REGEX.fullmatch(x)
+        if match is not None:
+            return model
+
+        # Match for model resources
         match = RESOURCE_STRING_REGEX.fullmatch(x)
         if match is None:
             return x
@@ -458,7 +479,7 @@ class WorldHandle(Handle):
     A similar approach is used in order to import
     :class:`esper.Processor`s.
     """
-    type_resolvers = ResolverStack((ResourceResolver(),))
+    type_resolvers = ResolverStack((ModuleResourceResolver(),))
     """Stack of type resolvers."""
 
     component_initializers = ResolverStack((component_initializer,
