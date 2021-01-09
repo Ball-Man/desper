@@ -42,3 +42,5 @@ from .gamemodel import *
 from .options import *
 from .res import *
 from .ecs import *
+
+from esper import World, Processor
