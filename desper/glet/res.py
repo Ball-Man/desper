@@ -234,7 +234,7 @@ class MediaHandle(desper.Handle):
         return pyglet.resource.media(self._filename, self._streamed)
 
 
-def glet_comp_initializer(comp_type, args, kwargs, instance, world, model):
+def glet_batch_resolver(comp_type, args, kwargs, instance, world, model):
     """Manage arguments in the correct way for :mod:`pyglet` components.
 
     This function is made to be used as resolver in the stack
@@ -257,8 +257,31 @@ def glet_comp_initializer(comp_type, args, kwargs, instance, world, model):
     return None
 
 
+def glet_comp_initializer(comp_type, args, kwargs, instance, world, model):
+    """Return an initialized component, given the type and arguments.
+
+    This function works like :func:`desper.core.component_initializer`
+    but makes some additional work to parse pyglet specific components.
+
+    So far, ``pyglet.sprite.Sprite`` will accept additional kwargs:
+    'scale_x', 'scale_y' and 'rotation', which are not by default
+    accepted by the constructor.
+    """
+    if issubclass(comp_type, pyglet.sprite.Sprite):
+        scale_x = kwargs.pop('scale_x', 1)
+        scale_y = kwargs.pop('scale_y', 1)
+        rotation = kwargs.pop('rotation', 0)
+        comp = comp_type(*args, **kwargs)
+        comp.scale_x = scale_x
+        comp.scale_y = scale_y
+        comp.rotation = rotation
+        return comp
+
+    return comp_type(*args, **kwargs)
+
+
 class GletWorldHandle(desper.WorldHandle):
     """Custom WorldHandle setup to better load pyglet components."""
     component_initializers = desper.ResolverStack(
-        (desper.component_initializer, desper.resources_initializer,
-         glet_comp_initializer))
+        (glet_comp_initializer, desper.resources_initializer,
+         glet_batch_resolver))
