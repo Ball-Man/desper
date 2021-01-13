@@ -186,8 +186,15 @@ class AnimationHandle(desper.Handle):
         """Implementation of the load logic for this Handle type."""
         with open(self._filename) as fin:
             data = json.load(fin)
-            if isinstance(data['frames'], dict):
-                data['frames'] = data['frames'].values()
+
+        # If no frames specified, add a frame which is the whole image
+        if 'frames' not in data:
+            data['frames'] = [{'frame': {'x': 0, 'y': 0,
+                                         'w': data['meta']['size']['w'],
+                                         'h': data['meta']['size']['h']},
+                               'duration': None}]
+        elif isinstance(data.get('frames'), dict):
+            data['frames'] = data['frames'].values()
 
         meta = data['meta']
         filedir = _pyglet_path(pt.join(pt.dirname(
@@ -197,7 +204,8 @@ class AnimationHandle(desper.Handle):
         frames = [pyglet.image.AnimationFrame(image.get_region(
             frame['frame']['x'], frame['frame']['y'],
             frame['frame']['w'], frame['frame']['h']),
-            frame['duration'] / 1000) for frame in data['frames']]
+            frame['duration'] and frame['duration'] / 1000)
+            for frame in data['frames']]
 
         # Set the given anchor to all the frames
         origin = meta['origin']
