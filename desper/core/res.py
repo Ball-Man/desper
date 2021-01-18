@@ -82,10 +82,7 @@ class Handle:
     should be overridden in order to reproduce the desired
     behaviour(correctly load and cache the desired resource).
     """
-
-    def __init__(self):
-        """Construct an empty handle."""
-        self._value = None
+    _value = None
 
     def __del__(self):
         self.clear()
