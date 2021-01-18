@@ -15,6 +15,7 @@ DEFAULT_ANIMATION_SHEET_EXTS = DEFAULT_IMAGE_EXTS
 """Default exts for the animation sprite sheet files."""
 
 DEFAULT_MEDIA_LOCATION = 'media'
+DEFAULT_STATIC_MEDIA_LOCATION = f'media{pt.sep}static'
 DEFAULT_MEDIA_EXTS = ('.wav', '.mp4', '.mp3', '.ogg')
 
 DEFAULT_FONT_LOCATION = 'fonts'
@@ -97,6 +98,43 @@ def get_media_importer():
     """
     return desper.get_resource_importer(location=DEFAULT_MEDIA_LOCATION,
                                         accepted_exts=DEFAULT_MEDIA_EXTS)
+
+
+def get_static_media_importer():
+    """Get an importer function for `pyglet.media.Source` resources.
+
+    This importer return an extra False in the final touple, which
+    is to be used with :class:`MediaHandle` to specify statically
+    loaded media resources.
+
+    Given the resource subfolder and accepted extensions, return a
+    function in the form of :py:attr:`GameModel.LAMBDA_SIG` that will
+    only accept files in the given resource subfolder(`location`) and
+    returns the path to the given media resource if it's considered
+    accepted.
+    (Designed to be used with :class:`MediaHandle`).
+
+    Currently there is not metadata file, the resource is imported as it
+    is (by default streamed from the disk, a custom importer function/handle
+    might be necessary if pre-decoded resources are needed).
+
+    :param location: The resource subfolder for the game where media
+                     should be stored(other directories won't be
+                     accepted).
+    :param accepted_exts: An iterable of extensions recognized as valid
+                          media metadata.
+    """
+
+    def importer(root, path, model):
+        res = desper.get_resource_importer(
+            location=DEFAULT_STATIC_MEDIA_LOCATION,
+            accepted_exts=DEFAULT_MEDIA_EXTS)(root, path, model)
+
+        if res is None:
+            return res
+        return (*res, False)
+
+    return importer
 
 
 def get_font_importer():

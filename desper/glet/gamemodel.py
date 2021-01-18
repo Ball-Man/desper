@@ -238,6 +238,7 @@ class DefaultGletGameModel(GletGameModel):
             .add_rule(dg.get_font_importer(), desper.IdentityHandle) \
             .add_rule(dg.get_animation_importer(), dg.AnimationHandle) \
             .add_rule(dg.get_image_importer(), dg.ImageHandle) \
+            .add_rule(dg.get_static_media_importer(), dg.MediaHandle) \
             .add_rule(dg.get_media_importer(), dg.MediaHandle) \
             .add_rule(desper.get_world_importer(), dg.GletWorldHandle, 1) \
             .build()
