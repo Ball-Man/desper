@@ -25,6 +25,9 @@ class GletGameModel(desper.GameModel):
     For more info, see :class:`GameModel`.
     """
 
+    # Delta time from last iteration
+    dt = 0
+
     def __init__(self, dirs=[], importer_dict={}, window=None,
                  event_handlers=(kbd.state, mouse.state), fps=60):
         """Construct a new GletGameModel.
@@ -118,6 +121,8 @@ class GletGameModel(desper.GameModel):
 
     def _iteration(self, dt):
         """Used as iteration inside the main loop."""
+        self.dt = dt
+
         if self._waiting_world_handle is not None:
             self._finalize_switch()
 
