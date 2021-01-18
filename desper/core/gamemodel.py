@@ -119,18 +119,16 @@ class GameModel:
         stack.append((self.res, self._init_handles(dirs, importer_dict)))
         while stack:
             p, new = stack.pop()
-            items = p.items()
 
             for k, v in list(new.items()):
                 # Add missing keys and substitute leaves
                 if k not in p \
-                or k in p and not isinstance(v, collections.abc.Mapping):
+                   or k in p and not isinstance(v, collections.abc.Mapping):
                     p[k] = v
                 # DFS on nested dictionaries
                 elif k in p and isinstance(p[k], collections.abc.Mapping) \
                      and isinstance(v, collections.abc.Mapping):
                     stack.append((p[k], v))
-
 
     def _init_handles(self, dirs, importer_dict):
         """Init a handle structure for resources and return it.
@@ -327,3 +325,10 @@ class GameModel:
         self._current_world_handle = self._waiting_world_handle
         self._waiting_world_handle = None
         self._current_world = self._current_world_handle.get()
+
+    def __getitem__(self, index):
+        """Retrieve an item from the resources dictionary.
+
+        Same as ``GameModel.res[index]``.
+        """
+        return self.res[index]
