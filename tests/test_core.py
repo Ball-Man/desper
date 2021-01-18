@@ -145,14 +145,14 @@ def test_gamemodel_res(gamemodel):
 
     # Try importing nothing
     import_dict = {accept_none: TextHandle}
-    gamemodel.init_handles(dirs, import_dict)
+    gamemodel.init_handles(import_dict, dirs)
 
     with pytest.raises(KeyError):
         gamemodel.res['sounds.txt']
 
     # Try importing sound files
     import_dict = {accept_sounds: TextHandle}
-    gamemodel.init_handles(dirs, import_dict)
+    gamemodel.init_handles(import_dict, dirs)
 
     assert gamemodel.res['sounds.txt'].get() == check_string
     with pytest.raises(KeyError):
@@ -162,7 +162,7 @@ def test_gamemodel_res(gamemodel):
 
     # Try importing everything
     import_dict = {accept_all: TextHandle}
-    gamemodel.init_handles(dirs, import_dict)
+    gamemodel.init_handles(import_dict, dirs)
 
     assert type(gamemodel.res['test.txt']) is TextHandle
     assert type(gamemodel.res['empty']['nofile']) is TextHandle
@@ -174,7 +174,7 @@ def test_gamemodel_res_no_extensions(gamemodel):
 
     desper.options['resource_extensions'] = False
 
-    gamemodel.init_handles(dirs, import_dict)
+    gamemodel.init_handles(import_dict, dirs)
 
     desper.options['resource_extensions'] = True
 
@@ -186,14 +186,14 @@ def test_gamemodel_res_no_extensions(gamemodel):
 def test_gamemodel_init_handles(gamemodel):
     dirs = [pt.join(pt.dirname(__file__), 'files')]
     importer_dict = {accept_all: core.IdentityHandle}
-    gamemodel.init_handles(dirs, importer_dict)
+    gamemodel.init_handles(importer_dict, dirs)
 
     gamemodel.res['gamemodel_res']['test.txt']
     with pytest.raises(KeyError):
         gamemodel.res['gamemodel_res']['test2.txt']
 
     dirs = [pt.join(pt.dirname(__file__), pt.join('files', 'fakefiles'))]
-    gamemodel.init_handles(dirs, importer_dict)
+    gamemodel.init_handles(importer_dict, dirs)
 
     gamemodel.res['gamemodel_res']['test.txt']
     gamemodel.res['gamemodel_res']['test2.txt']
@@ -273,9 +273,9 @@ def test_importer_dict_builder(gamemodel):
                                     .add_rule(accept_all_2, TextHandle, 0) \
                                     .build()
 
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files' + pt.sep
-                            + 'gamemodel_res')],
-                           dic)
+    gamemodel.init_handles(dic,
+                           [pt.join(pt.dirname(__file__), 'files' + pt.sep
+                            + 'gamemodel_res')])
 
     assert isinstance(gamemodel.res['sounds.txt'], TextHandle)
     assert isinstance(gamemodel.res['test.txt'], TextHandle)
@@ -440,8 +440,8 @@ def test_prototypes(world):
 
 
 def test_world_handle(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {core.get_world_importer(): core.WorldHandle})
+    gamemodel.init_handles({core.get_world_importer(): core.WorldHandle},
+                           [pt.join(pt.dirname(__file__), 'files')])
 
     w = gamemodel.res['worlds']['test.json'].get()
     assert isinstance(w, esper.World)
@@ -458,8 +458,8 @@ def test_world_handle(gamemodel):
 
 
 def test_world_handle_proto(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {core.get_world_importer(): core.WorldHandle})
+    gamemodel.init_handles({core.get_world_importer(): core.WorldHandle},
+                           [pt.join(pt.dirname(__file__), 'files')])
 
     w = gamemodel.res['worlds']['proto.json'].get()
     w.component_for_entity(1, collections.defaultdict)
@@ -467,9 +467,9 @@ def test_world_handle_proto(gamemodel):
 
 
 def test_world_handle_res_resolve(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {accept_sounds: TextHandle,
-                            core.get_world_importer(): core.WorldHandle})
+    gamemodel.init_handles({accept_sounds: TextHandle,
+                            core.get_world_importer(): core.WorldHandle},
+                           [pt.join(pt.dirname(__file__), 'files')])
 
     w = gamemodel.res['worlds']['res.json'].get()
     comp = w.component_for_entity(10, tests.helpers.ComponentArgs1)

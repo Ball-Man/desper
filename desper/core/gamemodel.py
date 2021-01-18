@@ -79,10 +79,11 @@ class GameModel:
                               patterns to Handle implementations.
         """
         self.res = {}
+        self.dirs = dirs
         if dirs:
-            self.init_handles(dirs, importer_dict)
+            self.init_handles(importer_dict, dirs)
 
-    def init_handles(self, dirs, importer_dict):
+    def init_handles(self, importer_dict, dirs=None):
         """Init a handle structure for resources and place it in `res`.
 
         An importer dictionary is in the form:
@@ -107,14 +108,17 @@ class GameModel:
         implementation. If you need to reimplement this logic, please
         consider overriding :py:meth:`_init_handles` instead.
 
-        :raises TypeError: If dirs is an empty list.
         :raises TypeError: If the functions in `importer_dict` don't
                            match :py:attr:`GameModel.LAMBDA_SIG`.
         :param dirs: A list of directory paths that will be recursively
-                     scanned in search of resources.
+                     scanned in search of resources. If not specified,
+                     :attr:`dirs` will be used (specified in the
+                     constructor).
         :param importer_dict: A dictionary that associates lamdas to
                               Handle implementations.
         """
+        dirs = dirs or self.dirs
+
         stack = []
         stack.append((self.res, self._init_handles(dirs, importer_dict)))
         while stack:

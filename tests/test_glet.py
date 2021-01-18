@@ -110,42 +110,42 @@ def test_active_position_processor(gamemodel, sprite):
 
 
 def test_image_handle(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {glet.get_image_importer(): glet.ImageHandle})
+    gamemodel.init_handles({glet.get_image_importer(): glet.ImageHandle},
+                           [pt.join(pt.dirname(__file__), 'files')])
 
     assert isinstance(gamemodel.res['sprites']['test.png'].get(),
                       pyglet.image.AbstractImage)
 
 
 def test_animation_handle(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {glet.get_animation_importer():
-                            glet.AnimationHandle})
+    gamemodel.init_handles({glet.get_animation_importer():
+                            glet.AnimationHandle},
+                           [pt.join(pt.dirname(__file__), 'files')])
 
     assert isinstance(gamemodel.res['sprites']['anim.json'].get(),
                       pyglet.image.Animation)
 
 
 def test_media_handle(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {glet.get_media_importer(): glet.MediaHandle})
+    gamemodel.init_handles({glet.get_media_importer(): glet.MediaHandle},
+                           [pt.join(pt.dirname(__file__), 'files')])
 
     assert isinstance(gamemodel.res['media']['volt.wav'].get(),
                       pyglet.media.Source)
 
 
 def test_font_importer(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {glet.get_font_importer(): core.IdentityHandle})
+    gamemodel.init_handles({glet.get_font_importer(): core.IdentityHandle},
+                           [pt.join(pt.dirname(__file__), 'files')])
 
     assert pyglet.font.have_font('The Godfather')
 
 
 def test_glet_world_handle_importer(gamemodel):
-    gamemodel.init_handles([pt.join(pt.dirname(__file__), 'files')],
-                           {glet.get_animation_importer():
+    gamemodel.init_handles({glet.get_animation_importer():
                             glet.AnimationHandle,
-                            core.get_world_importer(): glet.GletWorldHandle})
+                            core.get_world_importer(): glet.GletWorldHandle},
+                           [pt.join(pt.dirname(__file__), 'files')])
 
     w = gamemodel.res['worlds']['glet.json'].get()
     gamemodel.switch(gamemodel.res['worlds']['glet.json'], immediate=True)
