@@ -195,10 +195,13 @@ class ImageHandle(desper.Handle):
 
 
 class AnimationHandle(desper.Handle):
-    """Handle implementation for a `pyglet.image.Animation`.
+    """Handle implementation for a ``pyglet.image.Animation``.
 
-    This is used for animations only. For static images
-    (`pyglet.image.AbstractImage`) see :class:`ImageHandle`.
+    If a single frame is decoded from the animation, the single
+    ``pyglet.image.AbstractImage`` (representing the first and only
+    frame) is returned.
+    This can be useful for images that require a specific origin
+    (aka pyglet anchor point) but are static.
 
     This Handle accepts a file in its constructor, which should be in
     a specific format(the extension doesn't matter).
@@ -251,8 +254,10 @@ class AnimationHandle(desper.Handle):
             anim_frame.image.anchor_x = origin['x']
             anim_frame.image.anchor_y = origin['y']
 
-        return pyglet.image.Animation(
-            frames=frames)
+        # Return static image if the animation is a single frame
+        if len(frames) == 1:
+            return frames[0].image
+        return pyglet.image.Animation(frames=frames)
 
 
 class MediaHandle(desper.Handle):
