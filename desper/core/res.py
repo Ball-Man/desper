@@ -100,6 +100,10 @@ class Handle:
         """
         raise NotImplementedError
 
+    def __call__(self):
+        """Short for :meth:`get`."""
+        return self.get()
+
     def get(self):
         """Get the handled resource(and cache it if it's not already).
 
