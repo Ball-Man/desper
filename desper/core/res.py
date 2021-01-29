@@ -4,7 +4,7 @@ import json
 import importlib
 import re
 import gc
-from queue import PriorityQueue
+import heapq
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Any
@@ -184,7 +184,7 @@ class ImporterDictBuilder:
     """
 
     def __init__(self):
-        self._queue = PriorityQueue()
+        self._queue = []
 
     def add_rule(self, key_lambda, handle_type, priority=0):
         """Add a resource importer rule, given the key and the handle.
@@ -209,8 +209,8 @@ class ImporterDictBuilder:
                  so that multiple :py:meth:`add_rule` can be
                  concatenated.
         """
-        self._queue.put(_PrioritizedDictEntry(key_lambda, handle_type,
-                                              priority))
+        heapq.heappush(self._queue, _PrioritizedDictEntry(
+            key_lambda, handle_type, priority))
         return self
 
     def build(self):
@@ -224,8 +224,8 @@ class ImporterDictBuilder:
                  previous calls to :py:meth:`add_rule`.
         """
         importer_dict = OrderedDict()
-        while not self._queue.empty():
-            el = self._queue.get()
+        while self._queue:
+            el = heapq.heappop(self._queue)
             importer_dict[el.key_lambda] = el.handle_type
 
         return importer_dict
