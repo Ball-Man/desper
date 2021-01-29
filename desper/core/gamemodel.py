@@ -190,20 +190,19 @@ class GameModel:
         # importer_dict
         res = {}
         used_paths = set()
-        for item, dirpath in pathnames:
-            abs_path = pt.join(dirpath, item)
-            p = res
+        for lam, handle in importer_dict.items():
+            for item, dirpath in pathnames:
+                abs_path = pt.join(dirpath, item)
+                # If the resource has already been loaded, skip
+                if abs_path in used_paths:
+                    continue
+                p = res
 
-            split = item.split(os.sep)
-            for subitem in split:
-                # If it's a leaf and it's not a dir, find a handle for
-                # it
-                if subitem == split[-1] and not pt.isdir(abs_path):
-                    for lam, handle in importer_dict.items():
-                        # If the resource has already been loaded, skip
-                        if abs_path in used_paths:
-                            break
-
+                split = item.split(os.sep)
+                for subitem in split:
+                    # If it's a leaf and it's not a dir, find a handle for
+                    # it
+                    if subitem == split[-1] and not pt.isdir(abs_path):
                         params = lam(pt.abspath(dirpath), item, self)
                         if params is not None:
                             # Check if extensions are kept or ignored
@@ -222,9 +221,9 @@ class GameModel:
                             # iterations
                             used_paths.add(abs_path)
 
-                # If it's not a leaf, it's a directory. Make a subtree.
-                elif subitem != split[-1]:
-                    p = p.setdefault(subitem, {})
+                    # If it's not a leaf, it's a directory. Make a subtree.
+                    elif subitem != split[-1]:
+                        p = p.setdefault(subitem, {})
 
         # Remove empty dictionaries
         pre_stack = []
