@@ -8,6 +8,7 @@ Access :py:attr:`state` with key :py:attr:`X` or :py:attr:`Y` to get
 the last recorded position of the mouse(relative to the current window).
 """
 import pyglet
+from pyglet.window.mouse import *
 
 
 X = 10

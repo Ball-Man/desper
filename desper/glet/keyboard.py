@@ -5,5 +5,6 @@ state. Currently, the state is ``True`` if the key is pressed, ``False``
 otherwise.
 """
 import pyglet
+from pyglet.window.key import *
 
 state = pyglet.window.key.KeyStateHandler()
