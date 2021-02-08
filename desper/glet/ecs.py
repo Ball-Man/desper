@@ -91,17 +91,24 @@ class ActivePositionProcessor(esper.Processor):
 class Camera:
     """ECS component used to define a rendering camera."""
 
-    def __init__(self, viewport=None, zoom=1):
+    def __init__(self, proj=None, viewport=None, zoom=1):
         """Construct a camera with the given properties.
 
         Note that for all coordinates, point (0, 0) is bottom-left.
 
+        :param proj: A vector of 6 elements (left, right, bottom, top,
+                     nearval, farval). This is used as parameter for
+                     glOrtho.
         :param viewport: A vector of 4 elements(x, y, width, height)
                          representing the viewport of the camera on
                          screen(0,0 is bottom-left). Defaults to None(
                          which means the whole window).
+                         If a `proj` is specified, the default viewport
+                         will keep aspect ratio (with eventually empty
+                         bends at the sides).
         :param zoom: The zoom of the camera(1 means no zoom, and it's
                      set as default).
         """
+        self.projection = proj
         self.viewport = viewport
         self.zoom = zoom

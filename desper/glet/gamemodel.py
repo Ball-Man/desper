@@ -142,22 +142,50 @@ class GletGameModel(desper.GameModel):
             batch = self.get_batch(self._current_world)
             for _, (pos, camera) in self._current_world \
                     .get_components(dg.Position, dg.Camera):
+
+                # Projection matrix
+                pyglet.gl.glMatrixMode(pyglet.gl.GL_PROJECTION)
+                pyglet.gl.glLoadIdentity()
+                pyglet.gl.glPushMatrix()
+                proj = camera.projection or (0, self.window.width, 0,
+                                             self.window.height, -1, 1)
+                pyglet.gl.glOrtho(*proj)
+
+                pyglet.gl.glMatrixMode(pyglet.gl.GL_MODELVIEW)
+
                 # Transform according to camera
+                pyglet.gl.glLoadIdentity()
+                pyglet.gl.glPushMatrix()
                 pyglet.gl.glTranslatef(-pos.x * camera.zoom,
                                        -pos.y * camera.zoom, 0)
                 pyglet.gl.glScalef(camera.zoom, camera.zoom, 1)
-                if camera.viewport is not None:
-                    pyglet.gl.glViewport(*camera.viewport)
+
+                # Viewport
+                # Keep aspect ratio
+                viewport = camera.viewport
+                if camera.viewport is None:
+                    win_ratio = self.window.width / self.window.height
+                    proj_width = max(proj[0], proj[1])
+                    proj_height = max(proj[2], proj[3])
+                    proj_ratio = proj_width / proj_height
+
+                    if win_ratio > proj_ratio:
+                        calc_width = self.window.height * proj_ratio
+                        viewport = ((self.window.width - calc_width) / 2, 0,
+                                     calc_width, self.window.height)
+                    else:
+                        calc_height = self.window.width / proj_ratio
+                        viewport = (0, (self.window.height - calc_height) / 2,
+                                    self.window.width, calc_height)
+
+                pyglet.gl.glViewport(*map(int, viewport))
 
                 batch.draw()      # Actual draw
 
-                # Transform back
-                if camera.viewport is not None:
-                    pyglet.gl.glViewport(0, 0, self.window.width,
-                                         self.window.height)
-                pyglet.gl.glScalef(1 / camera.zoom, 1 / camera.zoom, 1)
-                pyglet.gl.glTranslatef(pos.x * camera.zoom,
-                                       pos.y * camera.zoom, 0)
+                pyglet.gl.glMatrixMode(pyglet.gl.GL_PROJECTION)
+                pyglet.gl.glPopMatrix()
+                pyglet.gl.glMatrixMode(pyglet.gl.GL_MODELVIEW)
+                pyglet.gl.glPopMatrix()
 
     def loop(self):
         """Start the main loop.
