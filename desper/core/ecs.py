@@ -83,13 +83,14 @@ class CoroutineProcessor(esper.Processor):
     execution.
     """
 
-    def __init__(self):
+    def __init__(self, delta_factory=lambda: 1):
         self._generators = {}
         # Dictionary format: {generator: _WaitingGenerator}
         # _WaitingGenerator is None if the said generator isn't waiting.
         self._active_queue = deque((None,))
         self._wait_queue = []       # Heap
         self._timer = 0
+        self.delta_factory = delta_factory
 
     def start(self, generator):
         """Add and start a coroutine, represented by a generator object.
@@ -168,7 +169,7 @@ class CoroutineProcessor(esper.Processor):
         """
         # Manage waiting coroutines
         if len(self._wait_queue) > 0:
-            self._timer += 1
+            self._timer += self.delta_factory()
             # Free all the coroutines that waited long enough
             while (len(self._wait_queue)
                    and self._timer >= self._wait_queue[0].wait_time):
