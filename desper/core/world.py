@@ -1,5 +1,6 @@
 import queue
 import weakref
+from collections import deque
 
 import esper
 
@@ -410,3 +411,18 @@ class AbstractWorld(esper.World):
 
         # self.clear_cache()
         return self._next_entity_id
+
+    def first_component(self, component_type):
+        """Query the first available component of a specific type.
+
+        :param component_type: The type of the wanted component.
+        :return: An existing component of the given type. Insertion
+                 order is not considered. ``None`` if the component
+                 isn't found.
+        """
+        try:
+            comp = next(iter(self._get_component(component_type)))[1]
+        except StopIteration:
+            comp = None
+
+        return comp

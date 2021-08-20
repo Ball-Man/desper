@@ -125,6 +125,15 @@ def test_remove_component(world):
     assert type(world.components_for_entity(entity)[0]) is ComponentB
 
 
+def test_first_component(world):
+    comp_b = ComponentB()
+    world.create_entity(comp_b)
+
+    assert world.first_component(ComponentA) == comp_b
+    assert world.first_component(ComponentB) == comp_b
+    assert world.first_component(ComponentC) is None
+
+
 def test_handle():
     test_val = 10
     handle = SquareHandle(test_val)
