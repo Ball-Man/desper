@@ -92,9 +92,10 @@ class Camera:
     """ECS component used to define a rendering camera."""
     projection = None
     viewport = None
+    offset = None
 
     def __init__(self, proj=None, viewport=None, zoom=1, batch=None,
-                 priority=0):
+                 priority=0, offset=(0, 0)):
         """Construct a camera with the given properties.
 
         :param proj: A vector of 6 elements (left, right, bottom, top,
@@ -125,3 +126,6 @@ class Camera:
         self.zoom = zoom
         self.batch = batch
         self.priority = priority
+        self.offset = self.__class__.offset or offset
+
+        self.rotation = 0

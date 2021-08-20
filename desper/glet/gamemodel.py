@@ -158,9 +158,11 @@ class GletGameModel(desper.GameModel):
                 # Transform according to camera
                 pyglet.gl.glLoadIdentity()
                 pyglet.gl.glPushMatrix()
-                pyglet.gl.glTranslatef(-pos.x * camera.zoom,
-                                       -pos.y * camera.zoom, 0)
+                pyglet.gl.glTranslatef(camera.offset[0], camera.offset[1], 0)
+                pyglet.gl.glRotatef(camera.rotation, 0, 0, 1)
                 pyglet.gl.glScalef(camera.zoom, camera.zoom, 1)
+                pyglet.gl.glTranslatef(-pos.x,
+                                       -pos.y, 0)
 
                 # Viewport
                 # Keep aspect ratio
