@@ -140,8 +140,10 @@ class GletGameModel(desper.GameModel):
         # Render all cameras
         if self._current_world is not None:
             batch = self.get_batch(self._current_world)
-            for _, (pos, camera) in self._current_world \
-                    .get_components(dg.Position, dg.Camera):
+            for _, (pos, camera) in sorted(
+                self._current_world .get_components(dg.Position, dg.Camera),
+                key=lambda tup: tup[1][1].priority,
+                    reverse=True):
 
                 # Projection matrix
                 pyglet.gl.glMatrixMode(pyglet.gl.GL_PROJECTION)
@@ -180,7 +182,7 @@ class GletGameModel(desper.GameModel):
 
                 pyglet.gl.glViewport(*map(int, viewport))
 
-                batch.draw()      # Actual draw
+                (camera.batch or batch).draw()      # Actual draw
 
                 pyglet.gl.glMatrixMode(pyglet.gl.GL_PROJECTION)
                 pyglet.gl.glPopMatrix()

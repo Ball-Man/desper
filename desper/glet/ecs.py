@@ -93,7 +93,8 @@ class Camera:
     projection = None
     viewport = None
 
-    def __init__(self, proj=None, viewport=None, zoom=1):
+    def __init__(self, proj=None, viewport=None, zoom=1, batch=None,
+                 priority=0):
         """Construct a camera with the given properties.
 
         :param proj: A vector of 6 elements (left, right, bottom, top,
@@ -112,7 +113,15 @@ class Camera:
                          (with eventually empty sidebands).
         :param zoom: The zoom of the camera(1 means no zoom, and it's
                      set as default).
+        :param batch: A :class:`pyglet.graphics.Batch` instance that
+                      will be rendered according to the given camera.
+                      Defaults to None, which stands for the main batch
+                      of the current world.
+        :param priority: Defines the order of rendering for different
+                         cameras. Higher numbers are processed first.
         """
         self.projection = self.__class__.projection or proj
         self.viewport = self.__class__.viewport or viewport
         self.zoom = zoom
+        self.batch = batch
+        self.priority = priority
