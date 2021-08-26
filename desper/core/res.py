@@ -517,15 +517,17 @@ class WorldHandle(Handle):
                 model=self._model)
             w.add_processor(proc_inst)
 
-        # Generate all entity ids to the max value (to avoid collisions)
-        tmp_entity = 0
-        max_entity_id = max(data.get('instances'),
-                            key=lambda inst: inst['id'])['id']
-        while tmp_entity < max_entity_id:
-            tmp_entity = w.create_entity()
-
         # Generate instances, while retrieving the correct types
-        for instance in data.get('instances', []):
+        cur_entity = 0
+        for instance in sorted(
+                data.get('instances', []), key=lambda inst: inst['id']):
+
+            # Create all the empty entities needed
+            while cur_entity < instance['id'] - 1:
+                cur_entity = w.create_entity()
+
+            # Retrieve all the components for the entity
+            components = []
             for comp in instance['comps']:
                 comp_type = self.type_resolvers(comp['type'])
 
@@ -538,9 +540,16 @@ class WorldHandle(Handle):
                 # Support prototypes too
                 if isinstance(comp_inst, desper.Prototype):
                     for c in comp_inst:
-                        w.add_component(instance['id'], c)
+                        components.append(c)
                 else:
-                    w.add_component(instance['id'], comp_inst)
+                    components.append(comp_inst)
+
+            # Add all the components in one call
+            # This helps when using an AbstractWorld, where on_attach
+            # is triggered after adding all the components, preventing
+            # initialization order issues.
+            w.create_entity(*components)
+            cur_entity += 1
 
         return w
 
