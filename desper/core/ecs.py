@@ -199,7 +199,7 @@ class CoroutineProcessor(esper.Processor):
                 continue        # Do not rotate if last item was popped
 
             # Put in wait queue if requested
-            if type(wait) is int and wait > 0:
+            if wait is not None and wait > 0:
                 waiting_gen = _WaitingGenerator(gen, wait + self._timer)
                 heapq.heappush(self._wait_queue, waiting_gen)
                 self._generators[gen] = waiting_gen
