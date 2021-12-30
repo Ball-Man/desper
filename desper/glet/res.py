@@ -16,7 +16,7 @@ DEFAULT_ANIMATION_SHEET_EXTS = DEFAULT_IMAGE_EXTS
 
 DEFAULT_MEDIA_LOCATION = 'media'
 DEFAULT_STATIC_MEDIA_LOCATION = f'media{pt.sep}static'
-DEFAULT_MEDIA_EXTS = ('.wav', '.mp4', '.mp3', '.ogg')
+DEFAULT_MEDIA_EXTS = ('.wav', '.mp4', '.mp3', '.ogg', '.flac')
 
 DEFAULT_FONT_LOCATION = 'fonts'
 DEFAULT_FONT_EXTS = ('.ttf', '.otf')
