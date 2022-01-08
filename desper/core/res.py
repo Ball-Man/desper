@@ -43,8 +43,20 @@ def get_resource_importer(location, accepted_exts):
                  otherwise(as stated in :py:attr:`GameModel.LAMBDA_SIG`
                  ).
         """
-        if (location in pt.dirname(rel_path).split(pt.sep)
-                and pt.splitext(rel_path)[1] in accepted_exts):
+        # Check for location
+        location_splitted = location.split(pt.sep)
+        rel_path_splitted: list = pt.dirname(rel_path).split(pt.sep)
+        last_index = -1
+        for loc in location_splitted:
+            found = loc in rel_path_splitted
+            found_index = rel_path_splitted.index(loc) if found else -1
+            if (found and (last_index == -1 or found_index == last_index + 1)):
+                last_index = found_index
+            else:
+                # Immediately drop if the location is inconsistent
+                return None
+
+        if pt.splitext(rel_path)[1] in accepted_exts:
             return pt.join(root, rel_path),
 
         return None

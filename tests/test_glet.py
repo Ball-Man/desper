@@ -134,6 +134,15 @@ def test_media_handle(gamemodel):
                       pyglet.media.Source)
 
 
+def test_static_media_handle(gamemodel):
+    gamemodel.init_handles(
+        {glet.get_static_media_importer(): glet.MediaHandle},
+        [pt.join(pt.dirname(__file__), 'files')])
+
+    assert isinstance(gamemodel.res['media']['static']['volt.wav'].get(),
+                      pyglet.media.StaticSource)
+
+
 def test_font_importer(gamemodel):
     gamemodel.init_handles({glet.get_font_importer(): core.IdentityHandle},
                            [pt.join(pt.dirname(__file__), 'files')])
