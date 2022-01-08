@@ -132,7 +132,7 @@ def get_static_media_importer():
 
         if res is None:
             return res
-        return *res, False
+        return (*res, False)
 
     return importer
 
