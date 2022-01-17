@@ -29,7 +29,8 @@ class GletGameModel(desper.GameModel):
     dt = 0
 
     def __init__(self, dirs=[], importer_dict={}, window=None,
-                 event_handlers=(kbd.state, mouse.state), fps=60):
+                 event_handlers=(kbd.state, mouse.state), fps=60,
+                 dt_range=(0, 1)):
         """Construct a new GletGameModel.
 
         For more info about `importer_dict` and `dirs` see
@@ -47,6 +48,8 @@ class GletGameModel(desper.GameModel):
                                ``set_handlers``. The given defaults will
                                manage the basic events for desper
                                (updating the keyboard).
+        :param dt_range: A pair describing the clamping range for the
+                         delta time.
         """
         super().__init__(dirs, importer_dict)
 
@@ -58,6 +61,9 @@ class GletGameModel(desper.GameModel):
         self.window.set_handlers(*event_handlers)
 
         self.fps = fps
+
+        self.max_dt = max(dt_range)
+        self.min_dt = min(dt_range)
 
         # Dict of `pyglet.graphics.Batch`. All the game render should
         # be added to this batches to optimize performance.
@@ -121,7 +127,7 @@ class GletGameModel(desper.GameModel):
 
     def _iteration(self, dt):
         """Used as iteration inside the main loop."""
-        self.dt = dt
+        self.dt = max(self.min_dt, min(dt, self.max_dt))
 
         if self._waiting_world_handle is not None:
             self._finalize_switch()
