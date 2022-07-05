@@ -81,3 +81,44 @@ class TestEventDispatcher:
         assert handler1.received == 1
         assert handler2.received == 2
         assert handler_uninterested.received == 0
+
+
+def test_event_handler():
+    # Some random events to test the handler on
+    event_list = ['ev1', 'ev2']
+    event_mappings = {'ev3': 'k', 'ev4': 'z'}
+
+    @desper.event_handler(*event_list, **event_mappings)
+    class Handler:
+        pass
+
+    handler = Handler()
+
+    # Check simple listed events
+    for event in event_list:
+        assert handler.__events__[event] == event
+
+    # Check event mappings
+    for event, method in event_mappings.items():
+        assert handler.__events__[event] == method
+
+    # Test inheritance
+    new_event_list = ['ev10']
+    new_event_mappings = {'ev1': 'p'}
+    # Conflicting events shall be overwritten
+
+    @desper.event_handler(*new_event_list, **new_event_mappings)
+    class Handler2(Handler):
+        pass
+
+    handler2 = Handler2()
+
+    for event in event_list + new_event_list:
+        assert event in handler2.__events__
+
+    for event, method in (event_mappings | new_event_mappings).items():
+        assert event in handler2.__events__
+
+    # Check for overwritten events
+    for event, method in new_event_mappings.items():
+        assert handler2.__events__[event] == method

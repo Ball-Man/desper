@@ -98,3 +98,32 @@ class EventDispatcher:
         # automatic cleanup
         for handler_ref, method_ref in self._events[event_name]:
             method_ref(handler_ref(), *args, **kwargs)
+
+
+def event_handler(*event_names: str, **event_mappings: str) -> Callable[
+        type, type]:
+    """Decorator: implements :class:`EventHandler` in the decorated class.
+
+    The given event names shall match the method name that is to be
+    used as callback. If discrepancy between event and method names
+    is needed, keyword arguments can be used (argument name =
+    event name, argument value = method name).
+    """
+
+    def decorator(cls):
+        # For slightly better performance in the whole event system,
+        # ignore empty handlers
+        if not event_names and not event_mappings:
+            return cls
+
+        # Composite behaviour, compose eventually discovered events
+        # (eg. inherited events) with newly specified events
+        events = getattr(cls, '__events__', {})
+        cls.__events__ = (events | dict(zip(event_names, event_names))
+                          | event_mappings)
+
+        # TODO: manage __slots__ (create a new subclass)
+
+        return cls
+
+    return decorator
