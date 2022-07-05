@@ -32,3 +32,23 @@ class TestEventDispatcher:
         # Test real case
         dispatcher.add_handler(handler)
         assert dispatcher.is_handler(handler)
+
+    def test_remove_handler(self):
+        dispatcher = desper.EventDispatcher()
+
+        # Test removal of an foreign handler (shall remain silent)
+        handler1 = SimpleHandler()
+        dispatcher.remove_handler(handler1)
+
+        # Test removal of a known handler
+        handler2 = SimpleHandler()
+        dispatcher.add_handler(handler1)
+        dispatcher.add_handler(handler2)
+
+        dispatcher.remove_handler(handler1)
+
+        assert not dispatcher.is_handler(handler1)
+        assert dispatcher.is_handler(handler2)
+
+        dispatcher.remove_handler(handler2)
+        assert not dispatcher.is_handler(handler2)

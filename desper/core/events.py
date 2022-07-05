@@ -30,7 +30,8 @@ class EventDispatcher:
     """
 
     def __init__(self):
-        self._events: dict[str, set[Callable]] = {}
+        self._events: dict[str, set[tuple[weakref.ref[EventHandler],
+                                          Callable]]] = {}
         self._handlers: dict[
             weakref.ref[EventHandler],
             tuple[tuple[str, Callable], ...]] = {}
@@ -44,12 +45,13 @@ class EventDispatcher:
         assert isinstance(handler, EventHandler)
 
         # Populate _events
+        handler_ref = weakref.ref(handler, self._remove_weak_handler)
         for event_name, method_name in handler.__events__.items():
             self._events.setdefault(event_name, set()).add(
-                getattr(handler.__class__, method_name))
+                (handler_ref, getattr(handler.__class__, method_name)))
 
         # Populate _handlers
-        self._handlers[weakref.ref(handler, self._remove_weak_handler)] = \
+        self._handlers[handler_ref] = \
             tuple(
                 (event_name, getattr(handler.__class__, method_name))
                 for event_name, method_name in handler.__events__.items()
@@ -70,7 +72,13 @@ class EventDispatcher:
             return
 
         for event_name, method_ref in self._handlers[handler_ref]:
-            print(event_name, method_ref)
-            self._events[event_name].remove(method_ref)
+            self._events[event_name].remove((handler_ref, method_ref))
 
         del self._handlers[handler_ref]
+
+    def remove_handler(self, handler: EventHandler):
+        """Remove handler from the dispatcher.
+
+        Said handler will stop receiving all dispatched events.
+        """
+        self._remove_weak_handler(weakref.ref(handler))
