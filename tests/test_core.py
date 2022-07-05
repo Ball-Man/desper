@@ -1,6 +1,8 @@
 from context import desper
 from helpers import *
 
+import gc
+
 import pytest
 
 
@@ -15,6 +17,10 @@ class TestEventDispatcher:
 
         handler = SimpleHandler()
         dispatcher.add_handler(handler)
+
+        # Test weak references
+        del handler
+        gc.collect()
 
     def test_is_handler(self):
         dispatcher = desper.EventDispatcher()

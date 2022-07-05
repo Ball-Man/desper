@@ -46,12 +46,13 @@ class EventDispatcher:
         # Populate _events
         for event_name, method_name in handler.__events__.items():
             self._events.setdefault(event_name, set()).add(
-                getattr(handler, method_name))
+                getattr(handler.__class__, method_name))
 
         # Populate _handlers
-        self._handlers[weakref.ref(handler)] = tuple(
-            (event_name, getattr(handler, method_name))
-            for event_name, method_name in handler.__events__.items()
+        self._handlers[weakref.ref(handler, self._remove_weak_handler)] = \
+            tuple(
+                (event_name, getattr(handler.__class__, method_name))
+                for event_name, method_name in handler.__events__.items()
         )
 
     def is_handler(self, handler: EventHandler) -> bool:
@@ -59,3 +60,17 @@ class EventDispatcher:
         assert isinstance(handler, EventHandler)
 
         return weakref.ref(handler) in self._handlers
+
+    def _remove_weak_handler(self, handler_ref: weakref.ref[EventHandler]):
+        """Remove handler given its weak reference.
+
+        The reference may or may not be dead.
+        """
+        if handler_ref not in self._handlers:
+            return
+
+        for event_name, method_ref in self._handlers[handler_ref]:
+            print(event_name, method_ref)
+            self._events[event_name].remove(method_ref)
+
+        del self._handlers[handler_ref]
