@@ -82,3 +82,19 @@ class EventDispatcher:
         Said handler will stop receiving all dispatched events.
         """
         self._remove_weak_handler(weakref.ref(handler))
+
+    def dispatch(self, event_name: str, *args, **kwargs):
+        """Broadcast an event to all registered listeners.
+
+        Additional parameters are passed to each handler's callback.
+
+        Unknown events (for which there are and there have never been
+        handlers) are silently dropped.
+        """
+        if event_name not in self._events:
+            return
+
+        # Existance of the referents shall be guaranteed by the
+        # automatic cleanup
+        for handler_ref, method_ref in self._events[event_name]:
+            method_ref(handler_ref(), *args, **kwargs)
