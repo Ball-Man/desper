@@ -36,6 +36,11 @@ class EventDispatcher:
             tuple[tuple[str, Callable], ...]] = {}
 
     def add_handler(self, handler: EventHandler):
+        """Add an event handler to the dispatcher.
+
+        Weak references to it are kept, meaning that if the handler ever
+        gets out of scope it will be left by the dispatcher.
+        """
         assert isinstance(handler, EventHandler)
 
         # Populate _events
@@ -50,6 +55,7 @@ class EventDispatcher:
         )
 
     def is_handler(self, handler: EventHandler) -> bool:
+        """Return whether or not a handler is into the dispatcher."""
         assert isinstance(handler, EventHandler)
 
         return weakref.ref(handler) in self._handlers
