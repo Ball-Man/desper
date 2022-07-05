@@ -8,7 +8,7 @@ setup(name='desper',
                    'Intended Audience :: Developers',
                    'Programming Language :: Python :: 3 :: Only',
                    'Topic :: Games/Entertainment'],
-      version='0.2',
+      version='0.9.0',
       description='A Python3 game development toolkit, based on open source '
                   + 'projects.',
       long_description=README,
@@ -16,6 +16,5 @@ setup(name='desper',
       author='Francesco Mistri',
       author_email='franc.mistri@gmail.com',
       license='MIT',
-      packages=['desper', 'desper.core', 'desper.glet'],
-      install_requires=REQUIREMENTS
+      packages=['desper', 'desper.core'],
       )
