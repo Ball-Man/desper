@@ -1,3 +1,6 @@
+from context import desper
+
+
 class SimpleHandler:
     __events__ = {'event_name': 'event_method'}
     received = 0
@@ -12,3 +15,12 @@ class SimpleHandler2:
 
     def event_method(self):
         self.received += 1
+
+
+class SimpleHandle(desper.Handle):
+
+    def __init__(self, value):
+        self._value = value
+
+    def load(self):
+        return self._value * 2
