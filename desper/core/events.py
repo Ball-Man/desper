@@ -101,7 +101,7 @@ class EventDispatcher:
 
 
 def event_handler(*event_names: str, **event_mappings: str) -> Callable[
-        type, type]:
+        [type], type]:
     """Decorator: implements :class:`EventHandler` in the decorated class.
 
     The given event names shall match the method name that is to be
