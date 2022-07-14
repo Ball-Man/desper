@@ -56,3 +56,13 @@ class Handle(Generic[_T]):
             self._cached = True
 
         return self._cache
+
+    def clear(self):
+        """Clear internal cache."""
+        self._cached = False
+        self._cache = None
+
+    @property
+    def cached(self) -> bool:
+        """Get wheter the resource is cached or not."""
+        return self._cached
