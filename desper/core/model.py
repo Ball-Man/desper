@@ -1,21 +1,8 @@
-from typing import Protocol, runtime_checkable, Generic, TypeVar, Optional
+from typing import (Protocol, runtime_checkable, Generic, TypeVar, Optional,
+                    Union, ClassVar)
+from collections import ChainMap
 
 _T = TypeVar('T')
-
-
-class ResourceMap:
-    """ TBD. """
-
-
-@runtime_checkable
-class ResourceProtocol(Protocol):
-    """Protocol defining resources.
-
-    The implemented format makes them suitable to be cointained in
-    a :class:`ResourceMap`.
-    """
-    parent: ResourceMap
-    key: str
 
 
 class Handle(Generic[_T]):
@@ -34,7 +21,7 @@ class Handle(Generic[_T]):
     returned each time it is needed (unless manually cleaned from memory
     using :meth:`clear`).
     """
-    parent: ResourceMap = None
+    parent: 'ResourceMap' = None
     key: Optional[str] = None
 
     _cache: Optional[_T] = None
@@ -66,3 +53,54 @@ class Handle(Generic[_T]):
     def cached(self) -> bool:
         """Get wheter the resource is cached or not."""
         return self._cached
+
+
+class ResourceMap:
+    """ TBD. """
+    parent: Optional['ResourceMap'] = None
+    key: Optional[str] = None
+
+    split_char: ClassVar[str] = '/'
+
+    def __init__(self):
+        self.maps: dict = {}
+        self.handles: ChainMap = ChainMap()
+
+    def get(self, key: str, default: _T = None) -> Union[
+            Handle, 'ResourceProtocol', _T]:
+        """Retrieve either a resource handle or a resource subtree.
+
+        Nested exploration of resource maps can be achieved by providing
+        a composite key using the special delimiter ``/``.
+        Eg. ``resource_map.get('media/level1/ex1')``.
+
+        The delimiter character can be changed at any time by setting
+        the class attribute :attr:`split_char` (defaults to ``/``).
+        """
+        keys = key.split(self.split_char)
+        last_key = keys[-1]
+        value = self
+        try:
+            # Last key is queried at last, as it is not necessarily
+            # a map
+            for subkey in keys[:-1]:
+                value = value.maps[subkey]
+
+            if last_key in value.handles:
+                return value.handles[last_key]
+            else:
+                return value.maps[last_key]
+
+        except KeyError:
+            return default
+
+
+@runtime_checkable
+class ResourceProtocol(Protocol):
+    """Protocol defining resources.
+
+    The implemented format makes them suitable to be cointained in
+    a :class:`ResourceMap`.
+    """
+    parent: ResourceMap
+    key: str
