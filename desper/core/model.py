@@ -77,6 +77,7 @@ class ResourceMap:
         The delimiter character can be changed at any time by setting
         the class attribute :attr:`split_char` (defaults to ``/``).
         """
+        assert isinstance(key, str)
 
         keys = key.split(self.split_char)
         last_key = keys[-1]
@@ -106,6 +107,8 @@ class ResourceMap:
         :raises KeyError: If the query is invalid (no resource
             corresponds to it).
         """
+        assert isinstance(key, str)
+
         # Code is duplicated for extra performance
         keys = key.split(self.split_char)
         last_key = keys[-1]
