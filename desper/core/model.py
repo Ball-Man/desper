@@ -123,6 +123,35 @@ class ResourceMap:
         else:
             return value.maps[last_key]
 
+    def __setitem__(self, key: str, value: Union['ResourceMap', Handle]):
+        """TBD."""
+        assert isinstance(key, str)
+        assert isinstance(value, (ResourceMap, Handle)), \
+            ('Invalid resource type (valid types are Handles '
+             'and ResourceMaps')
+
+        # Code is duplicated for extra performance
+        keys = key.split(self.split_char)
+        last_key = keys[-1]
+        target_map = self
+        # Last key is queried at last, as the value has to be
+        # discriminated between handles and maps.
+        for subkey in keys[:-1]:
+            target_map = target_map.maps.setdefault(subkey, ResourceMap())
+
+        # For better performance, only one type check is done at this
+        # point.
+        # If the value is not a ResourceMap, it is assumed to be a
+        # Handle.
+        # More extensive checks are done through assertions in debug
+        # mode.
+        if isinstance(value, ResourceMap):
+            dest_map = target_map.maps
+        else:
+            dest_map = target_map.handles
+
+        dest_map[last_key] = value
+
 
 @runtime_checkable
 class ResourceProtocol(Protocol):

@@ -101,3 +101,32 @@ class TestResourceMap:
             resource_map['map1/xxx']
             resource_map['res1/xxx']
             resource_map['map1/map2/map3']
+
+    def test_setitem(self, resource_map):
+        # Test simple insertion
+        newres_name = 'newres'
+        newmap_name = 'newmap'
+
+        resource_map[newres_name] = SimpleHandle(3)
+        assert newres_name in resource_map.handles
+        assert newres_name not in resource_map.maps
+
+        resource_map[newmap_name] = desper.ResourceMap()
+        assert newmap_name not in resource_map.handles
+        assert newmap_name in resource_map.maps
+
+        # Test nested insertion
+        nested_res_name = f'{newmap_name}/{newmap_name}/{newres_name}'
+        nested_map_name = f'{newmap_name}/{newmap_name}/{newmap_name}'
+
+        resource_map[nested_res_name] = SimpleHandle(4)
+        assert newres_name in resource_map.maps[newmap_name].maps[
+            newmap_name].handles
+        assert newres_name not in resource_map.maps[newmap_name].maps[
+            newmap_name].maps
+
+        resource_map[nested_map_name] = desper.ResourceMap()
+        assert newmap_name not in resource_map.maps[newmap_name].maps[
+            newmap_name].handles
+        assert newmap_name in resource_map.maps[newmap_name].maps[
+            newmap_name].maps
