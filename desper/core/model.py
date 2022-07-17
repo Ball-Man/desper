@@ -137,6 +137,7 @@ class ResourceMap:
         # Last key is queried at last, as the value has to be
         # discriminated between handles and maps.
         for subkey in keys[:-1]:
+            target_map.handles.pop(subkey, None)    # Overwrite duplicates
             target_map = target_map.maps.setdefault(subkey, ResourceMap())
 
         # For better performance, only one type check is done at this
@@ -145,11 +146,12 @@ class ResourceMap:
         # Handle.
         # More extensive checks are done through assertions in debug
         # mode.
+        dest_map = target_map.handles
+        other_map = target_map.maps
         if isinstance(value, ResourceMap):
-            dest_map = target_map.maps
-        else:
-            dest_map = target_map.handles
+            dest_map, other_map = other_map, dest_map
 
+        other_map.pop(last_key, None)         # Delete duplicates
         dest_map[last_key] = value
 
 

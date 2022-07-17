@@ -130,3 +130,15 @@ class TestResourceMap:
             newmap_name].handles
         assert newmap_name in resource_map.maps[newmap_name].maps[
             newmap_name].maps
+
+        # Test overwritten resources
+        resource_map[nested_map_name] = SimpleHandle(10)
+        assert newmap_name in resource_map.maps[newmap_name].maps[
+            newmap_name].handles
+        assert newmap_name not in resource_map.maps[newmap_name].maps[
+            newmap_name].maps
+
+        resource_map['res1/res2'] = SimpleHandle(2)
+        assert 'res2' in resource_map.maps['res1'].handles
+        assert 'res1' not in resource_map.handles
+        assert 'res1' in resource_map.maps
