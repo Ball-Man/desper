@@ -1,5 +1,5 @@
 from typing import (Protocol, runtime_checkable, Generic, TypeVar, Optional,
-                    Union, ClassVar)
+                    Union, ClassVar, Any)
 from collections import ChainMap
 
 _T = TypeVar('T')
@@ -67,7 +67,7 @@ class ResourceMap:
         self.handles: ChainMap = ChainMap()
 
     def get(self, key: str, default: _T = None) -> Union[
-            Handle, 'ResourceProtocol', _T]:
+            Handle, 'ResourceMap', _T]:
         """Retrieve either a resource handle or a resource subtree.
 
         Nested exploration of resource maps can be achieved by providing
@@ -77,6 +77,7 @@ class ResourceMap:
         The delimiter character can be changed at any time by setting
         the class attribute :attr:`split_char` (defaults to ``/``).
         """
+
         keys = key.split(self.split_char)
         last_key = keys[-1]
         value = self
@@ -93,6 +94,31 @@ class ResourceMap:
 
         except KeyError:
             return default
+
+    def __getitem__(self, key: str) -> Union[Any, 'ResourceMap']:
+        """Retrieve either an unwrapped resource or a resource subtree.
+
+        Similar to :meth:`get` but if the resulting resource is a
+        :class:`Handle` the internal cached value is directly returned
+        instead (if no value is currently cached, it gets loaded
+        immediately).
+
+        :raises KeyError: If the query is invalid (no resource
+            corresponds to it).
+        """
+        # Code is duplicated for extra performance
+        keys = key.split(self.split_char)
+        last_key = keys[-1]
+        value = self
+        # Last key is queried at last, as it is not necessarily
+        # a map
+        for subkey in keys[:-1]:
+            value = value.maps[subkey]
+
+        if last_key in value.handles:
+            return value.handles[last_key]()
+        else:
+            return value.maps[last_key]
 
 
 @runtime_checkable

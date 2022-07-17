@@ -82,3 +82,22 @@ class TestResourceMap:
         assert resource_map.get('res1/xxx') is None
         assert resource_map.get('map1/map2/map3') is None
         assert resource_map.get('map1/map2/map3', 99) == 99
+
+    def test_getitem(self, resource_map):
+        # Test simple retrieval
+        assert resource_map['res1'] == 2
+        assert isinstance(resource_map['map1'], desper.ResourceMap)
+
+        # Test simple failure
+        with pytest.raises(KeyError):
+            resource_map['xxx']
+
+        # Test nested retrieval
+        assert resource_map['map1/map2/res2'] == 4
+        assert isinstance(resource_map['map1/map2'], desper.ResourceMap)
+
+        # Test nested failure
+        with pytest.raises(KeyError):
+            resource_map['map1/xxx']
+            resource_map['res1/xxx']
+            resource_map['map1/map2/map3']
