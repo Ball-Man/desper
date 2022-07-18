@@ -124,7 +124,17 @@ class ResourceMap:
             return value.maps[last_key]
 
     def __setitem__(self, key: str, value: Union['ResourceMap', Handle]):
-        """TBD."""
+        """Add a resource to the resource map.
+
+        The given resource shall be a :class:`ResourceMap` or a
+        :class:`Handle`.
+
+        Nested insertion can be achieved by providing a composite key
+        using the special delimiter ``/`` (see :meth:`get`).
+        Any missing intermediate maps will automatically be created.
+        If the creation of an intermediate map conflicts with an
+        existing handle, the handle will be overwritten by a new map.
+        """
         assert isinstance(key, str)
         assert isinstance(value, (ResourceMap, Handle)), \
             ('Invalid resource type (valid types are Handles '
