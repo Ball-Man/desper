@@ -164,6 +164,11 @@ class ResourceMap:
         other_map.pop(last_key, None)         # Delete duplicates
         dest_map[last_key] = value
 
+        # Set added value's key in its immediate parent (last_key)
+        # and the parent itself
+        value.parent = target_map
+        value.key = last_key
+
 
 @runtime_checkable
 class ResourceProtocol(Protocol):

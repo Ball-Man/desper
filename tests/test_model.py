@@ -115,6 +115,12 @@ class TestResourceMap:
         assert newmap_name not in resource_map.handles
         assert newmap_name in resource_map.maps
 
+        # Test protocol attributes
+        assert resource_map.handles[newres_name].parent == resource_map
+        assert resource_map.handles[newres_name].key == newres_name
+        assert resource_map.maps[newmap_name].parent == resource_map
+        assert resource_map.maps[newmap_name].key == newmap_name
+
         # Test nested insertion
         nested_res_name = f'{newmap_name}/{newmap_name}/{newres_name}'
         nested_map_name = f'{newmap_name}/{newmap_name}/{newmap_name}'
@@ -130,6 +136,19 @@ class TestResourceMap:
             newmap_name].handles
         assert newmap_name in resource_map.maps[newmap_name].maps[
             newmap_name].maps
+
+        # Test protocol attributes
+        assert (resource_map.maps[newmap_name].maps[newmap_name]
+                .handles[newres_name].parent
+                == resource_map.maps[newmap_name].maps[newmap_name])
+        assert (resource_map.maps[newmap_name].maps[newmap_name]
+                .handles[newres_name].key == newres_name)
+
+        assert (resource_map.maps[newmap_name].maps[newmap_name]
+                .maps[newmap_name].parent
+                == resource_map.maps[newmap_name].maps[newmap_name])
+        assert (resource_map.maps[newmap_name].maps[newmap_name]
+                .maps[newmap_name].key == newmap_name)
 
         # Test overwritten resources
         resource_map[nested_map_name] = SimpleHandle(10)
