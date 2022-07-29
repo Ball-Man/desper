@@ -95,6 +95,18 @@ class StaticResourceMap:
 
         return object.__getattribute__(self, name)
 
+    def get(self, key: str) -> Union[Handle, 'StaticResourceMap']:
+        """Retrieve either a resource handle or a static subtree.
+
+        Analogous to :meth:`ResourceMap.get`, but for static resource
+        maps.
+
+        Use this method if retrieval a :class:`Handle` instance is
+        necessary. To access the unwrapped values directly use direct
+        attribute access or ``[]`` operator (:meth:`__getitem__`).
+        """
+        return object.__getattribute__(self, key)
+
 
 class ResourceMap:
     """ TBD. """

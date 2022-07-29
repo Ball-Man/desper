@@ -201,3 +201,8 @@ class TestStaticResourceMap:
 
         assert type(map_['attr']) is SimpleStaticMap
         assert map_['attr']['attr'] == uncached_handle()
+
+    def test_get(self, uncached_handle):
+        map_ = SimpleStaticMap(uncached_handle)
+
+        assert map_.get('attr') == uncached_handle
