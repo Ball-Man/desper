@@ -57,7 +57,14 @@ class Handle(Generic[_T]):
 
 class StaticResourceMap:
     """TBD."""
-    __slots__ = []
+    __slots__ = ('_handle_names', )
+
+    # Store names of handles for faster retrieval of unwrapped resources
+    # If it's not a handle, it's a map
+    _handle_names: frozenset[str]
+
+    def __init__(self):
+        object.__setattr__(self, '_handle_names', frozenset())
 
     def __setattr__(self, name, value):
         """Prevent setting new values."""
@@ -66,6 +73,27 @@ class StaticResourceMap:
     def __delattr__(self, name):
         """Prevent deletion of values."""
         raise ValueError('StaticResourceMaps are immutable')
+
+    def __getitem__(self, key: str) -> Union[Any, 'StaticResourceMap']:
+        """Retrieve either an unwrapped resource or a static subtree.
+
+
+        Analogous to :meth:`ResourceMap.__getitem__`, but for static
+        resource maps.
+        """
+        return getattr(self, key)
+
+    def __getattribute__(self, name):
+        """Retrieve either an unwrapped resource or a static subtree.
+
+
+        Analogous to :meth:`ResourceMap.__getitem__`, but for static
+        resource maps.
+        """
+        if name in object.__getattribute__(self, '_handle_names'):
+            return object.__getattribute__(self, name)()
+
+        return object.__getattribute__(self, name)
 
 
 class ResourceMap:

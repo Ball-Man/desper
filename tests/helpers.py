@@ -31,4 +31,8 @@ class SimpleStaticMap(desper.StaticResourceMap):
     __slots__ = ['attr']
 
     def __init__(self, val):
+        super().__init__()
         object.__setattr__(self, 'attr', val)
+
+        if isinstance(val, desper.Handle):
+            object.__setattr__(self, '_handle_names', frozenset(['attr']))

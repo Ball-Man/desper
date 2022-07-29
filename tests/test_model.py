@@ -181,3 +181,23 @@ class TestStaticResourceMap:
 
         with pytest.raises(ValueError):
             del map_.attr
+
+    def test_getitem(self, uncached_handle):
+        map_ = SimpleStaticMap(uncached_handle)
+
+        assert map_.attr == uncached_handle()
+
+        map_ = SimpleStaticMap(SimpleStaticMap(uncached_handle))
+
+        assert type(map_.attr) is SimpleStaticMap
+        assert map_.attr.attr == uncached_handle()
+
+    def test_getattribute(self, uncached_handle):
+        map_ = SimpleStaticMap(uncached_handle)
+
+        assert map_['attr'] == uncached_handle()
+
+        map_ = SimpleStaticMap(SimpleStaticMap(uncached_handle))
+
+        assert type(map_['attr']) is SimpleStaticMap
+        assert map_['attr']['attr'] == uncached_handle()
