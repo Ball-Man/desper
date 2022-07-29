@@ -109,7 +109,40 @@ class StaticResourceMap:
 
 
 class ResourceMap:
-    """ TBD. """
+    """ Nested resource container.
+
+    Main model container for entire desper projects, it represents
+    resources in a tree like structure (contains other maps or resources
+    wrapped into :class:`Handle`s).
+
+    Resources can be queried using strings as keys, in particular, using
+    :meth:`get` retrieves a submap or a :class:`Handle` corresponding to
+    the given key. An unwrapped resource can be directly extrapolated
+    with the convenience ``[]`` operator (:meth:`__getitem__`) (quicker
+    than using :meth:`get` and obtaining the value manually with ``()``)
+    .
+
+    Key strings can be composed to simplify the retrieval process (a
+    delimiter character is used in this case, :attr:`split_char` which
+    is ``/`` by default). For example::
+
+        resource_map['sprites']['level1']['player']
+
+    is equivalent to::
+
+        resource_map['sprites/level1/player']
+
+    which in turn is equivalent to::
+
+        resource_map.get('sprites/level1/player')()
+
+    Adding a resource can be achieved similarly using the ``[]``
+    operator (:meth:`__setitem__`). Key composition is supported as
+    well::
+
+        resource_map['sprites/level2/player'] = ...
+
+    """
     parent: Optional['ResourceMap'] = None
     key: Optional[str] = None
 
