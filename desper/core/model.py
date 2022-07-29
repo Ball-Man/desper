@@ -55,6 +55,15 @@ class Handle(Generic[_T]):
         return self._cached
 
 
+class StaticResourceMap:
+    """TBD."""
+    __slots__ = []
+
+    def __setattr__(self, name, value):
+        """Prevent setting new values."""
+        raise ValueError('StaticResourceMaps are immutable')
+
+
 class ResourceMap:
     """ TBD. """
     parent: Optional['ResourceMap'] = None

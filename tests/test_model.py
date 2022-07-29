@@ -161,3 +161,18 @@ class TestResourceMap:
         assert 'res2' in resource_map.maps['res1'].handles
         assert 'res1' not in resource_map.handles
         assert 'res1' in resource_map.maps
+
+
+class TestStaticResourceMap:
+
+    def test_immutability(self):
+        map_ = desper.StaticResourceMap()
+
+        with pytest.raises(ValueError):
+            map_.attr = 0
+
+        with pytest.raises(ValueError):
+            setattr(map_, 'attr', 0)
+
+        with pytest.raises(AttributeError):
+            map_.__dict__['attr'] = 0
