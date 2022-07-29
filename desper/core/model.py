@@ -222,6 +222,32 @@ class ResourceMap:
         value.parent = target_map
         value.key = last_key
 
+    def clear(self):
+        """Clear contents of the resource tree.
+
+        All resources will be scrapped. Note that this simply clears
+        data structures internal to this specific map. Submaps can
+        still be alive and intact if referenced elsewhere.
+
+        :attr:`parent` and :attr:`key` of contained resources is reset
+        if necessary, while current map's ones are left untouched (
+        contents are freed but this map could still be part of
+        supermap).
+        """
+        # Before scrapping everything, update their parent information
+        for handle in self.handles.values():
+            if handle.parent == self:
+                handle.parent = None
+                handle.key = None
+
+        for map_ in self.maps.values():
+            if map_.parent == self:
+                map_.parent = None
+                map_.key = None
+
+        self.maps.clear()
+        self.handles.clear()
+
 
 @runtime_checkable
 class ResourceProtocol(Protocol):

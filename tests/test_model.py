@@ -21,20 +21,29 @@ def cached_handle():
 def resource_map():
     map_ = desper.ResourceMap()
 
-    resources = {'res1': SimpleHandle(1), 'res2': SimpleHandle(2)}
-
     map1 = desper.ResourceMap()
     map2 = desper.ResourceMap()
     map3 = desper.ResourceMap()
 
     map_.maps['map1'] = map1
-    map1.maps['map2'] = map2
-    map_.maps['map2'] = map3
+    map1.parent = map_
+    map1.key = 'map1'
 
-    map_.handles.update(resources)
-    map1.handles.update(resources)
-    map2.handles.update(resources)
-    map3.handles.update(resources)
+    map1.maps['map2'] = map2
+    map2.parent = map1
+    map2.key = 'map2'
+
+    map_.maps['map2'] = map3
+    map3.parent = map_
+    map3.key = 'map2'
+
+    maps = [map_, map1, map2, map3]
+
+    for m in maps:
+        m.handles.update({'res1': SimpleHandle(1), 'res2': SimpleHandle(2)})
+        for key, handle in m.handles.items():
+            handle.parent = m
+            handle.key = key
 
     return map_
 
@@ -161,6 +170,32 @@ class TestResourceMap:
         assert 'res2' in resource_map.maps['res1'].handles
         assert 'res1' not in resource_map.handles
         assert 'res1' in resource_map.maps
+
+    def test_clear(self, resource_map):
+        # Test submap clear
+        submap_name = 'map1'
+        submap = resource_map.maps[submap_name]
+        subresources = [*submap.maps.values(), *submap.handles.values()]
+        submap.clear()
+
+        for res in subresources:
+            assert res.parent is None
+            assert res.key is None
+
+        assert submap.parent == resource_map
+        assert submap.key == submap_name
+
+        assert not submap.maps
+        assert not submap.handles
+
+        # Test entire tree clear
+        resource_map.clear()
+
+        assert submap.parent is None
+        assert submap.key is None
+
+        assert not resource_map.handles
+        assert not resource_map.maps
 
 
 class TestStaticResourceMap:
