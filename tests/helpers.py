@@ -24,3 +24,11 @@ class SimpleHandle(desper.Handle):
 
     def load(self):
         return self._value * 2
+
+
+class SimpleStaticMap(desper.StaticResourceMap):
+
+    __slots__ = ['attr']
+
+    def __init__(self, val):
+        object.__setattr__(self, 'attr', val)

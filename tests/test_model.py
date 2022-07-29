@@ -166,7 +166,9 @@ class TestResourceMap:
 class TestStaticResourceMap:
 
     def test_immutability(self):
-        map_ = desper.StaticResourceMap()
+        val = 99
+
+        map_ = SimpleStaticMap(val)
 
         with pytest.raises(ValueError):
             map_.attr = 0
@@ -176,3 +178,6 @@ class TestStaticResourceMap:
 
         with pytest.raises(AttributeError):
             map_.__dict__['attr'] = 0
+
+        with pytest.raises(ValueError):
+            del map_.attr

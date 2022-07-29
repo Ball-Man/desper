@@ -63,6 +63,10 @@ class StaticResourceMap:
         """Prevent setting new values."""
         raise ValueError('StaticResourceMaps are immutable')
 
+    def __delattr__(self, name):
+        """Prevent deletion of values."""
+        raise ValueError('StaticResourceMaps are immutable')
+
 
 class ResourceMap:
     """ TBD. """
