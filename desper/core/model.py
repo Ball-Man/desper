@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import (Protocol, runtime_checkable, Generic, TypeVar, Optional,
                     Union, ClassVar, Any)
 from collections import ChainMap
@@ -280,6 +281,42 @@ class ResourceMap:
 
         self.maps.clear()
         self.handles.clear()
+
+    def get_static_map(self) -> StaticResourceMap:
+        """Generate a static map for convenience resource access.
+
+        The returned static map mirrors the structure of the original.
+
+        Internal implementation is recursive, hence extremely deep
+        nested resource maps are not ideal.
+        """
+        # Set valid identifiers as slots
+        slots_resources = tuple(filter(
+            lambda x: x.isidentifier(), chain(self.handles.keys(),
+                                              self.maps.keys())))
+
+        # Don't add a dict if all the resources can be encoded into
+        # slots
+        dict_list = []
+        if len(slots_resources) < len(self.handles) + len(self.maps):
+            dict_list.append('__dict__')
+
+        class StaticSubmap(StaticResourceMap):
+            __slots__ = (*slots_resources, *dict_list)
+
+            def __init__(subself):
+                super().__init__()
+                for key, value in self.handles.items():
+                    object.__setattr__(subself, key, value)
+
+                object.__setattr__(subself, '_handle_names',
+                                   frozenset(self.handles.keys()))
+
+                # Recursively retrieve nested static maps
+                for key, value in self.maps.items():
+                    object.__setattr__(subself, key, value.get_static_map())
+
+        return StaticSubmap()
 
 
 @runtime_checkable

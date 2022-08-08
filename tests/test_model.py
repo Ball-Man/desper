@@ -197,6 +197,19 @@ class TestResourceMap:
         assert not resource_map.handles
         assert not resource_map.maps
 
+    def test_get_static_map(self, resource_map):
+        static_map = resource_map.get_static_map()
+
+        # Test generated hierarchy
+        assert static_map.res1 is static_map['res1']
+        assert static_map.map1 is static_map['map1']
+        assert static_map.map1.map2 is static_map['map1']['map2']
+        assert static_map.map1.map2.res1 is static_map['map1']['map2']['res1']
+
+        assert static_map.get('res1') == resource_map.get('res1')
+        assert (static_map.get('map1').get('map2').get('res1')
+                == resource_map.get('map1/map2/res1'))
+
 
 class TestStaticResourceMap:
 
