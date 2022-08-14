@@ -82,6 +82,23 @@ class TestEventDispatcher:
         assert handler2.received == 2
         assert handler_uninterested.received == 0
 
+    def test_dispatch_disabled(self):
+        dispatcher = desper.EventDispatcher()
+        dispatcher.dispatch_enabled = False
+
+        handler = SimpleHandler()
+        dispatcher.add_handler(handler)
+
+        dispatcher.dispatch('event_name')
+
+        assert len(dispatcher._event_queue) == 1
+        assert handler.received == 0
+
+        dispatcher.dispatch_enabled = True
+
+        assert handler.received == 1
+        assert not dispatcher._event_queue
+
 
 def test_event_handler():
     # Some random events to test the handler on

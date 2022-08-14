@@ -24,10 +24,18 @@ class EventHandler(Protocol):
 class EventDispatcher:
     """Stores :class:`EventHandler` instances and dispatches events.
 
-    A dispatcher is basically observable object, handlers are pushed
+    A dispatcher is basically an observable object, handlers are pushed
     using :meth:`add_handler` and events are broadcasted to all
     interested handlers with :meth:`dispatch`.
+
+    An event dispatcher can be enabled (default) or disabled
+    (:attr:`dispatch_enabled`). A disabled dispatcher stops dispatching
+    events but buffers them internally and releases them as soon as
+    it is enabled again.
+    Disabling does not affect other behaviours (eg. adding new
+    handlers).
     """
+    _dispatch_enabled: bool = True
 
     def __init__(self):
         self._events: dict[str, set[tuple[weakref.ref[EventHandler],
@@ -35,6 +43,9 @@ class EventDispatcher:
         self._handlers: dict[
             weakref.ref[EventHandler],
             tuple[tuple[str, Callable], ...]] = {}
+
+        # Queue events by storing event's name, args and keyword args
+        self._event_queue: list[tuple[str, tuple, dict]] = []
 
     def add_handler(self, handler: EventHandler):
         """Add an event handler to the dispatcher.
@@ -94,10 +105,35 @@ class EventDispatcher:
         if event_name not in self._events:
             return
 
+        # If disabled, queue events
+        if not self._dispatch_enabled:
+            self._event_queue.append((event_name, args, kwargs))
+            return
+
         # Existance of the referents shall be guaranteed by the
         # automatic cleanup
         for handler_ref, method_ref in self._events[event_name]:
             method_ref(handler_ref(), *args, **kwargs)
+
+    @property
+    def dispatch_enabled(self) -> bool:
+        return self._dispatch_enabled
+
+    @dispatch_enabled.setter
+    def dispatch_enabled(self, value: bool):
+        self._dispatch_enabled = value
+
+        # This if is redundant as the queue would necessarily be empty
+        # if switching from enabled to disabled state.
+        # For extra safety (eg. the user modifies manually the queue)
+        # we keep this selection
+        if not value:
+            return
+
+        # Deplete queue if enabling
+        for event_name, args, kwargs in self._event_queue:
+            self.dispatch(event_name, *args, **kwargs)
+        self._event_queue.clear()
 
 
 def event_handler(*event_names: str, **event_mappings: str) -> Callable[
