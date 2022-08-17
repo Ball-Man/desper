@@ -112,7 +112,7 @@ class EventDispatcher:
 
         # Existance of the referents shall be guaranteed by the
         # automatic cleanup
-        for handler_ref, method_ref in self._events[event_name]:
+        for handler_ref, method_ref in set(self._events[event_name]):
             method_ref(handler_ref(), *args, **kwargs)
 
     @property

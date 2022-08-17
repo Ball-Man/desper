@@ -99,6 +99,15 @@ class TestEventDispatcher:
         assert handler.received == 1
         assert not dispatcher._event_queue
 
+    def test_remove_handler_during_event(self):
+        dispatcher = desper.EventDispatcher()
+        handler = RemovingHandler()
+
+        dispatcher.add_handler(handler)
+
+        dispatcher.dispatch('event_name', dispatcher)
+        assert not dispatcher.is_handler(handler)
+
 
 def test_event_handler():
     # Some random events to test the handler on

@@ -17,6 +17,13 @@ class SimpleHandler2:
         self.received += 1
 
 
+class RemovingHandler:
+    __events__ = {'event_name': 'event_name'}
+
+    def event_name(self, dispatcher: desper.EventDispatcher):
+        dispatcher.remove_handler(self)
+
+
 class SimpleHandle(desper.Handle):
 
     def __init__(self, value):
