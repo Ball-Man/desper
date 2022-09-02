@@ -6,18 +6,23 @@ centralized :class:`World`s.
 from itertools import count
 from typing import Hashable, Any, TypeVar
 
-from desper.core.events import EventDispatcher
+from desper.core.events import EventDispatcher, event_handler
 
 C = TypeVar('C')
 
 ON_ADD_EVENT_NAME = 'on_add'
+ON_ADD_DISPATCH_EVENT_NAME = '_on_add_dispatch'
 
 
+@event_handler(on_add_dispatch=ON_ADD_DISPATCH_EVENT_NAME)
 class World(EventDispatcher):
     """Main container for entities and components."""
 
     def __init__(self, id_generator=count(1)):
         super().__init__()
+
+        # Listen to self dispatched events
+        self.add_handler(self)
 
         self._processors = []
         self.id_generator = id_generator
@@ -86,14 +91,26 @@ class World(EventDispatcher):
         if hasattr(component, '__events__'):
             self.add_handler(component)
 
+            # If dispatching is enabled, call on_add directly to gain
+            # performance. Otherwise an event is dispatched
             if (ON_ADD_EVENT_NAME in component.__events__
                     and self._dispatch_enabled):
                 getattr(component,
                         component.__events__[ON_ADD_EVENT_NAME])(entity, self)
-            # TODO: on_add exists but dispatching is disabled
+            # on_add exists but dispatching is disabled
             elif not self._dispatch_enabled:
-                pass
+                self.dispatch('on_add_dispatch', component, entity)
 
+    def _on_add_dispatch(self, component, entity):
+        """Handler method, dispatch the ``on_add`` event to a component.
+
+        Designed to be used when adding components while dispatching is
+        disabled. A World is always a handler of itself, listening to
+        this event to relay on_add events.
+        """
+        print('on_add_dispatch')
+        getattr(component,
+                component.__events__[ON_ADD_EVENT_NAME])(entity, self)
 
     def has_component(self, entity: Hashable, component_type: type[C]) -> bool:
         """Check whether an entity has a component of the given type.

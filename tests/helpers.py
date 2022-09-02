@@ -69,4 +69,3 @@ class SimpleHandlerComponent(SimpleComponent):
         self.on_add_triggered = True
         self.entity = entity
         self.world = world
-

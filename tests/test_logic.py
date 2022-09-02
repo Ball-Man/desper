@@ -40,6 +40,9 @@ class TestWorld:
 
         assert world.has_component(entity, SimpleComponent2)
 
+    def test_event_handler(self, world):
+        assert world.is_handler(world)
+
     def test_add_component_event_handling(self, world):
         entity = world.create_entity()
         component = SimpleHandlerComponent()
@@ -49,3 +52,17 @@ class TestWorld:
         assert component.entity == entity
         assert component.world == world
         assert world.is_handler(component)
+
+        # Event handling when dispatching is disabled
+        world.dispatch_enabled = False
+        component2 = SimpleHandlerComponent()
+        entity2 = world.create_entity()
+        world.add_component(entity2, component2)
+
+        assert not component2.on_add_triggered
+
+        world.dispatch_enabled = True
+
+        assert component2.on_add_triggered
+        assert component2.entity == entity2
+        assert component2.world == world
