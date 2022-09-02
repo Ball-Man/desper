@@ -25,3 +25,16 @@ class TestWorld:
 
 		assert isinstance(world.has_component(entity, SimpleComponent), bool)
 		assert isinstance(world.has_component(entity, SimpleComponent2), bool)
+
+	def test_add_component(self, world):
+		entity = world.create_entity()
+
+		assert not world.has_component(entity, object)
+
+		world.add_component(entity, SimpleComponent())
+
+		assert world.has_component(entity, SimpleComponent)
+
+		world.add_component(entity, SimpleComponent2())
+
+		assert world.has_component(entity, SimpleComponent2)
