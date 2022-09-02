@@ -57,3 +57,16 @@ class SimpleChildComponent(SimpleComponent):
 
 class SimpleComponent2:
     pass
+
+
+@desper.event_handler(on_add='on_add2')
+class SimpleHandlerComponent(SimpleComponent):
+    on_add_triggered = False
+    entity = None
+    world = None
+
+    def on_add2(self, entity, world):
+        self.on_add_triggered = True
+        self.entity = entity
+        self.world = world
+

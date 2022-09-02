@@ -38,3 +38,13 @@ class TestWorld:
 		world.add_component(entity, SimpleComponent2())
 
 		assert world.has_component(entity, SimpleComponent2)
+
+	def test_add_component_event_handling(self, world):
+		entity = world.create_entity()
+		component = SimpleHandlerComponent()
+		world.add_component(entity, component)
+
+		assert component.on_add_triggered
+		assert component.entity == entity
+		assert component.world == world
+		assert world.is_handler(component)

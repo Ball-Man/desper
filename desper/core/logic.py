@@ -10,6 +10,7 @@ from desper.core.events import EventDispatcher
 
 C = TypeVar('C')
 
+ON_ADD_EVENT_NAME = 'on_add'
 
 
 class World(EventDispatcher):
@@ -77,6 +78,22 @@ class World(EventDispatcher):
             self._entities[entity] = {}
 
         self._entities[entity][component_type] = component
+
+        # Event handling, if component is an event handler for the
+        # special event on_add, manage it
+        # For performance reasons, check for the __events__ attribute
+        # instead of using isinstance
+        if hasattr(component, '__events__'):
+            self.add_handler(component)
+
+            if (ON_ADD_EVENT_NAME in component.__events__
+                    and self._dispatch_enabled):
+                getattr(component,
+                        component.__events__[ON_ADD_EVENT_NAME])(entity, self)
+            # TODO: on_add exists but dispatching is disabled
+            elif not self._dispatch_enabled:
+                pass
+
 
     def has_component(self, entity: Hashable, component_type: type[C]) -> bool:
         """Check whether an entity has a component of the given type.
