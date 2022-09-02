@@ -6,15 +6,18 @@ centralized :class:`World`s.
 from itertools import count
 from typing import Hashable, Any, TypeVar
 
-from desper.core.events import EventHandler
+from desper.core.events import EventDispatcher
 
 C = TypeVar('C')
 
 
-class World(EventHandler):
+
+class World(EventDispatcher):
     """Main container for entities and components."""
 
     def __init__(self, id_generator=count(1)):
+        super().__init__()
+
         self._processors = []
         self.id_generator = id_generator
         self._components: dict[set[Hashable]] = {}
