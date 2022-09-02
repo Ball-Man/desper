@@ -43,3 +43,17 @@ class SimpleStaticMap(desper.StaticResourceMap):
 
         if isinstance(val, desper.Handle):
             object.__setattr__(self, '_handle_names', frozenset(['attr']))
+
+
+class SimpleComponent:
+
+    def __init__(self, val=0):
+        self.val = val
+
+
+class SimpleChildComponent(SimpleComponent):
+    pass
+
+
+class SimpleComponent2:
+    pass
