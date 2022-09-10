@@ -199,3 +199,7 @@ class World(EventDispatcher):
             fringe += subtype.__subclasses__()
 
         return default
+
+    def get_components(self, entity: Hashable) -> tuple[C]:
+        """Retrieve a tuple of all components from an entity."""
+        return tuple(self._entities.get(entity, {}).values())

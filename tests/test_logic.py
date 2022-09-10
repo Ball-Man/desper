@@ -132,3 +132,10 @@ class TestWorld:
             for component in components:
                 assert populated_world.get_component(
                     entity, type(component)) == component
+
+    def test_get_components(self, populated_world, population):
+        for entity, components in population.items():
+            assert set(components) == set(
+                populated_world.get_components(entity))
+
+        assert len(populated_world.get_components(max(population) + 1)) == 0
