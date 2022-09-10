@@ -20,6 +20,8 @@ class TestWorld:
         assert world.has_component(entity2, SimpleChildComponent)
         assert world.has_component(entity2, SimpleComponent)
         assert not world.has_component(entity2, SimpleComponent2)
+        assert entity1 == 1
+        assert entity2 == 2
 
     def test_create_entity_event_handling(self, world):
         component1_1 = SimpleHandlerComponent()

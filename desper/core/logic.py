@@ -18,14 +18,17 @@ ON_ADD_DISPATCH_EVENT_NAME = '_on_add_dispatch'
 class World(EventDispatcher):
     """Main container for entities and components."""
 
-    def __init__(self, id_generator=count(1)):
+    def __init__(self, id_generator=None):
         super().__init__()
 
         # Listen to self dispatched events
         self.add_handler(self)
 
         self._processors = []
-        self.id_generator = id_generator
+        if id_generator is None:
+            self.id_generator = count(1)
+        else:
+            self.id_generator = id_generator
         self._components: dict[set[Hashable]] = {}
         self._entities: dict[dict[Any]] = {}
         self._dead_entities = set()
