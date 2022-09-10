@@ -4,11 +4,12 @@ Entities are collections of components (Python objects) catalogued in
 centralized :class:`World`s.
 """
 from itertools import count
-from typing import Hashable, Any, TypeVar, Iterable
+from typing import Hashable, Any, TypeVar, Iterable, Union
 
 from desper.core.events import EventDispatcher, event_handler
 
 C = TypeVar('C')
+T = TypeVar('T')
 
 ON_ADD_EVENT_NAME = 'on_add'
 ON_ADD_DISPATCH_EVENT_NAME = '_on_add_dispatch'
@@ -178,3 +179,23 @@ class World(EventDispatcher):
 
             for entity in self._components.get(subtype, []):
                 yield entity, self._entities[entity][subtype]
+
+    def get_component(self, entity: Hashable, component_type: type[C],
+                      default: T = None) -> Union[C, T]:
+        """Retrieve a component from an entity, if the entity owns one.
+
+        Subtypes are also checked. Priority goes to the specified type.
+        If no components for the given type are found, ``default``
+        value is returned.
+        """
+        fringe = [component_type]
+
+        while fringe:
+            subtype = fringe.pop()
+
+            if subtype in self._entities.get(entity, {}):
+                return self._entities[entity][subtype]
+
+            fringe += subtype.__subclasses__()
+
+        return default

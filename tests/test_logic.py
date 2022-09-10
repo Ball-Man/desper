@@ -126,3 +126,9 @@ class TestWorld:
             for component in components:
                 if isinstance(component, SimpleComponent):
                     assert entity, component in query_result
+
+    def test_get_component(self, populated_world, population):
+        for entity, components in population.items():
+            for component in components:
+                assert populated_world.get_component(
+                    entity, type(component)) == component
