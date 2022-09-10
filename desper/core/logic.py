@@ -129,7 +129,6 @@ class World(EventDispatcher):
         disabled. A World is always a handler of itself, listening to
         this event to relay on_add events.
         """
-        print('on_add_dispatch')
         getattr(component,
                 component.__events__[ON_ADD_EVENT_NAME])(entity, self)
 
