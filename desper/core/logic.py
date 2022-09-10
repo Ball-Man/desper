@@ -48,7 +48,7 @@ class World(EventDispatcher):
         if entity_id is None:
             entity_id = next(self.id_generator)
 
-        # Code duplication for performance
+        # Code duplication for performance, see add_component
         for component in components:
             component_type = type(component)
             if component_type not in self._components:
@@ -60,6 +60,24 @@ class World(EventDispatcher):
                 self._entities[entity_id] = {}
 
             self._entities[entity_id][component_type] = component
+
+        # Event handling takes effect after adding all components, so
+        # to prevent criticalities on component addition order.
+        for component in components:
+            if hasattr(component, '__events__'):
+                self.add_handler(component)
+
+                # If dispatching is enabled, call on_add directly to gain
+                # performance. Otherwise an event is dispatched
+                if (ON_ADD_EVENT_NAME in component.__events__
+                        and self._dispatch_enabled):
+                    getattr(
+                        component,
+                        component.__events__[ON_ADD_EVENT_NAME])(
+                            entity_id, self)
+                # on_add exists but dispatching is disabled
+                elif not self._dispatch_enabled:
+                    self.dispatch('on_add_dispatch', component, entity_id)
 
         return entity_id
 

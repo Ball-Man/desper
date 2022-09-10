@@ -21,6 +21,34 @@ class TestWorld:
         assert world.has_component(entity2, SimpleComponent)
         assert not world.has_component(entity2, SimpleComponent2)
 
+    def test_create_entity_event_handling(self, world):
+        component1_1 = SimpleHandlerComponent()
+        component2_1 = SimpleHandlerComponent()
+        components1 = [component1_1, component2_1]
+        entity1 = world.create_entity(component1_1, component2_1)
+
+        for component in components1:
+            assert component.on_add_triggered
+            assert component.entity == entity1
+            assert component.world == world
+
+        # Event handling when dispatching is disabled
+        world.dispatch_enabled = False
+        component1_2 = SimpleHandlerComponent()
+        component2_2 = SimpleHandlerComponent()
+        components2 = [component1_2, component2_2]
+        entity2 = world.create_entity(component1_2, component2_2)
+
+        for component in components2:
+            assert not component.on_add_triggered
+
+        world.dispatch_enabled = True
+
+        for component in components2:
+            assert component.on_add_triggered
+            assert component.entity == entity2
+            assert component.world == world
+
     def test_has_component(self, world):
         entity = world.create_entity(SimpleComponent())
 
