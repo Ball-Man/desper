@@ -9,6 +9,26 @@ def world():
     return desper.World()
 
 
+@pytest.fixture
+def population():
+    return {
+        1: [SimpleChildComponent(), SimpleComponent()],
+        2: [SimpleChildComponent()],
+        3: [SimpleComponent()],
+        4: [SimpleComponent2()]
+    }
+
+
+@pytest.fixture
+def populated_world(population):
+    world = desper.World()
+
+    for entity, components in population.items():
+        world.create_entity(*components)
+
+    return world
+
+
 class TestWorld:
 
     def test_create_entity(self, world):
@@ -96,3 +116,13 @@ class TestWorld:
         assert component2.on_add_triggered
         assert component2.entity == entity2
         assert component2.world == world
+
+    def test_get(self, populated_world, population):
+        for entity, component in populated_world.get(SimpleComponent):
+            assert component in population[entity]
+
+        query_result = populated_world.get(SimpleComponent)
+        for entity, components in population.items():
+            for component in components:
+                if isinstance(component, SimpleComponent):
+                    assert entity, component in query_result

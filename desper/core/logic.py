@@ -4,7 +4,7 @@ Entities are collections of components (Python objects) catalogued in
 centralized :class:`World`s.
 """
 from itertools import count
-from typing import Hashable, Any, TypeVar
+from typing import Hashable, Any, TypeVar, Iterable
 
 from desper.core.events import EventDispatcher, event_handler
 
@@ -151,3 +151,31 @@ class World(EventDispatcher):
                 return True
 
         return False
+
+    def get(self, component_type: type[C]) -> list[tuple[Hashable, C]]:
+        """Retrieve all stored components of the given type.
+
+        Subtypes are also checked. Return value is a list of pairs
+        where the first item is the entity id of the component's owner.
+        The second item of the pair is the actual queried component.
+        """
+        return list(self._get(component_type))
+
+    def _get(self, component_type: type[C]) -> Iterable[tuple[Hashable, C]]:
+        """Retrieve all stored components of the given type.
+
+        Subtypes are also checked. Return value is a generator of pairs
+        where the first item is the entity id of the component's owner.
+        The second item of the pair is the actual queried component.
+
+        This method is for internal use. Public method :meth:`get`
+        (TODO) returns cached results from this method.
+        """
+        fringe = [component_type]
+
+        while fringe:
+            subtype = fringe.pop()
+            fringe += subtype.__subclasses__()
+
+            for entity in self._components.get(subtype, []):
+                yield entity, self._entities[entity][subtype]
