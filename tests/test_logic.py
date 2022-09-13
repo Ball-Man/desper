@@ -139,3 +139,20 @@ class TestWorld:
                 populated_world.get_components(entity))
 
         assert len(populated_world.get_components(max(population) + 1)) == 0
+
+    def test_remove_component(self, populated_world, population):
+        for entity, components in population.items():
+            # Assumes that components is in "subclass" order, that is,
+            # any components that are subtype of others are listed
+            # before them.
+            for component in components:
+                assert populated_world.has_component(
+                    entity, type(component))
+                assert populated_world.remove_component(
+                    entity, type(component)) == component
+                assert not populated_world.has_component(
+                    entity, type(component))
+
+            assert populated_world.remove_component(
+                next(iter(population.keys())),
+                SimpleChildComponent) is None

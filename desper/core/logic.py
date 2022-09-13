@@ -206,3 +206,38 @@ class World(EventDispatcher):
     def get_components(self, entity: Hashable) -> tuple[C]:
         """Retrieve a tuple of all components from an entity."""
         return tuple(self._entities.get(entity, {}).values())
+
+    def remove_component(self, entity: Hashable, component_type: type[C]):
+        """Remove a component from an entity, if the entity owns one.
+
+        Subtypes are also checked, but only the first matching component
+        is actually removed. Priority goes to the specified type.
+        The removed component is returned (if any), ``None`` otherwise.
+        """
+        removed = None
+        fringe = [component_type]
+
+        while fringe:
+            subtype = fringe.pop()
+
+            if subtype in self._entities.get(entity, {}):
+                self._components[subtype].discard(entity)
+
+                # Free dict entry for a component type when empty
+                if not self._components[subtype]:
+                    del self._components[subtype]
+
+                if subtype in self._entities.get(entity, {}):
+                    removed = self._entities[entity][subtype]
+                    del self._entities[entity][subtype]
+
+                # Free dict entry for an entity if empty
+                if not self._entities[entity]:
+                    del self._entities[entity]
+
+                if removed is not None:
+                    return removed
+
+            fringe += subtype.__subclasses__()
+
+        return removed
