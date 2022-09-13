@@ -59,13 +59,18 @@ class SimpleComponent2:
     pass
 
 
-@desper.event_handler(on_add='on_add2')
+@desper.event_handler(on_add='on_add2', on_remove='on_remove2')
 class SimpleHandlerComponent(SimpleComponent):
     on_add_triggered = False
     entity = None
     world = None
 
+    on_remove_triggered = False
+
     def on_add2(self, entity, world):
         self.on_add_triggered = True
         self.entity = entity
         self.world = world
+
+    def on_remove2(self, entity, world):
+        self.on_remove_triggered = True

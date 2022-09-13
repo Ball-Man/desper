@@ -15,7 +15,8 @@ def population():
         1: [SimpleChildComponent(), SimpleComponent()],
         2: [SimpleChildComponent()],
         3: [SimpleComponent()],
-        4: [SimpleComponent2()]
+        4: [SimpleComponent2()],
+        5: [SimpleHandlerComponent()]
     }
 
 
@@ -156,3 +157,35 @@ class TestWorld:
             assert populated_world.remove_component(
                 next(iter(population.keys())),
                 SimpleChildComponent) is None
+
+    def test_remove_component_event_handling(self, populated_world,
+                                             population):
+        for entity, components in population.items():
+            # Assumes that components is in "subclass" order, that is,
+            # any components that are subtype of others are listed
+            # before them.
+            for component in components:
+                removed = populated_world.remove_component(
+                    entity, type(component))
+                if isinstance(removed, SimpleHandlerComponent):
+                    assert removed.on_remove_triggered
+
+    def test_remove_component_event_handling_disabled(self, populated_world,
+                                                      population):
+        populated_world.dispatch_enabled = False
+
+        handlers = []
+        for entity, components in population.items():
+            for component in components:
+                if isinstance(component, SimpleHandlerComponent):
+                    handlers.append(component)
+
+        self.test_remove_component(populated_world, population)
+
+        for component in handlers:
+            assert not component.on_remove_triggered
+
+        populated_world.dispatch_enabled = True
+
+        for component in handlers:
+            assert component.on_remove_triggered

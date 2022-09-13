@@ -236,6 +236,25 @@ class World(EventDispatcher):
                     del self._entities[entity]
 
                 if removed is not None:
+                    # No need to check if it is an handler, just check
+                    # if it implements the interface.
+                    if not hasattr(removed, '__events__'):
+                        return removed
+
+                    # Code replication
+                    # If dispatching is enabled, call on_remove directly
+                    # to gain performance. Otherwise an event is dispatched
+                    if (ON_REMOVE_EVENT_NAME in removed.__events__
+                            and self._dispatch_enabled):
+                        getattr(removed,
+                                removed.__events__[ON_REMOVE_EVENT_NAME])(
+                                    entity, self)
+                    # on_add exists but dispatching is disabled
+                    elif not self._dispatch_enabled:
+                        self.dispatch('on_component_dispatch',
+                                      ON_REMOVE_EVENT_NAME,
+                                      removed, entity)
+
                     return removed
 
             fringe += subtype.__subclasses__()
