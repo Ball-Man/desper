@@ -141,6 +141,9 @@ class World(EventDispatcher):
 
         Subtypes are also checked.
         """
+        assert isinstance(entity, Hashable), (
+            f'Entity ID must be hashble, found {entity}, which is not')
+
         if entity not in self._entities:
             return False
 
@@ -191,6 +194,9 @@ class World(EventDispatcher):
         If no components for the given type are found, ``default``
         value is returned.
         """
+        assert isinstance(entity, Hashable), (
+            f'Entity ID must be hashble, found {entity}, which is not')
+
         fringe = [component_type]
 
         while fringe:
@@ -205,6 +211,9 @@ class World(EventDispatcher):
 
     def get_components(self, entity: Hashable) -> tuple[C]:
         """Retrieve a tuple of all components from an entity."""
+        assert isinstance(entity, Hashable), (
+            f'Entity ID must be hashble, found {entity}, which is not')
+
         return tuple(self._entities.get(entity, {}).values())
 
     def remove_component(self, entity: Hashable, component_type: type[C]):
@@ -214,6 +223,9 @@ class World(EventDispatcher):
         is actually removed. Priority goes to the specified type.
         The removed component is returned (if any), ``None`` otherwise.
         """
+        assert isinstance(entity, Hashable), (
+            f'Entity ID must be hashble, found {entity}, which is not')
+
         removed = None
         fringe = [component_type]
 
