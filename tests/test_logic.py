@@ -78,6 +78,12 @@ class TestWorld:
         assert isinstance(world.has_component(entity, SimpleComponent), bool)
         assert isinstance(world.has_component(entity, SimpleComponent2), bool)
 
+    def test_entity_exists(self, populated_world, population):
+        for entity in population:
+            assert populated_world.entity_exists(entity)
+
+        assert not populated_world.entity_exists(max(population) + 1)
+
     def test_add_component(self, world):
         entity = world.create_entity()
 
@@ -189,3 +195,11 @@ class TestWorld:
 
         for component in handlers:
             assert component.on_remove_triggered
+
+    def test_delete_entity_immediate(self, populated_world, population):
+        for entity in population:
+            populated_world.delete_entity(entity, immediate=True)
+            assert not populated_world.entity_exists(entity)
+
+        with pytest.raises(KeyError):
+            populated_world.delete_entity(max(population) + 1, immediate=True)

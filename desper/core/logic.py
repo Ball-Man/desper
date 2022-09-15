@@ -158,6 +158,17 @@ class World(EventDispatcher):
 
         return False
 
+    def entity_exists(self, entity: Hashable) -> bool:
+        """Check if a specific entity exists.
+
+        Empty entities (with no components) and dead entities (destroyed
+        by :meth:`delete_entity`) will not count as existing ones.
+        """
+        assert isinstance(entity, Hashable), (
+            f'Entity ID must be hashble, found {entity}, which is not')
+
+        return entity in self._entities and entity not in self._dead_entities
+
     def get(self, component_type: type[C]) -> list[tuple[Hashable, C]]:
         """Retrieve all stored components of the given type.
 
@@ -215,6 +226,32 @@ class World(EventDispatcher):
             f'Entity ID must be hashble, found {entity}, which is not')
 
         return tuple(self._entities.get(entity, {}).values())
+
+    def delete_entity(self, entity: Hashable, immediate=False) -> None:
+        """Delete an entity.
+
+        Delete an entity and all of it's assigned component instances
+        from the world. By default, Entity deletion is delayed until
+        the next call to :meth:`process` (override this behaviour with
+        the ``immediate`` flag). This should generally not be
+        done during entity iteration (:meth:`get`).
+
+        Raises a ``KeyError`` if the given entity does not exist.
+        """
+        assert isinstance(entity, Hashable), (
+            f'Entity ID must be hashble, found {entity}, which is not')
+
+        if immediate:
+            for component_type in self._entities[entity]:
+                self._components[component_type].discard(entity)
+
+                if not self._components[component_type]:
+                    del self._components[component_type]
+
+            del self._entities[entity]
+
+        else:
+            self._dead_entities.add(entity)
 
     def remove_component(self, entity: Hashable, component_type: type[C]):
         """Remove a component from an entity, if the entity owns one.
