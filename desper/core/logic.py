@@ -253,6 +253,25 @@ class World(EventDispatcher):
         else:
             self._dead_entities.add(entity)
 
+    def _clear_dead_entities(self):
+        """Finalize deletion of any entities marked as dead.
+
+        In the interest of performance, this method duplicates code from
+        the :meth:`delete_entity` method. If that method is changed,
+        those changes should be duplicated here as well.
+        """
+        for entity in self._dead_entities:
+
+            for component_type in self._entities[entity]:
+                self._components[component_type].discard(entity)
+
+                if not self._components[component_type]:
+                    del self._components[component_type]
+
+            del self._entities[entity]
+
+        self._dead_entities.clear()
+
     def remove_component(self, entity: Hashable, component_type: type[C]):
         """Remove a component from an entity, if the entity owns one.
 
@@ -309,3 +328,10 @@ class World(EventDispatcher):
             fringe += subtype.__subclasses__()
 
         return removed
+
+    def process(self, *args, **kwargs):
+        """Execute code from all processors, in order of their priority.
+
+        (TBD)
+        """
+        self._clear_dead_entities()

@@ -203,3 +203,12 @@ class TestWorld:
 
         with pytest.raises(KeyError):
             populated_world.delete_entity(max(population) + 1, immediate=True)
+
+    def test_delete_entity(self, populated_world, population):
+        for entity in population:
+            populated_world.delete_entity(entity)
+            assert not populated_world.entity_exists(entity)
+
+        populated_world.delete_entity(max(population) + 1)
+        with pytest.raises(KeyError):
+            populated_world.process()
