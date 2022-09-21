@@ -3,8 +3,11 @@
 Entities are collections of components (Python objects) catalogued in
 centralized :class:`World`s.
 """
+import abc
+import bisect
 from itertools import count
-from typing import Hashable, Any, TypeVar, Iterable, Union
+from functools import total_ordering
+from typing import Hashable, Any, TypeVar, Iterable, Union, Optional
 
 from desper.core.events import EventDispatcher, event_handler
 
@@ -14,6 +17,37 @@ T = TypeVar('T')
 ON_ADD_EVENT_NAME = 'on_add'
 ON_REMOVE_EVENT_NAME = 'on_remove'
 ON_COMP_DISPATCH_EVENT_NAME = '_on_component_dispatch'
+
+
+@total_ordering
+class Processor(abc.ABC):
+    """Main executor over entities and components.
+
+    When a Processor is added into a :class:`World`, its
+    :attr:`world` attribute is updated accordingly.
+
+    :meth:`World.process` will call the :meth:`process` method of each
+    added Processor, in order of priority. Lower priorities are
+    processed first. A class or instance level priority can be set
+    through the :attr:`priority` attribute (defaults to ``0``).
+    """
+    world: Optional['World'] = None
+    priority: int = 0
+
+    @abc.abstractmethod
+    def process(self):
+        """Implement this method in a subclass to provide your logic."""
+
+    def __eq__(self, other):
+        """Define ordering based on priority values."""
+        return self.priority == other.priority
+
+    def __lt__(self, other):
+        """Define ordering based on priority values."""
+        return self.priority < other.priority
+
+
+P = TypeVar('Processor', bound=Processor)
 
 
 @event_handler(on_component_dispatch=ON_COMP_DISPATCH_EVENT_NAME)
@@ -26,7 +60,9 @@ class World(EventDispatcher):
         # Listen to self dispatched events
         self.add_handler(self)
 
-        self._processors = []
+        self._sorted_processors: list[Processor] = []
+        self._processors: dict[type[Processor], Processor] = {}
+
         if id_generator is None:
             self.id_generator = count(1)
         else:
@@ -328,6 +364,37 @@ class World(EventDispatcher):
             fringe += subtype.__subclasses__()
 
         return removed
+
+    def add_processor(self, processor: Processor,
+                      priority: Optional[int] = None):
+        """Add a processor into the system.
+
+        ``priority`` defines the order of execution upon calling
+        :meth:`process`. Lower priorities are processed first. If not
+        given, the internally defined default priority for the given
+        processor's type is used (see :class:`Processor`).
+
+        If a processor of the same exact type is present, it will be
+        replaced.
+        """
+        assert isinstance(processor, Processor), (
+            f'{processor} is not of type Processor')
+        assert isinstance(priority, int) or priority is None, (
+            f'{priority} is not of type int')
+
+        processor_type = type(processor)
+        if processor_type in self._processors:
+            self.remove_processor(processor_type)
+
+        if priority is not None:
+            processor.priority = priority
+
+        bisect.insort(self._sorted_processors, processor)
+        self._processors[processor_type] = processor
+
+    @property
+    def processors(self) -> tuple[Processor]:
+        return tuple(self._sorted_processors)
 
     def process(self, *args, **kwargs):
         """Execute code from all processors, in order of their priority.

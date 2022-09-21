@@ -21,11 +21,19 @@ def population():
 
 
 @pytest.fixture
-def populated_world(population):
+def processors():
+    return [SimpleProcessor(), SimpleHandlerProcessor()]
+
+
+@pytest.fixture
+def populated_world(population, processors):
     world = desper.World()
 
     for entity, components in population.items():
         world.create_entity(*components)
+
+    for processor in processors:
+        world.add_processor(processor)
 
     return world
 
@@ -212,3 +220,17 @@ class TestWorld:
         populated_world.delete_entity(max(population) + 1)
         with pytest.raises(KeyError):
             populated_world.process()
+
+    def test_processors(self, populated_world, processors):
+        for original, in_world in zip(sorted(processors),
+                                      populated_world.processors):
+            assert type(original) is type(in_world)
+
+    def test_add_processor(self, populated_world, processors):
+        new_processor = SimpleProcessor2()
+        lowest_priority = min(populated_world.processors).priority - 1
+        populated_world.add_processor(new_processor, lowest_priority)
+
+        assert new_processor in populated_world.processors
+        assert is_sorted(populated_world.processors)
+        assert populated_world.processors[0] is new_processor

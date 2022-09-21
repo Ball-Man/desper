@@ -74,3 +74,44 @@ class SimpleHandlerComponent(SimpleComponent):
 
     def on_remove2(self, entity, world):
         self.on_remove_triggered = True
+
+
+class SimpleProcessor(desper.Processor):
+    processed = 0
+
+    def process(self):
+        self.processed += 1
+
+
+@desper.event_handler('on_add', 'event_name', 'on_remove')
+class SimpleHandlerProcessor(SimpleProcessor):
+    on_add_triggered = False
+    event_name_triggered = False
+    on_remove_triggered = False
+
+    def on_add(self):
+        self.on_add_triggered = True
+
+    def event_name(self):
+        self.event_name_triggered = True
+
+    def on_remove(self):
+        self.on_remove_triggered = True
+
+
+class SimpleProcessor2(desper.Processor):
+
+    def process(self):
+        pass
+
+
+def is_sorted(seq) -> bool:
+    """Check if the given iterable is sorted (uses lte comparison)."""
+    prev_element = seq[0]
+    for element in seq[1:]:
+        if prev_element > element:
+            print(prev_element, element)
+            return False
+        prev_element = element
+
+    return True
