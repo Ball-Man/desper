@@ -107,6 +107,9 @@ class SimpleProcessor2(desper.Processor):
 
 def is_sorted(seq) -> bool:
     """Check if the given iterable is sorted (uses lte comparison)."""
+    if not seq:
+        return True
+
     prev_element = seq[0]
     for element in seq[1:]:
         if prev_element > element:
