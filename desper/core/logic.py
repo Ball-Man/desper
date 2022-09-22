@@ -392,6 +392,33 @@ class World(EventDispatcher):
         bisect.insort(self._sorted_processors, processor)
         self._processors[processor_type] = processor
 
+    def remove_processor(self, processor_type: type[P]) -> Optional[P]:
+        """Remove a processor of the given typefrom the system.
+
+        If it exists. Subtypes are also checked.
+        """
+        assert issubclass(processor_type, Processor), (
+            f'{processor_type} is not of a subtype of Processor')
+
+        fringe = [processor_type]
+
+        while fringe:
+            subtype = fringe.pop()
+
+            if subtype in self._processors:
+                removed = self._processors[subtype]
+
+                # Filter based on type instead of using list.remove
+                # as definitions of __eq__ could make it inconsistent.
+                self._sorted_processors = list(
+                    filter(lambda p: type(p) is not subtype,
+                           self._sorted_processors))
+                del self._processors[subtype]
+
+                return removed
+
+            fringe += subtype.__subclasses__()
+
     @property
     def processors(self) -> tuple[Processor]:
         return tuple(self._sorted_processors)

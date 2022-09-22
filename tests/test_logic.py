@@ -226,11 +226,32 @@ class TestWorld:
                                       populated_world.processors):
             assert type(original) is type(in_world)
 
-    def test_add_processor(self, populated_world, processors):
+    def test_add_processor(self, populated_world):
         new_processor = SimpleProcessor2()
         lowest_priority = min(populated_world.processors).priority - 1
         populated_world.add_processor(new_processor, lowest_priority)
 
-        assert new_processor in populated_world.processors
+        assert any(new_processor is p
+                   for p in populated_world.processors)
         assert is_sorted(populated_world.processors)
         assert populated_world.processors[0] is new_processor
+
+        # Test substitution of conflicting types processors
+        substitute_processor = SimpleProcessor2()
+        populated_world.add_processor(substitute_processor)
+
+        assert all(new_processor is not p for p in populated_world.processors)
+        assert any(substitute_processor is p
+                   for p in populated_world.processors)
+        assert is_sorted(populated_world.processors)
+
+    def test_remove_processor(self, populated_world):
+        for processor in populated_world.processors:
+            n_processors = len(populated_world.processors)
+
+            assert populated_world.remove_processor(type(processor)) \
+                   is processor
+            assert all(processor is not p for p in populated_world.processors)
+            assert is_sorted(populated_world.processors)
+
+            assert len(populated_world.processors) == n_processors - 1
