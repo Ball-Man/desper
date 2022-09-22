@@ -255,3 +255,10 @@ class TestWorld:
             assert is_sorted(populated_world.processors)
 
             assert len(populated_world.processors) == n_processors - 1
+
+    def test_process(self, populated_world):
+        assert all(p.processed == 0 for p in populated_world.processors)
+
+        populated_world.process()
+
+        assert all(p.processed == 1 for p in populated_world.processors)

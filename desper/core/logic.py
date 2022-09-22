@@ -423,9 +423,14 @@ class World(EventDispatcher):
     def processors(self) -> tuple[Processor]:
         return tuple(self._sorted_processors)
 
-    def process(self, *args, **kwargs):
+    def process(self):
         """Execute code from all processors, in order of their priority.
 
-        (TBD)
+        Stored :class:`Processor`s are executed according to their
+        ascending priority. In particular, :meth:`Processor.process`
+        is called for each of them.
         """
         self._clear_dead_entities()
+
+        for processor in self._sorted_processors:
+            processor.process()
