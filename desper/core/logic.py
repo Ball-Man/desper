@@ -130,6 +130,10 @@ class World(EventDispatcher):
 
         self._components[component_type].add(entity)
 
+        # Manage replaced components
+        if component_type in self._entities.get(entity, {}):
+            self.remove_component(entity, component_type)
+
         if entity not in self._entities:
             self._entities[entity] = {}
 

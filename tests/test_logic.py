@@ -118,6 +118,10 @@ class TestWorld:
         assert component.world == world
         assert world.is_handler(component)
 
+        replacing_component = SimpleHandlerComponent()
+        world.add_component(entity, replacing_component)
+        assert component.on_remove_triggered
+
         # Event handling when dispatching is disabled
         world.dispatch_enabled = False
         component2 = SimpleHandlerComponent()
