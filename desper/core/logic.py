@@ -5,7 +5,7 @@ centralized :class:`World`s.
 """
 import abc
 from itertools import count
-from typing import Hashable, Any, TypeVar, Iterable, Union, Optional
+from typing import Hashable, Any, TypeVar, Iterable, Union, Optional, Callable
 
 import desper.core.bisect as bisect
 from desper.core.events import EventDispatcher, event_handler
@@ -44,7 +44,9 @@ P = TypeVar('Processor', bound=Processor)
 class World(EventDispatcher):
     """Main container for entities and components."""
 
-    def __init__(self, id_generator=None):
+    def __init__(self,
+                 id_generator_factory: Callable[[], Iterable]
+                 = lambda: count(1)):
         super().__init__()
 
         # Listen to self dispatched events
@@ -53,10 +55,9 @@ class World(EventDispatcher):
         self._sorted_processors: list[Processor] = []
         self._processors: dict[type[Processor], Processor] = {}
 
-        if id_generator is None:
-            self.id_generator = count(1)
-        else:
-            self.id_generator = id_generator
+        self.id_generator_factory = id_generator_factory
+        self.id_generator = self.id_generator_factory()
+
         self._components: dict[set[Hashable]] = {}
         self._entities: dict[dict[Any]] = {}
         self._dead_entities = set()
@@ -524,5 +525,7 @@ class World(EventDispatcher):
 
         for processor in tuple(self._sorted_processors):
             self.remove_processor(type(processor))
+
+        self.id_generator = self.id_generator_factory()
 
         super().clear()     # Clear event dispatching system

@@ -347,3 +347,5 @@ class TestWorld:
 
         for processor in processors:
             assert processor not in populated_world.processors
+
+        assert populated_world.create_entity() == 1
