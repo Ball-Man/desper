@@ -429,7 +429,7 @@ class World(EventDispatcher):
                               processor)
 
     def remove_processor(self, processor_type: type[P]) -> Optional[P]:
-        """Remove a processor of the given typefrom the system.
+        """Remove a processor of the given type from the system.
 
         If it exists. Subtypes are also checked.
         """
