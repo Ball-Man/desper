@@ -105,10 +105,14 @@ class SimpleProcessor2(desper.Processor):
         pass
 
 
-def is_sorted(seq) -> bool:
+def is_sorted(seq, key=None) -> bool:
     """Check if the given iterable is sorted (uses lte comparison)."""
     if not seq:
         return True
+
+    # If a key function is specified, remap sequence
+    if key is not None:
+        seq = tuple(map(key, seq))
 
     prev_element = seq[0]
     for element in seq[1:]:
@@ -118,3 +122,8 @@ def is_sorted(seq) -> bool:
         prev_element = element
 
     return True
+
+
+def processor_key(processor):
+    """Key function for comparison based functions on processors."""
+    return processor.priority

@@ -4,11 +4,10 @@ Entities are collections of components (Python objects) catalogued in
 centralized :class:`World`s.
 """
 import abc
-import bisect
 from itertools import count
-from functools import total_ordering
 from typing import Hashable, Any, TypeVar, Iterable, Union, Optional
 
+import desper.core.bisect as bisect
 from desper.core.events import EventDispatcher, event_handler
 
 C = TypeVar('C')
@@ -19,7 +18,6 @@ ON_REMOVE_EVENT_NAME = 'on_remove'
 ON_COMP_DISPATCH_EVENT_NAME = '_on_component_dispatch'
 
 
-@total_ordering
 class Processor(abc.ABC):
     """Main executor over entities and components.
 
@@ -37,14 +35,6 @@ class Processor(abc.ABC):
     @abc.abstractmethod
     def process(self):
         """Implement this method in a subclass to provide your logic."""
-
-    def __eq__(self, other):
-        """Define ordering based on priority values."""
-        return self.priority == other.priority
-
-    def __lt__(self, other):
-        """Define ordering based on priority values."""
-        return self.priority < other.priority
 
 
 P = TypeVar('Processor', bound=Processor)
@@ -389,7 +379,8 @@ class World(EventDispatcher):
         if priority is not None:
             processor.priority = priority
 
-        bisect.insort(self._sorted_processors, processor)
+        bisect.insort(self._sorted_processors, processor,
+                      key=lambda p: p.priority)
         self._processors[processor_type] = processor
 
     def remove_processor(self, processor_type: type[P]) -> Optional[P]:
