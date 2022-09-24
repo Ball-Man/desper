@@ -336,3 +336,14 @@ class TestWorld:
         populated_world.process()
 
         assert all(p.processed == 1 for p in populated_world.processors)
+
+    def test_clear(self, populated_world, population):
+        processors = populated_world.processors
+
+        populated_world.clear()
+
+        for entity in population:
+            assert not populated_world.entity_exists(entity)
+
+        for processor in processors:
+            assert processor not in populated_world.processors

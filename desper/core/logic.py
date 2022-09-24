@@ -510,3 +510,19 @@ class World(EventDispatcher):
 
         for processor in self._sorted_processors:
             processor.process()
+
+    def clear(self):
+        """Clear the entire database.
+
+        Removal events are dispatched (``on_remove``).
+        Pending events (in case of disabled dispatching) are not.
+        Entities are removed before processors.
+        """
+        for entity in tuple(self._entities):
+            self.delete_entity(entity, immediate=True)
+        self._dead_entities.clear()
+
+        for processor in tuple(self._sorted_processors):
+            self.remove_processor(type(processor))
+
+        super().clear()     # Clear event dispatching system
