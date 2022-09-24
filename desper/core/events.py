@@ -135,6 +135,18 @@ class EventDispatcher:
             self.dispatch(event_name, *args, **kwargs)
         self._event_queue.clear()
 
+    def clear(self):
+        """Remove all handlers and pending events.
+
+        Pending events are lost forever. Dispatch is enabled after this
+        operation.
+        """
+        self._event_queue.clear()
+        self._events.clear()
+        self._handlers.clear()
+
+        self._dispatch_enabled = True
+
 
 def event_handler(*event_names: str, **event_mappings: str) -> Callable[
         [type], type]:
