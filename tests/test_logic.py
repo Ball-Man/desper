@@ -315,6 +315,18 @@ class TestWorld:
                 assert processor.on_remove_triggered
                 assert not populated_world.is_handler(processor)
 
+    def test_get_processor(self, populated_world):
+        for processor in populated_world.processors:
+            assert populated_world.get_processor(type(processor)) \
+                   is processor
+
+        # Test subtypes
+        populated_world.remove_processor(SimpleProcessor)
+        assert populated_world.get_processor(SimpleProcessor) is not None
+
+        # Test empty results
+        assert populated_world.get_processor(SimpleProcessor2) is None
+
     def test_process(self, populated_world):
         assert all(p.processed == 0 for p in populated_world.processors)
 

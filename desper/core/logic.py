@@ -472,6 +472,23 @@ class World(EventDispatcher):
 
             fringe += subtype.__subclasses__()
 
+    def get_processor(self, processor_type: type[P]) -> Optional[P]:
+        """Get a processor of the given type from the system.
+
+        If it exists. Subtypes are also checked.
+        """
+        fringe = [processor_type]
+
+        while fringe:
+            subtype = fringe.pop()
+
+            if subtype in self._processors:
+                return self._processors[subtype]
+
+            fringe += subtype.__subclasses__()
+
+        return None
+
     @property
     def processors(self) -> tuple[Processor]:
         return tuple(self._sorted_processors)
