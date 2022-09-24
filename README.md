@@ -1,3 +1,4 @@
+![desper logo](https://github.com/Ball-Man/desper/blob/master/assets/desper-logo-raw.png?raw=true)
 # desper
 A Python3 game development toolkit, based on open source projects.
 
