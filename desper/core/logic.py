@@ -289,11 +289,30 @@ class World(EventDispatcher):
         """
         for entity in self._dead_entities:
 
-            for component_type in self._entities[entity]:
+            for component_type, component in self._entities[entity].items():
                 self._components[component_type].discard(entity)
 
                 if not self._components[component_type]:
                     del self._components[component_type]
+
+                # Event handling
+                if (hasattr(component, '__events__')
+                        and ON_REMOVE_EVENT_NAME in component.__events__):
+                    # Code replication
+                    # If dispatching is enabled, call on_remove directly
+                    # to gain performance. Otherwise an event is dispatched
+                    if (ON_REMOVE_EVENT_NAME in component.__events__
+                            and self._dispatch_enabled):
+                        getattr(component,
+                                component.__events__[ON_REMOVE_EVENT_NAME])(
+                                    entity, self)
+                    # on_add exists but dispatching is disabled
+                    elif not self._dispatch_enabled:
+                        self.dispatch(ON_SINGLE_DISPATCH_EVENT_NAME,
+                                      ON_REMOVE_EVENT_NAME,
+                                      component, entity, self)
+
+                    self.remove_handler(component)
 
             del self._entities[entity]
 
@@ -350,6 +369,7 @@ class World(EventDispatcher):
                                       ON_REMOVE_EVENT_NAME,
                                       removed, entity, self)
 
+                    self.remove_handler(removed)
                     return removed
 
             fringe += subtype.__subclasses__()

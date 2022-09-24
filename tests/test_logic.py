@@ -182,6 +182,7 @@ class TestWorld:
                 removed = populated_world.remove_component(
                     entity, type(component))
                 if isinstance(removed, SimpleHandlerComponent):
+                    assert not populated_world.is_handler(removed)
                     assert removed.on_remove_triggered
 
     def test_remove_component_event_handling_disabled(self, populated_world,
@@ -220,6 +221,24 @@ class TestWorld:
         populated_world.delete_entity(max(population) + 1)
         with pytest.raises(KeyError):
             populated_world.process()
+
+    def test_delete_entity_event_handling(self, populated_world, population):
+        actual_population = {entity: populated_world.get_components(entity)
+                             for entity in population}
+
+        for components in actual_population.values():
+            for component in components:
+                if isinstance(component, desper.EventHandler):
+                    assert populated_world.is_handler(component)
+
+        for entity in population:
+            populated_world.delete_entity(entity)
+        populated_world.process()
+
+        for components in actual_population.values():
+            for component in components:
+                if isinstance(component, desper.EventHandler):
+                    assert not populated_world.is_handler(component)
 
     def test_processors(self, populated_world, processors):
         for original, in_world in zip(sorted(processors, key=processor_key),
