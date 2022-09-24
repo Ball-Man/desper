@@ -232,8 +232,8 @@ class TestWorld:
                               key=processor_key).priority - 1
         populated_world.add_processor(new_processor, lowest_priority)
 
-        assert any(new_processor is p
-                   for p in populated_world.processors)
+        assert new_processor in populated_world.processors
+        assert new_processor.world is populated_world
         assert is_sorted(populated_world.processors, key=processor_key)
         assert populated_world.processors[0] is new_processor
 

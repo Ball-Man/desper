@@ -384,6 +384,8 @@ class World(EventDispatcher):
                       key=lambda p: p.priority)
         self._processors[processor_type] = processor
 
+        processor.world = self
+
     def remove_processor(self, processor_type: type[P]) -> Optional[P]:
         """Remove a processor of the given typefrom the system.
 
