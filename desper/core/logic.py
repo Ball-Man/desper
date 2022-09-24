@@ -200,6 +200,12 @@ class World(EventDispatcher):
 
         return entity in self._entities and entity not in self._dead_entities
 
+    @property
+    def entities(self) -> tuple[Hashable]:
+        """Retrieve all the living entities in the system."""
+        return tuple(entity for entity in self._entities
+                     if entity not in self._dead_entities)
+
     def get(self, component_type: type[C]) -> list[tuple[Hashable, C]]:
         """Retrieve all stored components of the given type.
 

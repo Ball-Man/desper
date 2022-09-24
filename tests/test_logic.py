@@ -92,6 +92,9 @@ class TestWorld:
 
         assert not populated_world.entity_exists(max(population) + 1)
 
+    def test_entities(self, populated_world, population):
+        assert populated_world.entities == tuple(population)
+
     def test_add_component(self, world):
         entity = world.create_entity()
 
