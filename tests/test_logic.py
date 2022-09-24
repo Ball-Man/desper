@@ -245,6 +245,20 @@ class TestWorld:
         assert substitute_processor in populated_world.processors
         assert is_sorted(populated_world.processors, key=processor_key)
 
+    def test_add_processor_event_handling(self, populated_world):
+        for processor in populated_world.processors:
+            if isinstance(processor, desper.EventHandler):
+                assert populated_world.is_handler(processor)
+                assert processor.on_add_triggered
+
+        new_processor = SimpleHandlerProcessor()
+        assert not populated_world.is_handler(new_processor)
+        assert not new_processor.on_add_triggered
+
+        populated_world.add_processor(new_processor)
+        assert populated_world.is_handler(new_processor)
+        assert new_processor.on_add_triggered
+
     def test_remove_processor(self, populated_world):
         for processor in populated_world.processors:
             n_processors = len(populated_world.processors)
@@ -255,6 +269,28 @@ class TestWorld:
             assert is_sorted(populated_world.processors, key=processor_key)
 
             assert len(populated_world.processors) == n_processors - 1
+
+    def test_remove_processor_event_handling(self, populated_world):
+        # Test replacement, the substituted
+        handler_processor = None
+        for processor in populated_world.processors:
+            if isinstance(processor, SimpleHandlerProcessor):
+                handler_processor = processor
+                break
+        assert handler_processor is not None
+        assert populated_world.is_handler(handler_processor)
+
+        populated_world.add_processor(SimpleHandlerProcessor())
+        assert handler_processor.on_remove_triggered
+        assert not populated_world.is_handler(handler_processor)
+
+        for processor in populated_world.processors:
+            if isinstance(processor, desper.EventHandler):
+                assert populated_world.is_handler(processor)
+
+                populated_world.remove_processor(type(processor))
+                assert processor.on_remove_triggered
+                assert not populated_world.is_handler(processor)
 
     def test_process(self, populated_world):
         assert all(p.processed == 0 for p in populated_world.processors)

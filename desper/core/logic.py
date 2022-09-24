@@ -386,6 +386,24 @@ class World(EventDispatcher):
 
         processor.world = self
 
+        # Event handling, if processor is an event handler for the
+        # special event on_add, manage it
+        # For performance reasons, check for the __events__ attribute
+        # instead of using isinstance
+        if hasattr(processor, '__events__'):
+            self.add_handler(processor)
+
+            # If dispatching is enabled, call on_add directly to gain
+            # performance. Otherwise an event is dispatched
+            if (ON_ADD_EVENT_NAME in processor.__events__
+                    and self._dispatch_enabled):
+                getattr(processor,
+                        processor.__events__[ON_ADD_EVENT_NAME])()
+            # on_add exists but dispatching is disabled
+            elif not self._dispatch_enabled:
+                self.dispatch(ON_SINGLE_DISPATCH_EVENT_NAME, ON_ADD_EVENT_NAME,
+                              processor)
+
     def remove_processor(self, processor_type: type[P]) -> Optional[P]:
         """Remove a processor of the given typefrom the system.
 
@@ -409,6 +427,23 @@ class World(EventDispatcher):
                            self._sorted_processors))
                 del self._processors[subtype]
 
+                # Event handling for on_remove event
+                # Code duplication, see add_processor
+                if not hasattr(removed, '__events__'):
+                    return removed
+
+                # If dispatching is enabled, call on_remove directly to gain
+                # performance. Otherwise an event is dispatched
+                if (ON_REMOVE_EVENT_NAME in removed.__events__
+                        and self._dispatch_enabled):
+                    getattr(removed,
+                            removed.__events__[ON_REMOVE_EVENT_NAME])()
+                # on_add exists but dispatching is disabled
+                elif not self._dispatch_enabled:
+                    self.dispatch(ON_SINGLE_DISPATCH_EVENT_NAME,
+                                  ON_REMOVE_EVENT_NAME, removed)
+
+                self.remove_handler(removed)
                 return removed
 
             fringe += subtype.__subclasses__()
