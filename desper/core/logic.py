@@ -15,7 +15,7 @@ T = TypeVar('T')
 
 ON_ADD_EVENT_NAME = 'on_add'
 ON_REMOVE_EVENT_NAME = 'on_remove'
-ON_COMP_DISPATCH_EVENT_NAME = '_on_component_dispatch'
+ON_SINGLE_DISPATCH_EVENT_NAME = 'on_single_dispatch'
 
 
 class Processor(abc.ABC):
@@ -40,7 +40,7 @@ class Processor(abc.ABC):
 P = TypeVar('Processor', bound=Processor)
 
 
-@event_handler(on_component_dispatch=ON_COMP_DISPATCH_EVENT_NAME)
+@event_handler(on_single_dispatch='_on_single_dispatch')
 class World(EventDispatcher):
     """Main container for entities and components."""
 
@@ -108,8 +108,9 @@ class World(EventDispatcher):
                             entity_id, self)
                 # on_add exists but dispatching is disabled
                 elif not self._dispatch_enabled:
-                    self.dispatch('on_component_dispatch', ON_ADD_EVENT_NAME,
-                                  component, entity_id)
+                    self.dispatch(ON_SINGLE_DISPATCH_EVENT_NAME,
+                                  ON_ADD_EVENT_NAME,
+                                  component, entity_id, self)
 
         return entity_id
 
@@ -149,18 +150,18 @@ class World(EventDispatcher):
                         component.__events__[ON_ADD_EVENT_NAME])(entity, self)
             # on_add exists but dispatching is disabled
             elif not self._dispatch_enabled:
-                self.dispatch('on_component_dispatch', ON_ADD_EVENT_NAME,
-                              component, entity)
+                self.dispatch(ON_SINGLE_DISPATCH_EVENT_NAME, ON_ADD_EVENT_NAME,
+                              component, entity, self)
 
-    def _on_component_dispatch(self, event, component, entity):
-        """Handler method, dispatch the given event to a component.
+    def _on_single_dispatch(self, event, handler, *args):
+        """Dispatch the given event to a single handler.
 
-        Designed to be used when adding or removing components while
-        dispatching is disabled. A World is always a handler of itself,
-        listening to this event to relay ``on_add`` and ``on_remove``
-        events.
+        Designed to be used when adding or removing
+        components/processors while dispatching is disabled. A World
+        is always a handler of itself, listening to this event to relay
+        ``on_add`` and ``on_remove`` events.
         """
-        getattr(component, component.__events__[event])(entity, self)
+        getattr(handler, handler.__events__[event])(*args)
 
     def has_component(self, entity: Hashable, component_type: type[C]) -> bool:
         """Check whether an entity has a component of the given type.
@@ -345,9 +346,9 @@ class World(EventDispatcher):
                                     entity, self)
                     # on_add exists but dispatching is disabled
                     elif not self._dispatch_enabled:
-                        self.dispatch('on_component_dispatch',
+                        self.dispatch(ON_SINGLE_DISPATCH_EVENT_NAME,
                                       ON_REMOVE_EVENT_NAME,
-                                      removed, entity)
+                                      removed, entity, self)
 
                     return removed
 
