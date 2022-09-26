@@ -79,7 +79,7 @@ class SimpleHandlerComponent(SimpleComponent):
 class SimpleProcessor(desper.Processor):
     processed = 0
 
-    def process(self):
+    def process(self, dt=1):
         self.processed += 1
 
 
@@ -101,7 +101,7 @@ class SimpleHandlerProcessor(SimpleProcessor):
 
 class SimpleProcessor2(desper.Processor):
 
-    def process(self):
+    def process(self, dt=1):
         pass
 
 

@@ -5,7 +5,8 @@ centralized :class:`World`s.
 """
 import abc
 from itertools import count
-from typing import Hashable, Any, TypeVar, Iterable, Union, Optional, Callable
+from typing import (Hashable, Any, TypeVar, Iterable, Union, Optional,
+                    Callable, SupportsFloat)
 
 import desper.core.bisect as bisect
 from desper.core.events import EventDispatcher, event_handler
@@ -33,7 +34,7 @@ class Processor(abc.ABC):
     priority: int = 0
 
     @abc.abstractmethod
-    def process(self):
+    def process(self, dt: SupportsFloat = 1):
         """Implement this method in a subclass to provide your logic."""
 
 
@@ -500,7 +501,7 @@ class World(EventDispatcher):
     def processors(self) -> tuple[Processor]:
         return tuple(self._sorted_processors)
 
-    def process(self):
+    def process(self, dt: SupportsFloat = 1):
         """Execute code from all processors, in order of their priority.
 
         Stored :class:`Processor`s are executed according to their
@@ -510,7 +511,7 @@ class World(EventDispatcher):
         self._clear_dead_entities()
 
         for processor in self._sorted_processors:
-            processor.process()
+            processor.process(dt)
 
     def clear(self):
         """Clear the entire database.
