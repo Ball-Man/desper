@@ -105,6 +105,23 @@ class SimpleProcessor2(desper.Processor):
         pass
 
 
+class QuitProcessor(desper.Processor):
+
+    def process(self, dt):
+        raise desper.Quit()
+
+
+class SimpleWorldHandle(desper.Handle[desper.World]):
+
+    def load(self) -> desper.World:
+        world = desper.World()
+
+        world.add_processor(SimpleProcessor())
+        world.add_processor(QuitProcessor())
+
+        return world
+
+
 def is_sorted(seq, key=None) -> bool:
     """Check if the given iterable is sorted (uses lte comparison)."""
     if not seq:
