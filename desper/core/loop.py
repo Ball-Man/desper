@@ -1,6 +1,7 @@
 """Loop management module."""
 import abc
-from typing import Optional, TypeVar, Generic
+import time
+from typing import Optional, TypeVar, Generic, Callable, SupportsFloat
 
 from desper.core.logic import World
 from desper.core.model import Handle
@@ -109,23 +110,46 @@ class SimpleLoop(Loop[World]):
     """Simple specialized loop implementation for desper worlds.
 
     Process current world once per iteration, computing delta time.
+    First delta time value is always ``0``. A custom function can be
+    passed for time evaluation.
 
     :class:`SwitchWorld` exceptions are catched and managed to switch
     accordingly to a new world.
     """
 
+    def __init__(self, time_function: Callable[
+            [], SupportsFloat] = time.perf_counter):
+        self.time_function = time_function
+        self.last_timestamp = None
+
+    def start(self):
+        """Setup and start the main loop.
+
+        See :meth:`Loop.start` for more details.
+        """
+        super().start()
+        self.last_timestamp = None
+
     def loop(self):
         """Simple main loop.
 
         Process current world once per iteration, computing delta
-        time (TODO).
+        time. First delta time value is always ``0``.
 
         :class:`SwitchWorld` exceptions are catched and managed to
         switch accordingly to a new world.
         """
         while True:
             try:
-                self._current_world.process()
+                timestamp = self.time_function()
+                if self.last_timestamp is None:
+                    dt = 0
+                else:
+                    dt = timestamp - self.last_timestamp
+                self.last_timestamp = timestamp
+
+                self._current_world.process(dt)
+
             except SwitchWorld as ex:
                 self.switch(ex.world_handle, ex.clear_current, ex.clear_next)
 

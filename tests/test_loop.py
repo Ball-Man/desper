@@ -83,3 +83,22 @@ class TestSimpleLoop:
         simple_loop.start()
 
         assert world1_new is not handle1()
+
+    def test_delta_time(self, simple_loop):
+        handle = DeltaTimeWorldHandle()
+
+        simple_loop.switch(handle)
+        simple_loop.start()
+
+        world = handle()
+        processor = world.get_processor(DeltaTimeProcessor)
+
+        assert processor.dt_list[0] == 0
+
+        for dt in processor.dt_list[1:]:
+            assert dt > 0
+
+        # Test restarting
+        simple_loop.start()
+
+        assert processor.dt_list[0] == 0

@@ -123,6 +123,21 @@ class SwitchProcessor(desper.Processor):
                                  self.clear_next)
 
 
+class DeltaTimeProcessor(desper.Processor):
+
+    def __init__(self, iterations=10):
+        self.iterations = iterations
+        self.dt_list = []
+
+    def process(self, dt):
+        # Store dt for a while and quit
+        if self.iterations <= 0:
+            raise desper.Quit()
+
+        self.iterations -= 1
+        self.dt_list.append(dt)
+
+
 class SimpleWorldHandle(desper.Handle[desper.World]):
 
     def load(self) -> desper.World:
@@ -130,6 +145,16 @@ class SimpleWorldHandle(desper.Handle[desper.World]):
 
         world.add_processor(SimpleProcessor())
         world.add_processor(QuitProcessor())
+
+        return world
+
+
+class DeltaTimeWorldHandle(desper.Handle[desper.World]):
+
+    def load(self) -> desper.World:
+        world = desper.World()
+
+        world.add_processor(DeltaTimeProcessor())
 
         return world
 
