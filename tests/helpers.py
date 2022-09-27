@@ -111,6 +111,18 @@ class QuitProcessor(desper.Processor):
         raise desper.Quit()
 
 
+class SwitchProcessor(desper.Processor):
+
+    def __init__(self, target_handle, clear_current=False, clear_next=False):
+        self.target_handle = target_handle
+        self.clear_current = clear_current
+        self.clear_next = clear_next
+
+    def process(self, dt):
+        raise desper.SwitchWorld(self.target_handle, self.clear_current,
+                                 self.clear_next)
+
+
 class SimpleWorldHandle(desper.Handle[desper.World]):
 
     def load(self) -> desper.World:

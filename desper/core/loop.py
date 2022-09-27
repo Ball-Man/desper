@@ -127,7 +127,7 @@ class SimpleLoop(Loop[World]):
             try:
                 self._current_world.process()
             except SwitchWorld as ex:
-                self._switch(ex.world_handle, ex.clear_current)
+                self.switch(ex.world_handle, ex.clear_current, ex.clear_next)
 
     def switch(self, world_handle: Handle[World], clear_current=False,
                clear_next=False):
