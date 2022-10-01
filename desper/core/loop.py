@@ -25,9 +25,10 @@ def quit_loop(target: EventDispatcher = None):
     Quitting is signaled by raising a :class:`Quit` exception.
     """
     if target is None:
-        target = desper.loop.current_world
+        target = desper.default_loop.current_world
 
-    target.dispatch(ON_QUIT_EVENT_NAME)
+    if target is not None:
+        target.dispatch(ON_QUIT_EVENT_NAME)
     raise Quit()
 
 
@@ -68,8 +69,8 @@ class Loop(abc.ABC, Generic[_T]):
     :attr:`current_world`, and can be internally switched at any time
     with the :meth:`_switch` method.
     """
-    _current_world: Optional[_T]
-    _current_world_handle: Optional[Handle[_T]]
+    _current_world: Optional[_T] = None
+    _current_world_handle: Optional[Handle[_T]] = None
     running: bool = False
 
     def start(self):

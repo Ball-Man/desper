@@ -19,6 +19,9 @@ class TestSimpleLoop:
         assert simple_loop.current_world_handle is handle
 
     def test_quit(self, simple_loop):
+        with pytest.raises(desper.Quit):
+            desper.quit_loop()
+
         handle = SimpleWorldHandle()
         world = handle()
         simple_loop.switch(handle)
