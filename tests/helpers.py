@@ -111,6 +111,17 @@ class QuitProcessor(desper.Processor):
         raise desper.Quit()
 
 
+@desper.event_handler(desper.ON_QUIT_EVENT_NAME)
+class QuitFunctionProcessor(desper.Processor):
+    on_quit_triggered = False
+
+    def on_quit(self):
+        self.on_quit_triggered = True
+
+    def process(self, dt):
+        desper.quit_loop(self.world)
+
+
 class SwitchProcessor(desper.Processor):
 
     def __init__(self, target_handle, clear_current=False, clear_next=False):
@@ -155,6 +166,16 @@ class DeltaTimeWorldHandle(desper.Handle[desper.World]):
         world = desper.World()
 
         world.add_processor(DeltaTimeProcessor())
+
+        return world
+
+
+class QuitFunctionWorldHandle(desper.Handle[desper.World]):
+
+    def load(self) -> desper.World:
+        world = desper.World()
+
+        world.add_processor(QuitFunctionProcessor())
 
         return world
 

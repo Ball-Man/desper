@@ -102,3 +102,12 @@ class TestSimpleLoop:
         simple_loop.start()
 
         assert processor.dt_list[0] == 0
+
+
+def test_quit(simple_loop):
+    handle = QuitFunctionWorldHandle()
+    simple_loop.switch(handle)
+
+    simple_loop.start()
+
+    assert handle().get_processor(QuitFunctionProcessor).on_quit_triggered

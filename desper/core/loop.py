@@ -3,10 +3,32 @@ import abc
 import time
 from typing import Optional, TypeVar, Generic, Callable, SupportsFloat
 
+import desper
+from desper.core.events import EventDispatcher
 from desper.core.logic import World
 from desper.core.model import Handle
 
 _T = TypeVar('T')
+
+ON_QUIT_EVENT_NAME = 'on_quit'
+
+
+def quit_loop(target: EventDispatcher = None):
+    """Quit currently running loop and dispatch an event accordingly.
+
+    Event :attr:`ON_QUIT_EVENT_NAME` is dispatched on the specified
+    :class:`EventDispatcher` before quitting the loop. If not specified,
+    the default global :attr:`desper.core.loop` will be used to infer
+    the current running world. If a custom loop is used, it is advisable
+    to specify the world manually.
+
+    Quitting is signaled by raising a :class:`Quit` exception.
+    """
+    if target is None:
+        target = desper.loop.current_world
+
+    target.dispatch(ON_QUIT_EVENT_NAME)
+    raise Quit()
 
 
 class Quit(Exception):
