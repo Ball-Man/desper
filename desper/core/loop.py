@@ -70,6 +70,7 @@ class Loop(abc.ABC, Generic[_T]):
     """
     _current_world: Optional[_T]
     _current_world_handle: Optional[Handle[_T]]
+    running: bool = False
 
     def start(self):
         """Setup internal state and start the main loop.
@@ -77,10 +78,11 @@ class Loop(abc.ABC, Generic[_T]):
         Wraps :meth:`loop`. If a :class:`Quit` exception is catched,
         quits the loop.
         """
+        self.running = True
         try:
             self.loop()
         except Quit:
-            pass
+            self.running = False
 
     @abc.abstractmethod
     def loop(self):

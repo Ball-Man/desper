@@ -103,6 +103,15 @@ class TestSimpleLoop:
 
         assert processor.dt_list[0] == 0
 
+    def test_running(self, simple_loop):
+        handle = SimpleWorldHandle()
+
+        simple_loop.switch(handle)
+        assert not simple_loop.running
+        simple_loop.start()
+
+        assert not simple_loop.running
+
 
 def test_quit(simple_loop):
     handle = QuitFunctionWorldHandle()
