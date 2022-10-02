@@ -134,6 +134,26 @@ class SwitchProcessor(desper.Processor):
                                  self.clear_next)
 
 
+class SwitchFunctionProcessor(SwitchProcessor):
+
+    def process(self, dt):
+        desper.switch(self.target_handle, self.clear_current, self.clear_next,
+                      from_world=self.world)
+
+
+@desper.event_handler(desper.ON_SWITCH_IN_EVENT_NAME,
+                      desper.ON_SWITCH_OUT_EVENT_NAME)
+class SwitchEventsComponent:
+    on_switch_in_triggered = False
+    on_switch_out_triggered = False
+
+    def on_switch_in(self, from_, to):
+        self.on_switch_in_triggered = True
+
+    def on_switch_out(self, from_, to):
+        self.on_switch_out_triggered = True
+
+
 class DeltaTimeProcessor(desper.Processor):
 
     def __init__(self, iterations=10):
@@ -156,6 +176,16 @@ class SimpleWorldHandle(desper.Handle[desper.World]):
 
         world.add_processor(SimpleProcessor())
         world.add_processor(QuitProcessor())
+
+        return world
+
+
+class SwitchFunctionWorldHandle(SimpleWorldHandle):
+
+    def load(self) -> desper.World:
+        world = super().load()
+
+        world.create_entity(SwitchEventsComponent())
 
         return world
 

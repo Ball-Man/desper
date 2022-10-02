@@ -11,6 +11,8 @@ from desper.core.model import Handle
 _T = TypeVar('T')
 
 ON_QUIT_EVENT_NAME = 'on_quit'
+ON_SWITCH_OUT_EVENT_NAME = 'on_switch_out'
+ON_SWITCH_IN_EVENT_NAME = 'on_switch_in'
 
 
 def quit_loop(target: EventDispatcher = None):
@@ -30,6 +32,44 @@ def quit_loop(target: EventDispatcher = None):
     if target is not None:
         target.dispatch(ON_QUIT_EVENT_NAME)
     raise Quit()
+
+
+def switch(target_handle: Handle[World], clear_current=False, clear_next=False,
+           from_world: Optional[World] = None):
+    """Switch to the given world, contained in the specified handle.
+
+    Event :attr:`ON_SWITCH_OUT_EVENT` is dispatched in the world being
+    left. Two parameters are expected, being the world being left and
+    the world being entered.
+    :attr:`ON_SWITCH_IN_EVENT` is dispatched in the world being entered.
+    Two parameters are expected (as above). If there is no world to
+    leave, ``None`` is passed as first parameter.
+
+    If specified, the handle being left and/or the handle being entered
+    can be cleared.
+
+    Switching is signaled by raising a :class:`SwitchWorld` exception.
+    For this reason, it not globally supported. It is supported by
+    :class:`SimpleLoop` and similar implementations.
+    """
+    if from_world is None:
+        from_world = desper.default_loop.current_world
+
+    to_world = target_handle()
+
+    if from_world is not None:
+        from_world.dispatch(ON_SWITCH_OUT_EVENT_NAME, from_world, to_world)
+        # Disable switched out worlds for a more synchronized behaviour
+        from_world.dispatch_enabled = False
+
+    # To have more control in the order of execution, temporarily
+    # disable dispatching on the target world. It will be enabled again
+    # as soon as the loop catches the exception.
+    to_world.dispatch_enabled = False
+    to_world.dispatch(ON_SWITCH_IN_EVENT_NAME, from_world, to_world)
+
+    raise SwitchWorld(target_handle, clear_current=clear_current,
+                      clear_next=clear_next)
 
 
 class Quit(Exception):
@@ -186,4 +226,4 @@ class SimpleLoop(Loop[World]):
         """
         super().switch(world_handle, clear_current, clear_next)
 
-        world_handle().dispatching_enabled = True
+        world_handle().dispatch_enabled = True

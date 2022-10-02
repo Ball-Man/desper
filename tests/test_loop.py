@@ -123,3 +123,22 @@ def test_quit(simple_loop):
     simple_loop.start()
 
     assert handle().get_processor(QuitFunctionProcessor).on_quit_triggered
+
+
+def test_switch_exception_clear(simple_loop):
+    handle1 = SwitchFunctionWorldHandle()
+    handle2 = SwitchFunctionWorldHandle()
+
+    # Test clear current
+    handle1().add_processor(
+        SwitchFunctionProcessor(handle2), -1)
+
+    simple_loop.switch(handle1)
+    simple_loop.start()
+
+    assert handle1().get(SwitchEventsComponent)[0][1].on_switch_out_triggered
+    assert not handle1().get(
+        SwitchEventsComponent)[0][1].on_switch_in_triggered
+    assert handle2().get(SwitchEventsComponent)[0][1].on_switch_in_triggered
+    assert not handle2().get(
+        SwitchEventsComponent)[0][1].on_switch_out_triggered
