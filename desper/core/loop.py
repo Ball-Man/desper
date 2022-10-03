@@ -15,7 +15,7 @@ ON_SWITCH_OUT_EVENT_NAME = 'on_switch_out'
 ON_SWITCH_IN_EVENT_NAME = 'on_switch_in'
 
 
-def quit_loop(target: EventDispatcher = None):
+def quit_loop(target: Optional[EventDispatcher] = None):
     """Quit currently running loop and dispatch an event accordingly.
 
     Event :attr:`ON_QUIT_EVENT_NAME` is dispatched on the specified
