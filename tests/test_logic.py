@@ -368,6 +368,13 @@ def test_remove_component(populated_world, population):
         assert not populated_world.has_component(entity, type(component))
 
 
+def test_has_component(populated_world, population):
+    for entity, components in population.items():
+        for component in components:
+            controller = SimpleController(entity, populated_world)
+            assert desper.has_component(controller, type(component))
+
+
 class TestController:
 
     def test_event(self, world):

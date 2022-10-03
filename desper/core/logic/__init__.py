@@ -34,6 +34,15 @@ def remove_component(controller: ControllerProtocol,
     return controller.world.remove_component(controller.entity, component_type)
 
 
+def has_component(controller: ControllerProtocol,
+                  component_type: type[C]) -> bool:
+    """Get whether the entity represented by controller has a component.
+
+    A shorthand for controllers on :meth:`World.has_component`.
+    """
+    return controller.world.has_component(controller.entity, component_type)
+
+
 @event_handler('on_add')
 class Controller:
     """Special component, aware of their world and entity id.
