@@ -29,8 +29,7 @@ def remove_component(controller: ControllerProtocol,
                      component_type: type[C]) -> C:
     """Remove a component from the entity represented by controller.
 
-    A shorthand for shorthand for controllers on
-    :meth:`World.remove_component`.
+    A shorthand for controllers on :meth:`World.remove_component`.
     """
     return controller.world.remove_component(controller.entity, component_type)
 
