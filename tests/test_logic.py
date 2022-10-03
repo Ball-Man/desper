@@ -349,3 +349,13 @@ class TestWorld:
             assert processor not in populated_world.processors
 
         assert populated_world.create_entity() == 1
+
+
+class TestController:
+
+    def test_event(self, world):
+        controller = desper.Controller()
+        entity = world.create_entity(controller)
+
+        assert controller.entity == entity
+        assert controller.world == world

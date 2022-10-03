@@ -1,8 +1,4 @@
-"""Desper's logic module.
-
-Entities are collections of components (Python objects) catalogued in
-centralized :class:`World`s.
-"""
+""":class:`World` and :class:`Processor` main definitions."""
 import abc
 from itertools import count
 from typing import (Hashable, Any, TypeVar, Iterable, Union, Optional,
