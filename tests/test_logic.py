@@ -383,6 +383,12 @@ def test_get_component(populated_world, population):
                    is component
 
 
+def test_get_components(populated_world, population):
+    for entity, components in population.items():
+        controller = SimpleController(entity, populated_world)
+        assert set(desper.get_components(controller)) == set(components)
+
+
 def test_delete(populated_world, population):
     for entity in population:
         controller = SimpleController(entity, populated_world)

@@ -52,6 +52,14 @@ def get_component(controller: ControllerProtocol,
     return controller.world.get_component(controller.entity, component_type)
 
 
+def get_components(controller: ControllerProtocol) -> tuple[C]:
+    """Retrieve all components from the entity represented by controller.
+
+    A shorthand for controllers on :meth:`World.get_components`.
+    """
+    return controller.world.get_components(controller.entity)
+
+
 def delete(controller: ControllerProtocol):
     """Delete entity represented by the controller.
 
