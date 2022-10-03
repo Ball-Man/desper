@@ -43,6 +43,15 @@ def has_component(controller: ControllerProtocol,
     return controller.world.has_component(controller.entity, component_type)
 
 
+def get_component(controller: ControllerProtocol,
+                  component_type: type[C]) -> C:
+    """Retrieve a component from the entity represented by controller.
+
+    A shorthand for controllers on :meth:`World.get_component`.
+    """
+    return controller.world.get_component(controller.entity, component_type)
+
+
 def delete(controller: ControllerProtocol):
     """Delete entity represented by the controller.
 
