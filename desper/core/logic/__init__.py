@@ -43,6 +43,14 @@ def has_component(controller: ControllerProtocol,
     return controller.world.has_component(controller.entity, component_type)
 
 
+def delete(controller: ControllerProtocol):
+    """Delete entity represented by the controller.
+
+    A shorthand for controllers on :meth:`World.delete_entity`.
+    """
+    controller.world.delete_entity(controller.entity)
+
+
 @event_handler('on_add')
 class Controller:
     """Special component, aware of their world and entity id.

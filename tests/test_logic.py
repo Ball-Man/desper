@@ -375,6 +375,13 @@ def test_has_component(populated_world, population):
             assert desper.has_component(controller, type(component))
 
 
+def test_delete(populated_world, population):
+    for entity in population:
+        controller = SimpleController(entity, populated_world)
+        desper.delete(controller)
+        assert not populated_world.entity_exists(entity)
+
+
 class TestController:
 
     def test_event(self, world):
