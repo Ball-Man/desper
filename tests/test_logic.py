@@ -351,6 +351,23 @@ class TestWorld:
         assert populated_world.create_entity() == 1
 
 
+def test_add_component(world):
+    entity = world.create_entity()
+    controller = SimpleController(entity, world)
+    desper.add_component(controller, SimpleComponent())
+
+    assert world.has_component(entity, SimpleComponent)
+
+
+def test_remove_component(populated_world, population):
+    for entity, components in population.items():
+        component = components[0]
+        controller = SimpleController(entity, populated_world)
+        assert desper.remove_component(controller, type(component)) \
+               is component
+        assert not populated_world.has_component(entity, type(component))
+
+
 class TestController:
 
     def test_event(self, world):

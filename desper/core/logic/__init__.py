@@ -8,11 +8,31 @@ from typing import Protocol, Optional, Hashable
 from desper.core.events import event_handler
 from .world import *        # NOQA
 
+C = TypeVar('C')
+
 
 class ControllerProtocol(Protocol):
     """Protocol for special components, aware of their world."""
     world: Optional[World] = None
     entity: Optional[Hashable] = None
+
+
+def add_component(controller: ControllerProtocol, component):
+    """Add a component to the entity represented by given controller.
+
+    A shorthand for controllers on :meth:`World.add_component`.
+    """
+    controller.world.add_component(controller.entity, component)
+
+
+def remove_component(controller: ControllerProtocol,
+                     component_type: type[C]) -> C:
+    """Remove a component from the entity represented by controller.
+
+    A shorthand for shorthand for controllers on
+    :meth:`World.remove_component`.
+    """
+    return controller.world.remove_component(controller.entity, component_type)
 
 
 @event_handler('on_add')

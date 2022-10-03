@@ -1,5 +1,7 @@
 from context import desper
 
+from collections import namedtuple
+
 
 class SimpleHandler:
     __events__ = {'event_name': 'event_method'}
@@ -232,3 +234,6 @@ def is_sorted(seq, key=None) -> bool:
 def processor_key(processor):
     """Key function for comparison based functions on processors."""
     return processor.priority
+
+
+SimpleController = namedtuple('SimpleController', ('entity', 'world'))
