@@ -86,3 +86,10 @@ class Controller:
         """
         self.entity = entity
         self.world = world
+
+    add_component = add_component
+    remove_component = remove_component
+    has_component = has_component
+    get_component = get_component
+    get_components = get_components
+    delete = delete
