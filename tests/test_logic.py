@@ -396,6 +396,14 @@ def test_delete(populated_world, population):
         assert not populated_world.entity_exists(entity)
 
 
+def test_build_controller(populated_world, population):
+    for entity in population:
+        controller = desper.controller(entity, populated_world)
+        assert isinstance(controller, desper.ControllerProtocol)
+        assert controller.entity == entity
+        assert controller.world == populated_world
+
+
 class TestController:
 
     def test_event(self, world):

@@ -3,7 +3,7 @@
 Entities are collections of components (Python objects) catalogued in
 centralized :class:`World`s.
 """
-from typing import Protocol, Optional, Hashable
+from typing import Protocol, runtime_checkable, Optional, Hashable
 
 from desper.core.events import event_handler
 from .world import *        # NOQA
@@ -11,6 +11,7 @@ from .world import *        # NOQA
 C = TypeVar('C')
 
 
+@runtime_checkable
 class ControllerProtocol(Protocol):
     """Protocol for special components, aware of their world."""
     world: Optional[World] = None
@@ -93,3 +94,12 @@ class Controller:
     get_component = get_component
     get_components = get_components
     delete = delete
+
+
+def controller(entity: Hashable, world: World) -> Controller:
+    """Build a plain :class:`Controller` given a world and entity."""
+    controller = Controller()
+    controller.entity = entity
+    controller.world = world
+
+    return controller
