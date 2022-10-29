@@ -3,7 +3,7 @@
 Entities are collections of components (Python objects) catalogued in
 centralized :class:`World`s.
 """
-from typing import Protocol, runtime_checkable, Optional, Hashable
+from typing import Protocol, runtime_checkable, Optional, Hashable, Generic
 
 from desper.core.events import event_handler
 from .world import *        # NOQA
@@ -103,3 +103,42 @@ def controller(entity: Hashable, world: World) -> Controller:
     controller.world = world
 
     return controller
+
+
+class ComponentReference(Generic[C]):
+    """Descriptor for easier cross-component access.
+
+    Owner of component references descriptors shall implement the
+    :class:`ControllerProtocol` protocol, that is, they shall provide
+    ``world`` (:class:`World`) and ``entity`` attributes.
+
+    Accessing this descriptor leads to a :meth:`World.get_component`
+    query. Setting an element leads to :meth:`World.add_component` and
+    deleting it (``del``) leads to :meth:`World.remove_component`.
+    """
+
+    def __init__(self, component_type: type[C]):
+        self.component_type = component_type
+
+    def __get__(self, obj: ControllerProtocol, objtype=None) -> C:
+        """Retrieve component from the controller (owner), by type."""
+        assert isinstance(obj, ControllerProtocol), (
+            'Owner of ComponentRerefences must implement ControllerProtocol')
+
+        return get_component(obj, self.component_type)
+
+    def __set__(self, obj: ControllerProtocol, value: C):
+        """Set component using the controller (owner)."""
+        assert isinstance(obj, ControllerProtocol), (
+            'Owner of ComponentRerefences must implement ControllerProtocol')
+        assert isinstance(value, self.component_type), (
+            f'Expected {self.component_type} (sub)object, got a {type(value)}')
+
+        add_component(obj, value)
+
+    def __delete__(self, obj: ControllerProtocol):
+        """Remove component of the given type from the controller."""
+        assert isinstance(obj, ControllerProtocol), (
+            'Owner of ComponentRerefences must implement ControllerProtocol')
+
+        remove_component(obj, self.component_type)

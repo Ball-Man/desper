@@ -412,3 +412,39 @@ class TestController:
 
         assert controller.entity == entity
         assert controller.world == world
+
+
+class TestComponentReference:
+
+    def test_get(self, populated_world, population):
+        entity = tuple(population)[0]
+        controller = ControllerWithReference()
+        populated_world.add_component(entity, controller)
+
+        assert controller.simple_component \
+            is populated_world.get_component(entity, SimpleComponent)
+
+    def test_set(self, populated_world, population):
+        entity = tuple(population)[0]
+        controller = ControllerWithReference()
+        populated_world.add_component(entity, controller)
+        old_simple_component = populated_world.get_component(
+            entity, SimpleComponent)
+
+        simple_component = SimpleComponent()
+        controller.simple_component = simple_component
+
+        assert controller.simple_component is simple_component
+        assert controller.simple_component is not old_simple_component
+
+    def test_delete(self, populated_world, population):
+        entity = tuple(population)[0]
+        controller = ControllerWithReference()
+        populated_world.add_component(entity, controller)
+        simple_component = populated_world.get_component(
+            entity, SimpleComponent)
+
+        del controller.simple_component
+
+        assert simple_component not in controller.get_components()
+        assert type(controller.simple_component) is not SimpleComponent

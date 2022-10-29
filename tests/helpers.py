@@ -237,3 +237,7 @@ def processor_key(processor):
 
 
 SimpleController = namedtuple('SimpleController', ('entity', 'world'))
+
+
+class ControllerWithReference(desper.Controller):
+    simple_component = desper.ComponentReference(SimpleComponent)
