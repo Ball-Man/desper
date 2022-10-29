@@ -241,3 +241,4 @@ SimpleController = namedtuple('SimpleController', ('entity', 'world'))
 
 class ControllerWithReference(desper.Controller):
     simple_component = desper.ComponentReference(SimpleComponent)
+    simple_processor = desper.ProcessorReference(SimpleProcessor)

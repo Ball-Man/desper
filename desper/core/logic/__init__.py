@@ -9,6 +9,7 @@ from desper.core.events import event_handler
 from .world import *        # NOQA
 
 C = TypeVar('C')
+P = TypeVar('P', bound=Processor)
 
 
 @runtime_checkable
@@ -142,3 +143,49 @@ class ComponentReference(Generic[C]):
             'Owner of ComponentRerefences must implement ControllerProtocol')
 
         remove_component(obj, self.component_type)
+
+
+class ProcessorReference(Generic[P]):
+    """Descriptor for easier processor access.
+
+    Owner of processor references descriptors shall implement the
+    :class:`ControllerProtocol` protocol, that is, they shall provide
+    ``world`` (:class:`World`) and ``entity`` attributes.
+
+    Accessing this descriptor leads to a :meth:`World.get_processor`
+    query. Deleting (``del``) leads to :meth:`World.remove_processor`.
+
+    When using the descriptor as setter, a new processor is set using
+    :meth:`World.add_processor`. However, the ``priority`` parameter
+    is not provided. This means that the default priority will be
+    deduced through :attr:`Processor.priority`.
+    """
+
+    def __init__(self, processor_type: type[P]):
+        assert issubclass(processor_type, Processor), (
+            f'{processor_type} is not a subclass of Processor')
+
+        self.processor_type = processor_type
+
+    def __get__(self, obj: ControllerProtocol, objtype=None) -> P:
+        """Retrieve processor from the controller (owner), by type."""
+        assert isinstance(obj, ControllerProtocol), (
+            'Owner of ComponentRerefences must implement ControllerProtocol')
+
+        return obj.world.get_processor(self.processor_type)
+
+    def __set__(self, obj: ControllerProtocol, value: P):
+        """Set processor using the controller (owner)."""
+        assert isinstance(obj, ControllerProtocol), (
+            'Owner of ComponentRerefences must implement ControllerProtocol')
+        assert isinstance(value, self.processor_type), (
+            f'Expected {self.processor_type} (sub)object, got a {type(value)}')
+
+        obj.world.add_processor(value)
+
+    def __delete__(self, obj: ControllerProtocol):
+        """Remove processor of the given type from the controller."""
+        assert isinstance(obj, ControllerProtocol), (
+            'Owner of ComponentRerefences must implement ControllerProtocol')
+
+        obj.world.remove_processor(self.processor_type)

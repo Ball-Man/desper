@@ -448,3 +448,38 @@ class TestComponentReference:
 
         assert simple_component not in controller.get_components()
         assert type(controller.simple_component) is not SimpleComponent
+
+
+class TestProcessorReference:
+
+    def test_get(self, populated_world, population):
+        entity = tuple(population)[0]
+        controller = ControllerWithReference()
+        populated_world.add_component(entity, controller)
+
+        assert controller.simple_processor \
+            is populated_world.get_processor(SimpleProcessor)
+
+    def test_set(self, populated_world, population):
+        old_simple_processor = populated_world.get_processor(SimpleProcessor)
+
+        entity = tuple(population)[0]
+        controller = ControllerWithReference()
+        populated_world.add_component(entity, controller)
+
+        simple_processor = SimpleProcessor()
+        controller.simple_processor = simple_processor
+
+        assert controller.simple_processor is simple_processor
+        assert controller.simple_processor is not old_simple_processor
+
+    def test_delete(self, populated_world, population):
+        entity = tuple(population)[0]
+        controller = ControllerWithReference()
+        populated_world.add_component(entity, controller)
+        simple_processor = populated_world.get_processor(SimpleProcessor)
+
+        del controller.simple_processor
+
+        assert simple_processor not in populated_world.processors
+        assert type(controller.simple_processor) is not SimpleProcessor
