@@ -250,5 +250,5 @@ class SimplePrototype(desper.Prototype):
     def __init__(self, val):
         self.val = val
 
-    def init_SimpleComponent(self):
-        return SimpleComponent(self.val)
+    def init_SimpleComponent(self, cls):
+        return cls(self.val)

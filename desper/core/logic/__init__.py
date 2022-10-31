@@ -247,10 +247,10 @@ class Prototype:
     By default, init methods follow this naming rule::
 
         ...
-        def init_ComponentType(self):
+        def init_Component(self, component_type: type[Component]) -> Component:
             ...
 
-    The return type has to be ``ComponentType`` (for obvious reasons).
+    The return type has to be ``Component`` (for obvious reasons).
 
     e.g::
 
@@ -274,11 +274,11 @@ class Prototype:
                 self.offset_x = offset_x
                 self.offset_y = offset_y
 
-            def init_Position(self):
-                return example.Position(self.xx, self.yy)
+            def init_Position(self, component_type):
+                return component_type(self.xx, self.yy)
 
-            def init_Sprite(self):
-                return example.Sprite(self.xx, self.yy, self.image,
+            def init_Sprite(self, component_type):
+                return component_type(self.xx, self.yy, self.image,
                                       self.offset_x, self.offset_y)
 
         w.create_entity(*EnemyPrototype(x, y, image, offset_x, offset_y))
@@ -295,7 +295,7 @@ class Prototype:
     component_types: tuple[type] = tuple()
     """List of types of the prototype's components."""
 
-    init_methods: dict[type[C], Callable[[], C]] = dict()
+    init_methods: dict[type[C], Callable[[type[C]], C]] = dict()
     """Dictionary in the format ``{type: function}``.
 
     Used to specify custom functions instead of the standard
@@ -310,8 +310,17 @@ class Prototype:
     init_prefix = 'init_'
     """Prefix for the init methods."""
 
+    def _default_init(self, component_type: type[C]) -> C:
+        """Init component with default constructor.
+
+        Used as default init method.
+        """
+        return component_type()
+
     def __iter__(self):
+        """Yield instantiated components."""
         return (self.init_methods.get(
-            comp_t,
-            getattr(self, f'{self.init_prefix}{comp_t.__name__}', comp_t))()
-            for comp_t in self.component_types)
+                comp_t,
+                getattr(self, f'{self.init_prefix}{comp_t.__name__}',
+                        self._default_init))(comp_t)
+                for comp_t in self.component_types)
