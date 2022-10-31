@@ -483,3 +483,13 @@ class TestProcessorReference:
 
         assert simple_processor not in populated_world.processors
         assert type(controller.simple_processor) is not SimpleProcessor
+
+
+def test_prototype(world):
+    val = 1432
+
+    entity = world.create_entity(*SimplePrototype(val))
+
+    assert world.get_component(entity, SimpleComponent) is not None
+    assert world.get_component(entity, SimpleComponent2) is not None
+    assert world.get_component(entity, SimpleChildComponent) is None

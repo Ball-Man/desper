@@ -242,3 +242,13 @@ SimpleController = namedtuple('SimpleController', ('entity', 'world'))
 class ControllerWithReference(desper.Controller):
     simple_component = desper.ComponentReference(SimpleComponent)
     simple_processor = desper.ProcessorReference(SimpleProcessor)
+
+
+class SimplePrototype(desper.Prototype):
+    component_types = SimpleComponent, SimpleComponent2
+
+    def __init__(self, val):
+        self.val = val
+
+    def init_SimpleComponent(self):
+        return SimpleComponent(self.val)
