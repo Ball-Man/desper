@@ -14,3 +14,4 @@ To keep everything at its core, desper keeps as small as possible its
 set of dependencies.
 """
 from .core import *         # NOQA
+from . import math          # NOQA
