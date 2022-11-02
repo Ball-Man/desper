@@ -10,6 +10,31 @@ import pytest
 # given by fixture to the various test functions
 
 
+def isexception(obj) -> bool:
+    """Return whether the given object is a subclass of ``Exception``."""
+    return type(obj) is type and issubclass(obj, Exception)
+
+
+def assert_tuple(tup):
+    """Test result based on the given tuple.
+
+    Tuple structure is: ``callable, operand1, operand2, ..., result``.
+
+    If ``result`` is an exception type it will be tested whether it is
+    correctly raised.
+    """
+    operator = tup[0]
+    result = tup[-1]
+    operands = tup[1:-1]
+
+    if isexception(result):
+        with pytest.raises(result):
+            operator(*operands)
+        return
+
+    assert operator(*operands) == result
+
+
 @pytest.fixture
 def clamp_test_tuple():
     # Format: val, min, max, result
@@ -52,24 +77,40 @@ def vec2_operators_test_tuple():
     )
 
 
-def assert_tuple(tup):
-    """Test result based on the given tuple.
+def expand_operands_vectors_tuple(tests, exp_value=1):
+    """Augment size of vectors in test tuple by 1.
 
-    Tuple structure is: ``callable, operand1, operand2, ..., result``.
-
-    If ``result`` is an exception type it will be tested whether it is
-    correctly raised.
+    ``exp_value`` is used to specify with what value the vectors
+    are expanded.
     """
-    operator = tup[0]
-    result = tup[-1]
-    operands = tup[1:-1]
+    test_tuples = []
+    for tup in tests:
+        operator = tup[0]
+        result = tup[-1]
+        operands = tup[1:-1]
 
-    if type(result) is type and issubclass(result, Exception):
-        with pytest.raises(result):
-            operator(*operands)
-        return
+        new_operands = [(*op, 1) for op in operands]
 
-    assert operator(*operands) == result
+        # Update results accordingly
+        new_result = result
+        if not isexception(result):         # Eventually update result
+            new_result = (*result, operator(1, 1))
+
+        test_tuples.append((operator, *new_operands, new_result))
+
+    return test_tuples
+
+
+@pytest.fixture
+def vec3_operators_test_tuple(vec2_operators_test_tuple):
+    # Manipulate vec2 tests
+    return expand_operands_vectors_tuple(vec2_operators_test_tuple)
+
+
+@pytest.fixture
+def vec4_operators_test_tuple(vec3_operators_test_tuple):
+    # Manipulate vec3 tests
+    return expand_operands_vectors_tuple(vec3_operators_test_tuple)
 
 
 def test_vec2_operators(vec2_operators_test_tuple, operators_commutative):
@@ -82,3 +123,27 @@ def test_vec2_operators(vec2_operators_test_tuple, operators_commutative):
         # Commutativity
         if op in operators_commutative:
             assert_tuple((op, Vec2(*vec2), Vec2(*vec1), result))
+
+
+def test_vec3_operators(vec3_operators_test_tuple, operators_commutative):
+    for op, vec1, vec2, result in vec3_operators_test_tuple:
+        assert_tuple((op, Vec3(*vec1), Vec3(*vec2), result))
+
+        # Tuple compatibility
+        assert_tuple((op, Vec3(*vec1), vec2, result))
+
+        # Commutativity
+        if op in operators_commutative:
+            assert_tuple((op, Vec3(*vec2), Vec3(*vec1), result))
+
+
+def test_vec4_operators(vec4_operators_test_tuple, operators_commutative):
+    for op, vec1, vec2, result in vec4_operators_test_tuple:
+        assert_tuple((op, Vec4(*vec1), Vec4(*vec2), result))
+
+        # Tuple compatibility
+        assert_tuple((op, Vec4(*vec1), vec2, result))
+
+        # Commutativity
+        if op in operators_commutative:
+            assert_tuple((op, Vec4(*vec2), Vec4(*vec1), result))
