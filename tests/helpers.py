@@ -252,3 +252,20 @@ class SimplePrototype(desper.Prototype):
 
     def init_SimpleComponent(self, cls):
         return cls(self.val)
+
+
+@desper.event_handler('on_position_change', 'on_rotation_change',
+                      'on_scale_change')
+class TransformListener:
+    position = None
+    rotation = None
+    scale = None
+
+    def on_position_change(self, new_pos):
+        self.position = new_pos
+
+    def on_rotation_change(self, new_rot):
+        self.rotation = new_rot
+
+    def on_scale_change(self, new_scale):
+        self.scale = new_scale

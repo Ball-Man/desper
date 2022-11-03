@@ -493,3 +493,17 @@ def test_prototype(world):
     assert world.get_component(entity, SimpleComponent) is not None
     assert world.get_component(entity, SimpleComponent2) is not None
     assert world.get_component(entity, SimpleChildComponent) is None
+
+
+class TestTransform2D:
+
+    def test_position(self, world):
+        transform_listener = TransformListener()
+        transform = desper.Transform2D()
+        transform.add_handler(transform_listener)
+        world.create_entity(transform_listener, transform)
+
+        position_delta = (1, 1)
+        transform.position += position_delta
+
+        transform_listener.position == position_delta
