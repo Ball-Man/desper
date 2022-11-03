@@ -532,3 +532,43 @@ class TestTransform2D:
 
         assert transform_listener.scale == desper.math.Vec2(1, 1) + scale_delta
         assert transform_listener.scale == transform.scale
+
+
+class TestTransform3D:
+
+    def test_position(self, world):
+        transform_listener = TransformListener()
+        transform = desper.Transform3D()
+        transform.add_handler(transform_listener)
+        world.create_entity(transform_listener, transform)
+
+        position_delta = (1, 1, 1)
+        transform.position += position_delta
+
+        assert transform_listener.position == position_delta
+        assert transform_listener.position == transform.position
+
+    def test_rotation(self, world):
+        transform_listener = TransformListener()
+        transform = desper.Transform3D()
+        transform.add_handler(transform_listener)
+        world.create_entity(transform_listener, transform)
+
+        rotation_delta = (42, 42, 42)
+        transform.rotation += rotation_delta
+
+        assert transform_listener.rotation == rotation_delta
+        assert transform_listener.rotation == transform.rotation
+
+    def test_scale(self, world):
+        transform_listener = TransformListener()
+        transform = desper.Transform3D()
+        transform.add_handler(transform_listener)
+        world.create_entity(transform_listener, transform)
+
+        scale_delta = (1, 1, 1)
+        transform.scale += scale_delta
+
+        assert (transform_listener.scale
+                == desper.math.Vec3(1, 1, 1) + scale_delta)
+        assert transform_listener.scale == transform.scale
