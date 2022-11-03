@@ -45,3 +45,12 @@ class Transform2D(EventDispatcher):
     def rotation(self, value):
         self._rotation = value
         self.dispatch(ON_ROTATION_CHANGE_EVENT_NAME, value)
+
+    @property
+    def scale(self):
+        return self._scale
+
+    @scale.setter
+    def scale(self, value):
+        self._scale = value
+        self.dispatch(ON_SCALE_CHANGE_EVENT_NAME, value)

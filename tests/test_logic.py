@@ -518,3 +518,14 @@ class TestTransform2D:
         transform.rotation += rotation_delta
 
         assert transform_listener.rotation == rotation_delta
+
+    def test_scale(self, world):
+        transform_listener = TransformListener()
+        transform = desper.Transform2D()
+        transform.add_handler(transform_listener)
+        world.create_entity(transform_listener, transform)
+
+        scale_delta = (1, 1)
+        transform.scale += scale_delta
+
+        assert transform_listener.scale == desper.math.Vec2(1, 1) + scale_delta
