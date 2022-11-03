@@ -506,4 +506,15 @@ class TestTransform2D:
         position_delta = (1, 1)
         transform.position += position_delta
 
-        transform_listener.position == position_delta
+        assert transform_listener.position == position_delta
+
+    def test_rotation(self, world):
+        transform_listener = TransformListener()
+        transform = desper.Transform2D()
+        transform.add_handler(transform_listener)
+        world.create_entity(transform_listener, transform)
+
+        rotation_delta = 42
+        transform.rotation += rotation_delta
+
+        assert transform_listener.rotation == rotation_delta

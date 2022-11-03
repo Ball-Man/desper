@@ -36,3 +36,12 @@ class Transform2D(EventDispatcher):
     def position(self, value):
         self._position = value
         self.dispatch(ON_POSITION_CHANGE_EVENT_NAME, value)
+
+    @property
+    def rotation(self):
+        return self._rotation
+
+    @rotation.setter
+    def rotation(self, value):
+        self._rotation = value
+        self.dispatch(ON_ROTATION_CHANGE_EVENT_NAME, value)
