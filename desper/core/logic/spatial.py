@@ -24,12 +24,17 @@ class Transform2D(EventDispatcher):
     For all three events a single parameter is supported, which is the
     new property's value.
     """
-    _position: dmath.Vec2 = dmath.Vec2()
-    _rotation: float = 0
-    _scale: dmath.Vec2 = dmath.Vec2(1., 1.)
+
+    def __init__(self, position: dmath.Vec2 = dmath.Vec2(),
+                 rotation: float = 0., scale: dmath.Vec2 = dmath.Vec2(1., 1.)):
+        super().__init__()
+
+        self._position: dmath.Vec2 = position
+        self._rotation: float = rotation
+        self._scale: dmath.Vec2 = scale
 
     @property
-    def position(self):
+    def position(self) -> dmath.Vec2:
         return self._position
 
     @position.setter
@@ -38,7 +43,7 @@ class Transform2D(EventDispatcher):
         self.dispatch(ON_POSITION_CHANGE_EVENT_NAME, value)
 
     @property
-    def rotation(self):
+    def rotation(self) -> float:
         return self._rotation
 
     @rotation.setter
@@ -47,7 +52,7 @@ class Transform2D(EventDispatcher):
         self.dispatch(ON_ROTATION_CHANGE_EVENT_NAME, value)
 
     @property
-    def scale(self):
+    def scale(self) -> dmath.Vec2:
         return self._scale
 
     @scale.setter
