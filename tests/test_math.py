@@ -2,7 +2,8 @@ from context import *
 from desper.math import *
 from helpers import *
 
-from operator import add, mul, truediv, sub
+from operator import add, mul, truediv, sub, matmul
+from itertools import repeat
 
 import pytest
 
@@ -77,11 +78,13 @@ def vec2_operators_test_tuple():
     )
 
 
-def expand_operands_vectors_tuple(tests, exp_value=1):
+def expand_operands_vectors_tuple(tests, exp_value=1, exp_amount=1):
     """Augment size of vectors in test tuple by 1.
 
     ``exp_value`` is used to specify with what value the vectors
     are expanded.
+
+    ``exp_amount`` is used to specify by the "size" of the expansion.
     """
     test_tuples = []
     for tup in tests:
@@ -89,12 +92,13 @@ def expand_operands_vectors_tuple(tests, exp_value=1):
         result = tup[-1]
         operands = tup[1:-1]
 
-        new_operands = [(*op, 1) for op in operands]
+        new_operands = [(*op, *repeat(exp_value, exp_amount))
+                        for op in operands]
 
         # Update results accordingly
         new_result = result
         if not isexception(result):         # Eventually update result
-            new_result = (*result, operator(1, 1))
+            new_result = (*result, *repeat(operator(1, 1), exp_amount))
 
         test_tuples.append((operator, *new_operands, new_result))
 
@@ -111,6 +115,45 @@ def vec3_operators_test_tuple(vec2_operators_test_tuple):
 def vec4_operators_test_tuple(vec3_operators_test_tuple):
     # Manipulate vec3 tests
     return expand_operands_vectors_tuple(vec3_operators_test_tuple)
+
+
+@pytest.fixture
+def mat3_operators_test_tuple():
+    # Format operator, operand1, operand2, result
+    return (
+        (add, (0, 0, 0, 0, 0, 0, 0, 0, 0), (1, 1, 1, 1, 1, 1, 1, 1, 1),
+         (1, 1, 1, 1, 1, 1, 1, 1, 1)),
+        (sub, (1, 1, 1, 1, 1, 1, 1, 1, 1), (2, 2, 2, 2, 2, 2, 2, 2, 2),
+         (-1, -1, -1, -1, -1, -1, -1, -1, -1)),
+        (mul, (0, 0, 0, 0, 0, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0, 0, 0, 0),
+         NotImplementedError),
+        (matmul, (0, 0, 0, 0, 0, 0, 0, 0, 0), (2, 2, 2, 2, 2, 2, 2, 2, 2),
+         (0, 0, 0, 0, 0, 0, 0, 0, 0)),
+        (matmul, (1, 0, 0, 0, 1, 0, 0, 0, 1), (2, 2, 2, 2, 2, 2, 2, 2, 2),
+         (2, 2, 2, 2, 2, 2, 2, 2, 2))
+    )
+
+
+@pytest.fixture
+def mat4_operators_test_tuple():
+    # Format operator, operand1, operand2, result
+    return (
+        (add, (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+         (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+         (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)),
+        (sub, (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+         (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
+         (-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1)),
+        (mul, (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+         (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+         NotImplementedError),
+        (matmul, (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+         (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
+         (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)),
+        (matmul, (1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+         (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
+         (2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2))
+    )
 
 
 def test_vec2_operators(vec2_operators_test_tuple, operators_commutative):
@@ -147,3 +190,27 @@ def test_vec4_operators(vec4_operators_test_tuple, operators_commutative):
         # Commutativity
         if op in operators_commutative:
             assert_tuple((op, Vec4(*vec2), Vec4(*vec1), result))
+
+
+def test_mat3_operators(mat3_operators_test_tuple, operators_commutative):
+    for op, mat1, mat2, result in mat3_operators_test_tuple:
+        assert_tuple((op, Mat3(mat1), Mat3(mat2), result))
+
+        # Tuple compatibility
+        assert_tuple((op, Mat3(mat1), mat2, result))
+
+        # Commutativity
+        if op in operators_commutative:
+            assert_tuple((op, Mat3(mat2), Mat3(mat1), result))
+
+
+def test_mat4_operators(mat4_operators_test_tuple, operators_commutative):
+    for op, mat1, mat2, result in mat4_operators_test_tuple:
+        assert_tuple((op, Mat4(mat1), Mat4(mat2), result))
+
+        # Tuple compatibility
+        assert_tuple((op, Mat4(mat1), mat2, result))
+
+        # Commutativity
+        if op in operators_commutative:
+            assert_tuple((op, Mat4(mat2), Mat4(mat1), result))
