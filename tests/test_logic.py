@@ -507,6 +507,7 @@ class TestTransform2D:
         transform.position += position_delta
 
         assert transform_listener.position == position_delta
+        assert transform_listener.position == transform.position
 
     def test_rotation(self, world):
         transform_listener = TransformListener()
@@ -518,6 +519,7 @@ class TestTransform2D:
         transform.rotation += rotation_delta
 
         assert transform_listener.rotation == rotation_delta
+        assert transform_listener.rotation == transform.rotation
 
     def test_scale(self, world):
         transform_listener = TransformListener()
@@ -529,3 +531,4 @@ class TestTransform2D:
         transform.scale += scale_delta
 
         assert transform_listener.scale == desper.math.Vec2(1, 1) + scale_delta
+        assert transform_listener.scale == transform.scale
