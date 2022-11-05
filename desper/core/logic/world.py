@@ -105,7 +105,8 @@ class World(EventDispatcher):
                         component.__events__[ON_ADD_EVENT_NAME])(
                             entity_id, self)
                 # on_add exists but dispatching is disabled
-                elif not self._dispatch_enabled:
+                elif (ON_ADD_EVENT_NAME in component.__events__
+                        and not self._dispatch_enabled):
                     self.dispatch(ON_SINGLE_DISPATCH_EVENT_NAME,
                                   ON_ADD_EVENT_NAME,
                                   component, entity_id, self)
@@ -151,7 +152,8 @@ class World(EventDispatcher):
                 getattr(component,
                         component.__events__[ON_ADD_EVENT_NAME])(entity, self)
             # on_add exists but dispatching is disabled
-            elif not self._dispatch_enabled:
+            elif (ON_ADD_EVENT_NAME in component.__events__
+                    and not self._dispatch_enabled):
                 self.dispatch(ON_SINGLE_DISPATCH_EVENT_NAME, ON_ADD_EVENT_NAME,
                               component, entity, self)
 
