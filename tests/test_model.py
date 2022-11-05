@@ -254,3 +254,19 @@ class TestStaticResourceMap:
         map_ = SimpleStaticMap(uncached_handle)
 
         assert map_.get('attr') == uncached_handle
+
+
+def test_world_handle():
+    handle = desper.WorldHandle()
+    handle.transform_functions.append(
+        lambda h, w: w.create_entity(OnWorldLoadHandler()))
+
+    assert not handle().dispatch_enabled
+
+    _, handler = handle().get(OnWorldLoadHandler)[0]
+    assert handler.world is None
+    assert handler.handle is None
+
+    handle().dispatch_enabled = True
+    assert handle is handler.handle
+    assert handle() is handler.world

@@ -269,3 +269,13 @@ class TransformListener:
 
     def on_scale_change(self, new_scale):
         self.scale = new_scale
+
+
+@desper.event_handler('on_world_load')
+class OnWorldLoadHandler:
+    world = None
+    handle = None
+
+    def on_world_load(self, handle, world):
+        self.world = world
+        self.handle = handle
