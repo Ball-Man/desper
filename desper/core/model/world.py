@@ -154,9 +154,16 @@ class WorldFromFileTransformer:
             passthrough_dict = data_dict
             initial_dict = copy.deepcopy(passthrough_dict)
 
-            # Only the passthrough dict is supposed to be modifiable
-            transformer(world_handle, world, initial_dict,
-                        passthrough_dict)
+            try:
+                # Only the passthrough dict is supposed to be modifiable
+                transformer(world_handle, world, initial_dict,
+                            passthrough_dict)
+            except Exception as ex:
+                # Relay exceptions and add information
+                ex.msg = (
+                    f"While loading World from file {world_handle.filename}: "
+                    + ex.msg)
+                raise ex
 
 
 @functools.lru_cache()
