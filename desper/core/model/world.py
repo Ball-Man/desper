@@ -190,3 +190,19 @@ def object_from_string(name: str) -> Any:
         comp = getattr(comp, comp_str)
 
     return comp
+
+
+def type_dict_transformer(world_handle: WorldFromFileHandle, world: World,
+                          initial_dict: dict, passthrough_dict: dict):
+    """Dict transformer, use with :class:`WorldFromFileTransformer`.
+
+    Translates string types (key "type") into actual types. Only
+    callables are accepted.
+    """
+    type_object = object_from_string(passthrough_dict['type'])
+
+    if not callable(type_object):
+        raise TypeError(f'Trying to use {type_object} as component type, '
+                        'which is not a callable')
+
+    passthrough_dict['type'] = type_object

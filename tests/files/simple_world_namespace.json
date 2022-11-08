@@ -1,0 +1,33 @@
+{
+    "processors": [
+        {
+            "type": "helpers.SimpleProcessor"
+        }
+    ],
+    "entities": [
+        {
+            "components": [
+                {
+                    "type": "helpers.SimpleComponent",
+                    "args": [
+                        42
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "string id",
+            "components": [
+                {
+                    "type": "helpers.SimpleComponent",
+                    "kwargs": {
+                        "val": 1
+                    }
+                },
+                {
+                    "type": "helpers.SimpleChildComponent"
+                }
+            ]
+        }
+    ]
+}

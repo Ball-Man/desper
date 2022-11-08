@@ -342,3 +342,18 @@ def test_object_from_string():
 
     with pytest.raises(AttributeError):
         desper.object_from_string('collections.xxxx')
+
+
+def test_type_dict_transformer():
+    transformer = desper.WorldFromFileTransformer(
+        [desper.type_dict_transformer])
+
+    world = desper.World()
+    transformer(
+        desper.WorldFromFileHandle(
+            get_filename('files', 'simple_world_namespace.json')),
+        world)
+
+    assert world.get(SimpleComponent)
+    assert world.get(SimpleChildComponent)
+    assert world.get_processor(SimpleProcessor) is not None
