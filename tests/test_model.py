@@ -329,8 +329,8 @@ def test_world_from_file_transformer():
         world)
 
     assert world.get_processor(SimpleProcessor) is not None
-    assert world.get(SimpleComponent) is not None
-    assert world.get(SimpleChildComponent) is not None
+    assert world.get(SimpleComponent)
+    assert world.get(SimpleChildComponent)
 
 
 def test_object_from_string():
