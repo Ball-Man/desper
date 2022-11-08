@@ -50,3 +50,55 @@ class WorldHandle(Handle[World]):
         world.dispatch(ON_WORLD_LOAD_EVENT_NAME, self, world)
 
         return world
+
+
+def populate_world_from_dict(world: World, world_dict: dict):
+    """Populate given world with data from dictionary.
+
+    The given dictionary shall be formatted appropriately. In
+    particular::
+
+        {
+            'processors': [
+                {'type': ProcessorType, 'args': [...], 'kwargs': {...}},
+                ...
+            ],
+            entities: [
+                {
+                    'id': ...,
+                    'components': [
+                        {'type': ComponentType, 'args': [...], 'kwargs' {...}},
+                        ...
+                    ],
+                },
+
+                ...
+            ]
+        }
+
+    Each processor and entity listed in the dictionary will be
+    instatiated by calling their classes (``type``) and by passing them
+    ``args`` and ``kwargs`` accordingly. IDs for entities are optional
+    (if omitted, the default id generator will be used, see
+    :attr:`World.id_generator` and :attr:`World.id_generator_factory`).
+
+    Processors are instantiated and added before entitites.
+    """
+    processors = world_dict.get('processors', [])
+    entities = world_dict.get('entities', [])
+
+    for processor_dict in processors:
+        world.add_processor(
+            processor_dict['type'](*processor_dict.get('args', []),
+                                   **processor_dict.get('kwargs', {})))
+
+    for entity_dict in entities:
+        entity_id = entity_dict.get('id', None)
+
+        components = []
+        for component_dict in entity_dict.get('components', []):
+            args = component_dict.get('args', [])
+            kwargs = component_dict.get('kwargs', {})
+            components.append(component_dict['type'](*args, **kwargs))
+
+        world.create_entity(*components, entity_id=entity_id)

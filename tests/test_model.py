@@ -48,6 +48,40 @@ def resource_map():
     return map_
 
 
+@pytest.fixture
+def world_dict():
+    return {
+        'processors': [
+            {
+                'type': SimpleProcessor
+            }
+        ],
+
+        'entities': [
+            {
+                'components': [
+                    {
+                        'type': SimpleComponent,
+                        'args': [42]
+                    }
+                ],
+            },
+            {
+                'id': 'string id',
+                'components': [
+                    {
+                        'type': SimpleComponent,
+                        'kwargs': {'val': 1}
+                    },
+                    {
+                        'type': SimpleChildComponent
+                    }
+                ]
+            }
+        ]
+    }
+
+
 class TestHandle:
 
     def test_get(self):
@@ -270,3 +304,14 @@ def test_world_handle():
     handle().dispatch_enabled = True
     assert handle is handler.handle
     assert handle() is handler.world
+
+
+def test_populate_world_from_dict(world_dict):
+    world = desper.World()
+
+    desper.populate_world_from_dict(world, {})
+    assert not world.entities
+    assert not world.processors
+
+    desper.populate_world_from_dict(world, world_dict)
+    assert populated_world_dict_verify(world, world_dict)

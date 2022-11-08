@@ -279,3 +279,25 @@ class OnWorldLoadHandler:
     def on_world_load(self, handle, world):
         self.world = world
         self.handle = handle
+
+
+def populated_world_dict_verify(world: desper.World, world_dict: dict) -> bool:
+    """Verifiy that a world was correctly populated through given dict."""
+    processors = world_dict['processors']
+    entities = world_dict['entities']
+
+    for processor_dict in processors:
+        if world.get_processor(processor_dict['type']) is None:
+            return False
+
+    for entity_dict in entities:
+        entity_id = entity_dict.get('id', None)
+        if entity_id is None:
+            continue            # How to test for unspecified ids..?
+
+        for component_dict in entity_dict.get('components', []):
+            if (world.get_component(entity_id, component_dict['type'])
+                    is None):
+                return False
+
+    return True
