@@ -165,6 +165,8 @@ def object_from_string(name: str) -> Any:
 
     The name shall be in the form: ``package.subpackage.etc.obj_name``.
     """
+    assert isinstance(name, str), f'{name} is not a string'
+
     name_split = name.split('.')
 
     # Import the module itertively
@@ -176,6 +178,10 @@ def object_from_string(name: str) -> Any:
         except ModuleNotFoundError:
             i -= 1
             break
+
+    if module is None:
+        raise ModuleNotFoundError(
+            f'No module named {name_split[0]}')
 
     # Import subcomponents from module
     last_index = i + 1

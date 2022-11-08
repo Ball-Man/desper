@@ -336,3 +336,9 @@ def test_world_from_file_transformer():
 def test_object_from_string():
     assert inspect.ismodule(desper.object_from_string('collections'))
     assert inspect.isclass(desper.object_from_string('collections.ChainMap'))
+
+    with pytest.raises(ModuleNotFoundError):
+        desper.object_from_string('xxxx')
+
+    with pytest.raises(AttributeError):
+        desper.object_from_string('collections.xxxx')
