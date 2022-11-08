@@ -1,6 +1,8 @@
 """Default resources for worlds."""
+import copy
+import json
 from collections import deque
-from typing import Callable
+from typing import Callable, Sequence
 
 from desper.core.model import Handle
 from desper.core.logic import World
@@ -102,3 +104,54 @@ def populate_world_from_dict(world: World, world_dict: dict):
             components.append(component_dict['type'](*args, **kwargs))
 
         world.create_entity(*components, entity_id=entity_id)
+
+
+class WorldFromFileHandle(WorldHandle):
+    """Specialized handle for loading worlds from file."""
+
+    def __init__(self, filename: str):
+        super().__init__()
+
+        self.filename = filename
+        self.fromfile_transformer = WorldFromFileTransformer
+        self.transform_functions.append(self.fromfile_transformer)
+
+
+class WorldFromFileTransformer:
+    """Populate a :class:`World` from file.
+
+    Callable to be used as transfomer function in class:`WorldHandle`.
+    """
+
+    def __init__(self,
+                 dict_transformers:
+                 Sequence[Callable[[WorldHandle, World, dict, dict], None]]
+                 = tuple()):
+        self.dict_transformers = dict_transformers
+
+    def __call__(self, world_handle: WorldFromFileHandle, world: World):
+        """Apply processor and component transformers."""
+        with open(world_handle.filename) as fin:
+            world_dict = json.load(fin)
+
+        # Apply transformers on processor dictionaries
+        for processor_dict in world_dict.get('processors', []):
+            self._apply_transformers(world_handle, world, processor_dict)
+
+        # Apply transformers on component dictionaries
+        for entity_dict in world_dict.get('entities', []):
+            for component_dict in entity_dict.get('components', []):
+                self._apply_transformers(world_handle, world, component_dict)
+
+        populate_world_from_dict(world, world_dict)
+
+    def _apply_transformers(self, world_handle: WorldFromFileHandle,
+                            world: World, data_dict: dict):
+        """Apply all transformers on the given world with given data."""
+        for transformer in self.dict_transformers:
+            passthrough_dict = data_dict
+            initial_dict = copy.deepcopy(passthrough_dict)
+
+            # Only the passthrough dict is supposed to be modifiable
+            transformer(world_handle, world, initial_dict,
+                        passthrough_dict)

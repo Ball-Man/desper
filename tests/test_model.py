@@ -315,3 +315,17 @@ def test_populate_world_from_dict(world_dict):
 
     desper.populate_world_from_dict(world, world_dict)
     assert populated_world_dict_verify(world, world_dict)
+
+
+def test_world_from_file_transformer():
+    transformer = desper.WorldFromFileTransformer(
+        [dict_transformer_simple_type])
+
+    world = desper.World()
+    transformer(
+        desper.WorldFromFileHandle(get_filename('files', 'simple_world.json')),
+        world)
+
+    assert world.get_processor(SimpleProcessor) is not None
+    assert world.get(SimpleComponent) is not None
+    assert world.get(SimpleChildComponent) is not None

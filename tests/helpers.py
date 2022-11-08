@@ -1,6 +1,15 @@
 from context import desper
 
+import os.path as pt
 from collections import namedtuple
+
+
+def get_filename(*path: str) -> str:
+    """Get a path with respect to tests folder.
+
+    Use varargs instead of slashes.
+    """
+    return pt.join(pt.dirname(__file__), *path)
 
 
 class SimpleHandler:
@@ -301,3 +310,7 @@ def populated_world_dict_verify(world: desper.World, world_dict: dict) -> bool:
                 return False
 
     return True
+
+
+def dict_transformer_simple_type(handle, world, initial_dict, passthrough_dict):
+    passthrough_dict['type'] = globals()[passthrough_dict['type']]
