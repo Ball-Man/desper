@@ -1,8 +1,10 @@
 """Default resources for worlds."""
 import copy
 import json
+import functools
+import importlib
 from collections import deque
-from typing import Callable, Sequence
+from typing import Callable, Sequence, Any
 
 from desper.core.model import Handle
 from desper.core.logic import World
@@ -155,3 +157,30 @@ class WorldFromFileTransformer:
             # Only the passthrough dict is supposed to be modifiable
             transformer(world_handle, world, initial_dict,
                         passthrough_dict)
+
+
+@functools.lru_cache()
+def object_from_string(name: str) -> Any:
+    """Retrieve object from namespace given its string name.
+
+    The name shall be in the form: ``package.subpackage.etc.obj_name``.
+    """
+    name_split = name.split('.')
+
+    # Import the module itertively
+    module = None
+    for i, _ in enumerate(name_split):
+        try:
+            module = importlib.import_module(
+                '.'.join(name_split[0 : i + 1]))        # NOQA
+        except ModuleNotFoundError:
+            i -= 1
+            break
+
+    # Import subcomponents from module
+    last_index = i + 1
+    comp = module
+    for comp_str in name_split[last_index:]:
+        comp = getattr(comp, comp_str)
+
+    return comp

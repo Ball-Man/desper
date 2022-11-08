@@ -1,6 +1,8 @@
 from context import desper
 from helpers import *
 
+import inspect
+
 import pytest
 
 
@@ -329,3 +331,8 @@ def test_world_from_file_transformer():
     assert world.get_processor(SimpleProcessor) is not None
     assert world.get(SimpleComponent) is not None
     assert world.get(SimpleChildComponent) is not None
+
+
+def test_object_from_string():
+    assert inspect.ismodule(desper.object_from_string('collections'))
+    assert inspect.isclass(desper.object_from_string('collections.ChainMap'))
