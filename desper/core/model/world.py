@@ -235,7 +235,7 @@ def object_dict_transformer(world_handle: WorldFromFileHandle, world: World,
     """
     def map_function(arg):
         if not isinstance(arg, str):        # Skip non-strings
-            return
+            return arg
 
         match = OBJECT_STRING_REGEX.match(arg)
         if match is not None:
@@ -280,7 +280,7 @@ def resource_dict_transformer(world_handle: WorldFromFileHandle, world: World,
 
     def map_function(arg):
         if not isinstance(arg, str):        # Skip non-strings
-            return
+            return arg
 
         match = RESOURCE_STRING_REGEX.match(arg)
         if match is not None:
