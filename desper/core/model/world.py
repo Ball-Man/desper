@@ -240,6 +240,8 @@ def object_dict_transformer(world_handle: WorldFromFileHandle, world: World,
         if match is not None:
             return object_from_string(match.groups()[0])
 
+        return arg
+
     args_list = passthrough_dict.get('args', [])
     kwargs_map = passthrough_dict.get('kwargs', {})
 
