@@ -14,6 +14,7 @@ ON_WORLD_LOAD_EVENT_NAME = 'on_world_load'
 
 OBJECT_STRING_REGEX = re.compile(r'\$\{(.+)\}')
 RESOURCE_STRING_REGEX = re.compile(r'\$res\{(.+)\}')
+HANDLE_STRING_REGEX = re.compile(r'\$handle\{(.+)\}')
 
 
 class WorldHandle(Handle[World]):
@@ -255,12 +256,18 @@ def resource_dict_transformer(world_handle: WorldFromFileHandle, world: World,
 
     Resolve certain string arguments (keys "args" and "kwargs") into
     resources. In particular, strings in the form:
-    ``$res{map_name.etc.resource}``, that is, that match the regex
-    :attr:`RESOURCE_STRING_REGEX`.
+    ``$res{map_name.etc.resource}`` and
+    ``$handle{map_name.etc.resource}``, that is, that match the regex
+    :attr:`RESOURCE_STRING_REGEX` or :attr:`HANDLE_STRING_REGEX`
 
     The given resource string is used to retrive a :class:`Handle` from
-    the root ``ResourceMap``. Root map is resolved through the
-    parent relationship of the handle.
+    the root ``ResourceMap``. If the ``res``form is used, the handle
+    is unpacked and the actual internal resource is retrieved.
+    Otherwise (the ``handle`` for is used), the :class:`Handle` instance
+    is retrieved.
+
+    Root map is resolved through the :attr:`Handle.parent` attribute
+    of the given world handle.
     """
     root_map = world_handle
     while root_map.parent is not None:
@@ -279,6 +286,11 @@ def resource_dict_transformer(world_handle: WorldFromFileHandle, world: World,
         if match is not None:
             res_string = root_map.split_char.join(match.groups()[0].split('.'))
             return root_map[res_string]
+
+        match = HANDLE_STRING_REGEX.match(arg)
+        if match is not None:
+            res_string = root_map.split_char.join(match.groups()[0].split('.'))
+            return root_map.get(res_string)
 
         return arg
 

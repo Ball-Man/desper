@@ -39,7 +39,8 @@
                     }
                 },
                 {
-                    "type": "SimpleChildComponent"
+                    "type": "SimpleChildComponent",
+                    "args": ["$handle{map1.map2.res1}"]
                 }
             ]
         }

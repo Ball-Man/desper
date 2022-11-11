@@ -384,3 +384,6 @@ def test_resource_dict_transformer(resource_map):
 
     assert (world.get_component("string id 2", SimpleComponent).val
             is resource_map['map1/map2/res1'])
+
+    assert (world.get_component("string id 2", SimpleChildComponent).val
+            is resource_map.get('map1/map2/res1'))
