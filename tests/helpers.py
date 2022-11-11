@@ -315,3 +315,23 @@ def populated_world_dict_verify(world: desper.World, world_dict: dict) -> bool:
 def dict_transformer_simple_type(handle, world, initial_dict,
                                  passthrough_dict):
     passthrough_dict['type'] = globals()[passthrough_dict['type']]
+
+
+class CoroutineComponent:
+
+    def __init__(self):
+        self.counter = 0
+        self.counter2 = 0
+
+    def coroutine(self):
+        yield 10
+        self.counter += 1
+
+    def coroutine2(self):
+        while self.counter2 < 100:
+            self.counter2 += 1
+            yield
+
+    def coroutine3(self):
+        while True:
+            yield 3

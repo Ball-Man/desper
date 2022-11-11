@@ -572,3 +572,115 @@ class TestTransform3D:
         assert (transform_listener.scale
                 == desper.math.Vec3(1, 1, 1) + scale_delta)
         assert transform_listener.scale == transform.scale
+
+
+class TestCoroutineProcessor():
+
+    def test_start(self):
+        proc = desper.CoroutineProcessor()
+        component = CoroutineComponent()
+        coroutine1 = proc.start(component.coroutine())
+        coroutine2 = proc.start(component.coroutine2())
+        proc.start(component.coroutine3())
+
+        with pytest.raises(TypeError):
+            proc.start(None)
+
+        for _ in range(5):
+            proc.process(1)
+
+        assert component.counter == 0
+        with pytest.raises(ValueError):
+            proc.start(coroutine1)
+        with pytest.raises(ValueError):
+            proc.start(coroutine2)
+
+        for _ in range(6):
+            proc.process(1)
+
+        assert component.counter == 1
+        assert component.counter2 == 11
+
+        proc.start(coroutine1)
+
+    def test_kill(self):
+        proc = desper.CoroutineProcessor()
+        component = CoroutineComponent()
+        coroutine1 = proc.start(component.coroutine())
+        proc.start(component.coroutine2())
+        coroutine3 = proc.start(component.coroutine3())
+
+        with pytest.raises(TypeError):
+            proc.kill(None)
+
+        for _ in range(5):
+            proc.process(1)
+
+        proc.kill(coroutine3)
+        with pytest.raises(ValueError):
+            proc.kill(coroutine3)
+
+        for _ in range(6):
+            proc.process(1)
+
+        with pytest.raises(ValueError):
+            proc.kill(coroutine1)
+
+        proc.start(coroutine3)
+
+    def test_state(self):
+        proc = desper.CoroutineProcessor()
+        component = CoroutineComponent()
+
+        gen0 = component.coroutine()
+        assert proc.state(gen0) == desper.CoroutineState.TERMINATED
+
+        gen1 = proc.start(component.coroutine())
+        gen2 = proc.start(component.coroutine2())
+
+        proc.process(1)
+
+        assert proc.state(gen1) == desper.CoroutineState.PAUSED
+        assert proc.state(gen2) == desper.CoroutineState.ACTIVE
+
+        for _ in range(10):
+            proc.process(1)
+
+        assert proc.state(gen1) == desper.CoroutineState.TERMINATED
+        assert proc.state(gen2) == desper.CoroutineState.ACTIVE
+
+    def test_timer(self):
+        proc = desper.CoroutineProcessor()
+        component = CoroutineComponent()
+
+        old_coroutine = None
+        for i in range(100):
+            coroutine = proc.start(component.coroutine())
+            for _ in range(6):
+                proc.process(1)
+
+            if old_coroutine is not None:
+                with pytest.raises(ValueError):
+                    proc.kill(old_coroutine)
+
+            with pytest.raises(ValueError):
+                proc.start(coroutine)
+
+            old_coroutine = coroutine
+
+    def test_free(self):
+        coroutine_number = 10
+
+        proc = desper.CoroutineProcessor()
+        component = CoroutineComponent()
+
+        coroutines = [component.coroutine() for i in range(coroutine_number)]
+        for cor in coroutines:
+            proc.start(cor)
+
+        for _ in range(11):
+            proc.process(1)
+
+        for cor in coroutines:
+            with pytest.raises(ValueError):
+                proc.kill(cor)

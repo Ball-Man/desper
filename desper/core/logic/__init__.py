@@ -9,6 +9,7 @@ from typing import (Protocol, runtime_checkable, Optional, Hashable, Generic,
 from desper.core.events import event_handler
 from .world import *        # NOQA
 from .spatial import *      # NOQA
+from .coroutines import *   # NOQA
 
 C = TypeVar('C')
 P = TypeVar('P', bound=Processor)
