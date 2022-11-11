@@ -160,10 +160,11 @@ class WorldFromFileTransformer:
                             passthrough_dict)
             except Exception as ex:
                 # Relay exceptions and add information
-                ex.msg = (
-                    f"While loading World from file {world_handle.filename}: "
-                    + ex.msg)
-                raise ex
+                raise type(ex)(
+                    f"While loading World from file {world_handle.filename}, "
+                    f"\non dictionary: {data_dict}\n"
+                    f"with dict transformer: {transformer}\n"
+                    + str(ex))
 
 
 @functools.lru_cache()
