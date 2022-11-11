@@ -370,3 +370,17 @@ def test_object_dict_transformer():
 
     assert (world.get_component("string id", SimpleComponent).val
             is SimpleComponent)
+
+
+def test_resource_dict_transformer(resource_map):
+    transformer = desper.WorldFromFileTransformer(
+        [dict_transformer_simple_type, desper.resource_dict_transformer])
+
+    world = desper.World()
+    handle = desper.WorldFromFileHandle(
+        get_filename('files', 'simple_world.json'))
+    resource_map['world_handle'] = handle
+    transformer(handle, world)
+
+    assert (world.get_component("string id 2", SimpleComponent).val
+            is resource_map['map1/map2/res1'])

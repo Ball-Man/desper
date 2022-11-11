@@ -28,6 +28,20 @@
                     "type": "SimpleChildComponent"
                 }
             ]
+        },
+        {
+            "id": "string id 2",
+            "components": [
+                {
+                    "type": "SimpleComponent",
+                    "kwargs": {
+                        "val": "$res{map1.map2.res1}"
+                    }
+                },
+                {
+                    "type": "SimpleChildComponent"
+                }
+            ]
         }
     ]
 }

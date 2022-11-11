@@ -7,7 +7,7 @@ import re
 from collections import deque
 from typing import Callable, Sequence, Any
 
-from desper.core.model import Handle
+from desper.core.model import Handle, ResourceMap
 from desper.core.logic import World
 
 ON_WORLD_LOAD_EVENT_NAME = 'on_world_load'
@@ -239,6 +239,46 @@ def object_dict_transformer(world_handle: WorldFromFileHandle, world: World,
         match = OBJECT_STRING_REGEX.match(arg)
         if match is not None:
             return object_from_string(match.groups()[0])
+
+        return arg
+
+    args_list = passthrough_dict.get('args', [])
+    kwargs_map = passthrough_dict.get('kwargs', {})
+
+    args_list[:] = map(map_function, args_list)
+    kwargs_map.update({k: map_function(v) for k, v in kwargs_map.items()})
+
+
+def resource_dict_transformer(world_handle: WorldFromFileHandle, world: World,
+                              initial_dict: dict, passthrough_dict: dict):
+    """Dict transformer, use with :class:`WorldFromFileTransformer`.
+
+    Resolve certain string arguments (keys "args" and "kwargs") into
+    resources. In particular, strings in the form:
+    ``$res{map_name.etc.resource}``, that is, that match the regex
+    :attr:`RESOURCE_STRING_REGEX`.
+
+    The given resource string is used to retrive a :class:`Handle` from
+    the root ``ResourceMap``. Root map is resolved through the
+    parent relationship of the handle.
+    """
+    root_map = world_handle
+    while root_map.parent is not None:
+        root_map = root_map.parent
+
+    if not isinstance(root_map, ResourceMap):
+        raise TypeError('World Handle not connected to a ResourceMap. '
+                        'Unable to retrieve resources through the '
+                        r'$res{} format.')
+
+    def map_function(arg):
+        if not isinstance(arg, str):        # Skip non-strings
+            return
+
+        match = RESOURCE_STRING_REGEX.match(arg)
+        if match is not None:
+            res_string = root_map.split_char.join(match.groups()[0].split('.'))
+            return root_map[res_string]
 
         return arg
 
