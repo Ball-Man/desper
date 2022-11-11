@@ -312,5 +312,6 @@ def populated_world_dict_verify(world: desper.World, world_dict: dict) -> bool:
     return True
 
 
-def dict_transformer_simple_type(handle, world, initial_dict, passthrough_dict):
+def dict_transformer_simple_type(handle, world, initial_dict,
+                                 passthrough_dict):
     passthrough_dict['type'] = globals()[passthrough_dict['type']]
