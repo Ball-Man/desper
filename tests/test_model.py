@@ -357,3 +357,16 @@ def test_type_dict_transformer():
     assert world.get(SimpleComponent)
     assert world.get(SimpleChildComponent)
     assert world.get_processor(SimpleProcessor) is not None
+
+
+def test_object_dict_transformer():
+    transformer = desper.WorldFromFileTransformer(
+        [dict_transformer_simple_type, desper.object_dict_transformer])
+
+    world = desper.World()
+    transformer(
+        desper.WorldFromFileHandle(get_filename('files', 'simple_world.json')),
+        world)
+
+    assert (world.get_component("string id", SimpleComponent).val
+            is SimpleComponent)

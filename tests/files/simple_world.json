@@ -21,7 +21,7 @@
                 {
                     "type": "SimpleComponent",
                     "kwargs": {
-                        "val": 1
+                        "val": "${helpers.SimpleComponent}"
                     }
                 },
                 {

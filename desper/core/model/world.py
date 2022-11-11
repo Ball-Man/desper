@@ -3,6 +3,7 @@ import copy
 import json
 import functools
 import importlib
+import re
 from collections import deque
 from typing import Callable, Sequence, Any
 
@@ -10,6 +11,9 @@ from desper.core.model import Handle
 from desper.core.logic import World
 
 ON_WORLD_LOAD_EVENT_NAME = 'on_world_load'
+
+OBJECT_STRING_REGEX = re.compile(r'\$\{(.+)\}')
+RESOURCE_STRING_REGEX = re.compile(r'\$res\{(.+)\}')
 
 
 class WorldHandle(Handle[World]):
@@ -214,3 +218,30 @@ def type_dict_transformer(world_handle: WorldFromFileHandle, world: World,
                         'which is not a callable')
 
     passthrough_dict['type'] = type_object
+
+
+def object_dict_transformer(world_handle: WorldFromFileHandle, world: World,
+                            initial_dict: dict, passthrough_dict: dict):
+    """Dict transformer, use with :class:`WorldFromFileTransformer`.
+
+    Resolves certain string arguments (keys "args" and "kwargs") into
+    corresponding objects. In particular, strings in the form:
+    ``${package.subpackage.etc.obj_name}``, that is, that match the
+    regex :attr:`OBJECT_STRING_REGEX`.
+
+    Internally, :func:`object_from_string` is used to resolve the
+    object.
+    """
+    def map_function(arg):
+        if not isinstance(arg, str):        # Skip non-strings
+            return
+
+        match = OBJECT_STRING_REGEX.match(arg)
+        if match is not None:
+            return object_from_string(match.groups()[0])
+
+    args_list = passthrough_dict.get('args', [])
+    kwargs_map = passthrough_dict.get('kwargs', {})
+
+    args_list[:] = map(map_function, args_list)
+    kwargs_map.update({k: map_function(v) for k, v in kwargs_map.items()})
