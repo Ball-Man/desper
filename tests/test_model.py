@@ -387,3 +387,24 @@ def test_resource_dict_transformer(resource_map):
 
     assert (world.get_component("string id 2", SimpleChildComponent).val
             is resource_map.get('map1/map2/res1'))
+
+
+def test_world_from_file_handle(resource_map):
+    handle = desper.WorldFromFileHandle(
+        get_filename('files', 'simple_world_namespace.json'))
+    resource_map['world_handle'] = handle
+
+    world = handle()
+
+    print(tuple(map(lambda x: x.val, world.get_components("string id"))))
+
+    assert world.get(SimpleComponent)
+    assert world.get(SimpleChildComponent)
+    assert world.get_processor(SimpleProcessor) is not None
+    assert (world.get_component("string id", SimpleComponent).val
+            is SimpleComponent)
+    assert (world.get_component("string id 2", SimpleComponent).val
+            is resource_map['map1/map2/res1'])
+
+    assert (world.get_component("string id 2", SimpleChildComponent).val
+            is resource_map.get('map1/map2/res1'))

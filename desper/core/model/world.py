@@ -113,17 +113,6 @@ def populate_world_from_dict(world: World, world_dict: dict):
         world.create_entity(*components, entity_id=entity_id)
 
 
-class WorldFromFileHandle(WorldHandle):
-    """Specialized handle for loading worlds from file."""
-
-    def __init__(self, filename: str):
-        super().__init__()
-
-        self.filename = filename
-        self.fromfile_transformer = WorldFromFileTransformer
-        self.transform_functions.append(self.fromfile_transformer)
-
-
 class WorldFromFileTransformer:
     """Populate a :class:`World` from file.
 
@@ -136,7 +125,7 @@ class WorldFromFileTransformer:
                  = tuple()):
         self.dict_transformers = dict_transformers
 
-    def __call__(self, world_handle: WorldFromFileHandle, world: World):
+    def __call__(self, world_handle: 'WorldFromFileHandle', world: World):
         """Apply processor and component transformers."""
         with open(world_handle.filename) as fin:
             world_dict = json.load(fin)
@@ -152,7 +141,7 @@ class WorldFromFileTransformer:
 
         populate_world_from_dict(world, world_dict)
 
-    def _apply_transformers(self, world_handle: WorldFromFileHandle,
+    def _apply_transformers(self, world_handle: 'WorldFromFileHandle',
                             world: World, data_dict: dict):
         """Apply all transformers on the given world with given data."""
         for transformer in self.dict_transformers:
@@ -170,6 +159,30 @@ class WorldFromFileTransformer:
                     f"\non dictionary: {data_dict}\n"
                     f"with dict transformer: {transformer}\n"
                     + str(ex))
+
+
+class WorldFromFileHandle(WorldHandle):
+    """Specialized handle for loading worlds from file.
+
+    By default, a :class:`WorldFromFileTransformer` is added as
+    main transformer, with the following internal (dictionary)
+    transformers:
+    :func:`type_dict_transformer`, :func:`object_dict_transformer` and
+    :func:`resource_dict_transformer`.
+
+    See individual docstrings to get an insight of what feature they
+    represent.
+    """
+
+    def __init__(self, filename: str):
+        super().__init__()
+
+        self.filename = filename
+        self.transform_functions.append(
+            WorldFromFileTransformer([type_dict_transformer,
+                                      object_dict_transformer,
+                                      resource_dict_transformer])
+        )
 
 
 @functools.lru_cache()
