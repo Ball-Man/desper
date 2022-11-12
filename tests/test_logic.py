@@ -579,8 +579,14 @@ class TestCoroutineProcessor():
     def test_start(self):
         proc = desper.CoroutineProcessor()
         component = CoroutineComponent()
-        coroutine1 = proc.start(component.coroutine())
-        coroutine2 = proc.start(component.coroutine2())
+        coroutine1 = component.coroutine()
+        promise1 = proc.start(coroutine1)
+
+        assert promise1.processor is proc
+        assert promise1.generator is coroutine1
+        assert promise1.value is None
+
+        coroutine2 = proc.start(component.coroutine2()).generator
         proc.start(component.coroutine3())
 
         with pytest.raises(TypeError):
@@ -599,6 +605,7 @@ class TestCoroutineProcessor():
             proc.process(1)
 
         assert component.counter == 1
+        assert promise1.value == 10
         assert component.counter2 == 11
 
         proc.start(coroutine1)
@@ -606,9 +613,9 @@ class TestCoroutineProcessor():
     def test_kill(self):
         proc = desper.CoroutineProcessor()
         component = CoroutineComponent()
-        coroutine1 = proc.start(component.coroutine())
+        coroutine1 = proc.start(component.coroutine()).generator
         proc.start(component.coroutine2())
-        coroutine3 = proc.start(component.coroutine3())
+        coroutine3 = proc.start(component.coroutine3()).generator
 
         with pytest.raises(TypeError):
             proc.kill(None)
@@ -635,8 +642,8 @@ class TestCoroutineProcessor():
         gen0 = component.coroutine()
         assert proc.state(gen0) == desper.CoroutineState.TERMINATED
 
-        gen1 = proc.start(component.coroutine())
-        gen2 = proc.start(component.coroutine2())
+        gen1 = proc.start(component.coroutine()).generator
+        gen2 = proc.start(component.coroutine2()).generator
 
         proc.process(1)
 
@@ -655,7 +662,7 @@ class TestCoroutineProcessor():
 
         old_coroutine = None
         for i in range(100):
-            coroutine = proc.start(component.coroutine())
+            coroutine = proc.start(component.coroutine()).generator
             for _ in range(6):
                 proc.process(1)
 

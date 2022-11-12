@@ -3,10 +3,28 @@ import inspect
 import enum
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Generator
+from typing import Generator, Any
 import heapq
 
 from desper.core.logic import Processor
+
+
+class CoroutinePromise:
+    """Monitor, manage a coroutine and retrieve return its value."""
+
+    def __init__(self, generator: Generator, processor: 'CoroutineProcessor',
+                 value: Any = None):
+        self._generator = generator
+        self._processor = processor
+        self.value = value
+
+    @property
+    def generator(self) -> Generator:
+        return self._generator
+
+    @property
+    def processor(self) -> 'CoroutineProcessor':
+        return self._processor
 
 
 @dataclass(order=True)
@@ -84,9 +102,10 @@ class CoroutineProcessor(Processor):
         self._active_queue = deque((None,))
         self._wait_queue = []       # Heap
         self._kill_queue = set()    # Coroutines waiting to be killed
+        self._promises = {}     # Dict format: {generator: CoroutinePromise}
         self._timer = 0.
 
-    def start(self, generator: Generator):
+    def start(self, generator: Generator) -> CoroutinePromise:
         """Add and start a coroutine, represented by a generator object.
 
         :param generator: The generator object representing the
@@ -102,7 +121,9 @@ class CoroutineProcessor(Processor):
 
         self._active_queue.append(generator)
         self._generators[generator] = None
-        return generator
+        promise = CoroutinePromise(generator, self)
+        self._promises[generator] = promise
+        return promise
 
     def kill(self, generator: Generator):
         """Stop and remove a coroutine, given the generator.
@@ -170,6 +191,7 @@ class CoroutineProcessor(Processor):
                 if gen in self._kill_queue:
                     del self._generators[gen]
                     self._kill_queue.discard(gen)
+                    del self._promises[gen]
                 else:
                     self._active_queue.append(gen)
                     self._generators[gen] = None
@@ -193,13 +215,16 @@ class CoroutineProcessor(Processor):
                 del self._generators[gen]
                 self._kill_queue.discard(gen)
                 self._active_queue.popleft()
+                del self._promises[gen]
                 continue        # Do not rotate if last item was popped
 
             try:
                 wait = next(self._active_queue[0])  # Execute
-            except StopIteration:
+            except StopIteration as exception:
                 gen = self._active_queue.popleft()
                 del self._generators[gen]
+                self._promises[gen].value = exception.value
+                del self._promises[gen]
                 continue        # Do not rotate if last item was popped
 
             # Put in wait queue if requested

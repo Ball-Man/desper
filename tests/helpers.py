@@ -326,6 +326,7 @@ class CoroutineComponent:
     def coroutine(self):
         yield 10
         self.counter += 1
+        return 10
 
     def coroutine2(self):
         while self.counter2 < 100:
