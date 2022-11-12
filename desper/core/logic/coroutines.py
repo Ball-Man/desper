@@ -83,6 +83,7 @@ class CoroutineProcessor(Processor):
         # _WaitingGenerator is None if the said generator isn't waiting.
         self._active_queue = deque((None,))
         self._wait_queue = []       # Heap
+        self._kill_queue = set()    # Coroutines waiting to be killed
         self._timer = 0.
 
     def start(self, generator: Generator):
@@ -108,12 +109,16 @@ class CoroutineProcessor(Processor):
 
         Paused coroutines can be killed too.
 
+        Internally, the coroutine is not killed immediately. The
+        generator is simply marked so that it shall not be executed
+        again.
+
         :param generator: The generator object representing the
                           coroutine.
         :return: The killed generator object.
         :raises TypeError: If ``generator`` isn't a generator object.
         :raises ValueError: If ``generator`` isn't being executed (has
-                            already been killed or terminated it's
+                            already been killed or terminated its
                             execution).
         """
         if not inspect.isgenerator(generator):
@@ -121,17 +126,10 @@ class CoroutineProcessor(Processor):
 
         # Sentinel is 0 since None is a valid element in the dictionary
         waiting_gen = self._generators.get(generator, 0)
-        if waiting_gen == 0:
+        if waiting_gen == 0 or generator in self._kill_queue:
             raise ValueError('Generator not found')
 
-        # Check in which queue the generator currently is
-        if waiting_gen is None:
-            self._active_queue.remove(generator)
-        else:
-            self._wait_queue.remove(waiting_gen)
-        del self._generators[generator]
-
-        return generator
+        self._kill_queue.add(generator)
 
     def state(self, generator: Generator):
         """Get the current state of the given coroutine.
@@ -146,7 +144,7 @@ class CoroutineProcessor(Processor):
             raise TypeError('Only generator objects are accepted')
 
         waiting_gen = self._generators.get(generator, 0)
-        if waiting_gen == 0:
+        if waiting_gen == 0 or generator in self._kill_queue:
             return CoroutineState.TERMINATED
 
         # Check in which queue the generator currently is
@@ -167,8 +165,14 @@ class CoroutineProcessor(Processor):
             while (len(self._wait_queue)
                    and self._timer >= self._wait_queue[0].wait_time):
                 gen = heapq.heappop(self._wait_queue).generator
-                self._active_queue.append(gen)
-                self._generators[gen] = None
+
+                # If a kill was pending, just drop the coroutine
+                if gen in self._kill_queue:
+                    del self._generators[gen]
+                    self._kill_queue.discard(gen)
+                else:
+                    self._active_queue.append(gen)
+                    self._generators[gen] = None
 
             if len(self._wait_queue) == 0:
                 self._timer = 0
@@ -183,6 +187,13 @@ class CoroutineProcessor(Processor):
         # Rotate and execute the coroutine (generator)
         while self._active_queue[0] is not None:
             gen = self._active_queue[0]
+
+            # If a kill is pending, don't execute and drop
+            if gen in self._kill_queue:
+                del self._generators[gen]
+                self._kill_queue.discard(gen)
+                self._active_queue.popleft()
+                continue        # Do not rotate if last item was popped
 
             try:
                 wait = next(self._active_queue[0])  # Execute
