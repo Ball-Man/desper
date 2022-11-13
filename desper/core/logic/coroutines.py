@@ -136,7 +136,6 @@ class CoroutineProcessor(Processor):
 
         :param generator: The generator object representing the
                           coroutine.
-        :return: The killed generator object.
         :raises TypeError: If ``generator`` isn't a generator object.
         :raises ValueError: If ``generator`` isn't being executed (has
                             already been killed or terminated its
