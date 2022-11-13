@@ -4,7 +4,7 @@ import enum
 from collections import deque
 from dataclasses import dataclass, field
 import functools
-from typing import Generator, Any, Callable, ParamSpec, TypeVar
+from typing import Generator, Callable, ParamSpec, TypeVar, Generic
 import heapq
 
 import desper
@@ -21,14 +21,14 @@ class CoroutineState(enum.IntEnum):
     ACTIVE = 2
 
 
-class CoroutinePromise:
+class CoroutinePromise(Generic[T]):
     """Monitor, manage a coroutine and retrieve return its value."""
 
     def __init__(self, generator: Generator, processor: 'CoroutineProcessor',
-                 value: Any = None):
+                 value: T = None):
         self._generator = generator
         self._processor = processor
-        self.value = value
+        self.value: T = value
 
     @property
     def generator(self) -> Generator:
@@ -251,11 +251,12 @@ class CoroutineProcessor(Processor):
 
 
 def coroutine(function: Callable[Params, T]
-              ) -> Callable[Params, CoroutinePromise]:
+              ) -> Callable[Params, CoroutinePromise[T]]:
     """Decorator: easy coroutine startup.
 
     The wrapped function must be a generator function. As a result,
-    calling it instantly starts it as a coroutine.
+    calling it instantly starts it as a coroutine, returning the
+    associated :class:`CoroutinePromise`.
 
     Requires a :class:`CoroutineProcessor` in the target :class:`World`.
     By default, current world from the main loop
