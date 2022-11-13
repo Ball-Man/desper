@@ -735,3 +735,35 @@ class TestCoroutinePromise:
 
         assert promise.state == processor.state(promise.generator)
         assert promise.value == 10
+
+
+def test_coroutine_decorator(world):
+    world.add_processor(desper.CoroutineProcessor())
+
+    @desper.coroutine
+    def coroutine(world=world):
+        yield
+
+    promise = coroutine()
+
+    assert promise.state == desper.CoroutineState.ACTIVE
+
+
+def test_coroutine_decorator_default_loop():
+    handle = SimpleWorldHandle()
+    handle().add_processor(desper.CoroutineProcessor())
+    desper.default_loop.switch(handle)
+
+    @desper.coroutine
+    def coroutine():
+        yield
+
+    promise = coroutine()
+    assert promise.state == desper.CoroutineState.ACTIVE
+
+    @desper.coroutine
+    def coroutine(world=None):
+        yield
+
+    promise = coroutine()
+    assert promise.state == desper.CoroutineState.ACTIVE

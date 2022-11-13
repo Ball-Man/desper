@@ -3,10 +3,15 @@ import inspect
 import enum
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Generator, Any
+import functools
+from typing import Generator, Any, Callable, ParamSpec, TypeVar
 import heapq
 
-from desper.core.logic import Processor
+import desper
+from desper.core.logic import Processor, World
+
+Params = ParamSpec('Params')
+T = TypeVar('T')
 
 
 class CoroutineState(enum.IntEnum):
@@ -243,3 +248,46 @@ class CoroutineProcessor(Processor):
                 self._active_queue.popleft()
             else:       # Do not rotate if last item was popped
                 self._active_queue.rotate(-1)
+
+
+def coroutine(function: Callable[Params, T]
+              ) -> Callable[Params, CoroutinePromise]:
+    """Decorator: easy coroutine startup.
+
+    The wrapped function must be a generator function. As a result,
+    calling it instantly starts it as a coroutine.
+
+    Requires a :class:`CoroutineProcessor` in the target :class:`World`.
+    By default, current world from the main loop
+    (:attr:`desper.default_loop`) is used.
+    A custom world can be targeted by specifying an argument named
+    ``world`` in the wrapped function. ``None`` values for such argument
+    will fall back on the default loop.
+    """
+    signature = inspect.signature(function)
+
+    @functools.wraps(function)
+    def wrapper(*args, **kwargs):
+        bound_args = signature.bind(*args, **kwargs)
+        bound_args.apply_defaults()
+
+        world: World = bound_args.arguments.get(
+            'world', )
+
+        if world is None:
+            world = desper.default_loop.current_world
+
+        assert world is not None, (
+            'Could not find a viable World to start the coroutine. '
+            'Consider setting up the default loop (desper.default_loop) '
+            'or providing a world manually, adding the keyword argument '
+            '"world" to the wrapped function.')
+
+        processor = world.get_processor(CoroutineProcessor)
+
+        assert processor is not None, (
+            'A CoroutineProcessor is necessary to start a coroutine')
+
+        return processor.start(function(*bound_args.args, **bound_args.kwargs))
+
+    return wrapper
