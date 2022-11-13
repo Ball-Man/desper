@@ -691,3 +691,47 @@ class TestCoroutineProcessor():
         for cor in coroutines:
             with pytest.raises(ValueError):
                 proc.kill(cor)
+
+
+class TestCoroutinePromise:
+
+    def generator(self):
+        yield 1
+        return 10
+
+    def test_init(self):
+        generator = self.generator()
+        processor = desper.CoroutineProcessor()
+        value = 100
+        promise = desper.CoroutinePromise(generator, processor, value)
+
+        assert promise.generator is generator
+        assert promise.processor is processor
+        assert promise.value is value
+
+    def test_kill(self):
+        processor = desper.CoroutineProcessor()
+        generator = self.generator()
+
+        promise = processor.start(generator)
+
+        promise.kill()
+        assert (processor.state(promise.generator)
+                == desper.CoroutineState.TERMINATED)
+
+    def test_state(self):
+        processor = desper.CoroutineProcessor()
+        generator = self.generator()
+
+        promise = processor.start(generator)
+
+        assert promise.state == processor.state(promise.generator)
+
+        processor.process(1)
+
+        assert promise.state == processor.state(promise.generator)
+
+        processor.process(1)
+
+        assert promise.state == processor.state(promise.generator)
+        assert promise.value == 10

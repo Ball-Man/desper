@@ -9,6 +9,13 @@ import heapq
 from desper.core.logic import Processor
 
 
+class CoroutineState(enum.IntEnum):
+    """Enumeration of possible states for a coroutine."""
+    TERMINATED = 0
+    PAUSED = 1
+    ACTIVE = 2
+
+
 class CoroutinePromise:
     """Monitor, manage a coroutine and retrieve return its value."""
 
@@ -26,6 +33,15 @@ class CoroutinePromise:
     def processor(self) -> 'CoroutineProcessor':
         return self._processor
 
+    @property
+    def state(self) -> CoroutineState:
+        """Get state of the coroutine."""
+        return self._processor.state(self._generator)
+
+    def kill(self):
+        """Kill coroutine."""
+        self._processor.kill(self._generator)
+
 
 @dataclass(order=True)
 class _WaitingGenerator:
@@ -36,13 +52,6 @@ class _WaitingGenerator:
     """
     generator: Generator = field(compare=False)
     wait_time: float
-
-
-class CoroutineState(enum.IntEnum):
-    """Enumeration of possible states for a coroutine."""
-    TERMINATED = 0
-    PAUSED = 1
-    ACTIVE = 2
 
 
 class CoroutineProcessor(Processor):
@@ -110,7 +119,7 @@ class CoroutineProcessor(Processor):
 
         :param generator: The generator object representing the
                           coroutine.
-        :return: The started generator object.
+        :return: A promise object for the started coroutine.
         :raises TypeError: If `generator` isn't a generator object.
         :raises ValueError: If `generator` is already being executed.
         """
