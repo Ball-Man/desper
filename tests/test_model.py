@@ -408,3 +408,11 @@ def test_world_from_file_handle(resource_map):
 
     assert (world.get_component("string id 2", SimpleChildComponent).val
             is resource_map.get('map1/map2/res1'))
+
+
+def test_project_path():
+    components = 'a', 'b', 'c'
+
+    assert desper.project_path(*components).endswith(pt.join(*components))
+
+    desper.project_path()
