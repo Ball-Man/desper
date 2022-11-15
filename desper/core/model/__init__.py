@@ -48,10 +48,21 @@ class DirectoryResourcePopulator:
 
     Instances of this populator are callables which accept a map and
     populate it with the resources gathered from the file system.
+
+    ``nest_on_conflict`` can be used to enable/disable nesting of
+    conflicting handles. When trying to place a new :class:`Handle` in
+    the resource map, it is possible that a resource for the same key
+    already exists.
+    If nesting is enabled, both the new and the old
+    handles are kept in memory. The new one will become the default
+    value, but it will always be possible to retrieve the shadowed one.
+    If nesting is disabled, only the new resource is kept.
     """
 
-    def __init__(self, root: str = project_path('resources')):
+    def __init__(self, root: str = project_path('resources'),
+                 nest_on_conflict: bool = True):
         self.root: str = root
+        self.nest_on_conflict = nest_on_conflict
         self.rules: list[DirectoryPopulatorRule] = []
 
     def add_rule(self, relative_path: str, handle_type: Callable[..., Handle],
@@ -87,9 +98,6 @@ class DirectoryResourcePopulator:
           directory name.
 
         TODO: Manage separately rules for subdirectories
-        TODO: Add layers to the resource map when encountering a
-              conflicting handle (or add parameter to handle such
-              situation)
         """
         for rule in self.rules:
             full_dir_path = pt.join(self.root, rule.directory_path)
@@ -112,9 +120,19 @@ class DirectoryResourcePopulator:
                     pt.sep, ResourceMap.split_char)
 
                 new_resource = None
-                if pt.isdir(full_file_path):
+                if (pt.isdir(full_file_path)
+                        and resource_map.get(resource_string) is None):
                     new_resource = ResourceMap()
                 elif pt.isfile(full_file_path):
                     new_resource = rule.instantiate(full_file_path)
 
-                resource_map[resource_string] = new_resource
+                    # Add scope level if a conflicting handle is encountered?
+                    if self.nest_on_conflict:
+                        handle = resource_map.get(resource_string)
+                        if (handle is not None
+                            and handle is handle.parent.handles.maps[0].get(
+                                handle.key)):
+                            handle.parent.handles.maps.insert(0, {})
+
+                if new_resource is not None:
+                    resource_map[resource_string] = new_resource

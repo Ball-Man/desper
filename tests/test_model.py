@@ -420,9 +420,9 @@ def test_project_path():
 
 class TestDirectoryResourcePopulator:
 
-    def test_add_rule(self):
+    def test_add_rule(self, nest=True):
         populator = desper.DirectoryResourcePopulator(
-            get_filename('files', 'fake_project'))
+            get_filename('files', 'fake_project'), nest_on_conflict=nest)
 
         populator.add_rule('dir', FilenameHandle, 'args', kwarg='kwarg')
         populator.add_rule('dir2', lambda filename: SimpleWorldHandle())
@@ -450,3 +450,21 @@ class TestDirectoryResourcePopulator:
             'file2', ('args',), {'kwarg': 'kwarg'})
 
         assert resource_map.get('dir2') is None
+
+    def test_call_conflicting_nest(self, resource_map):
+        populator = self.test_add_rule(nest=True)
+
+        populator(resource_map)
+        populator(resource_map)
+
+        assert len(resource_map['dir'].handles.maps) == 2
+        for map_ in resource_map['dir'].handles.maps:
+            assert 'file1' in map_ and isinstance(map_['file1'], desper.Handle)
+
+    def test_call_conflicting_no_nest(self, resource_map):
+        populator = self.test_add_rule(nest=False)
+
+        populator(resource_map)
+        populator(resource_map)
+
+        assert len(resource_map['dir'].handles.maps) == 1
