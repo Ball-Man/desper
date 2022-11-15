@@ -416,3 +416,39 @@ def test_project_path():
     assert desper.project_path(*components).endswith(pt.join(*components))
 
     desper.project_path()
+
+
+class TestDirectoryResourcePopulator:
+
+    def test_add_rule(self):
+        populator = desper.DirectoryResourcePopulator(
+            get_filename('files', 'fake_project'))
+
+        populator.add_rule('dir', FilenameHandle, 'args', kwarg='kwarg')
+        populator.add_rule('dir2', lambda filename: SimpleWorldHandle())
+
+        assert populator.rules[0].directory_path == 'dir'
+        assert populator.rules[0].handle_type is FilenameHandle
+        assert populator.rules[0].args == ('args',)
+        assert populator.rules[0].kwargs == {'kwarg': 'kwarg'}
+
+        assert populator.rules[1].directory_path == 'dir2'
+        assert populator.rules[1].args == ()
+        assert populator.rules[1].kwargs == {}
+
+        return populator
+
+    def test_call(self, resource_map):
+        populator = self.test_add_rule()
+
+        populator(resource_map)
+
+        print(resource_map.maps)
+
+        assert resource_map['dir/file1'].val == (
+            'file1', ('args',), {'kwarg': 'kwarg'})
+
+        assert resource_map['dir/subdir/file2'].val == (
+            'file2', ('args',), {'kwarg': 'kwarg'})
+
+        assert resource_map.get('dir2') is None

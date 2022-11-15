@@ -221,6 +221,18 @@ class QuitFunctionWorldHandle(desper.Handle[desper.World]):
         return world
 
 
+class FilenameHandle(desper.Handle[SimpleComponent]):
+
+    def __init__(self, filename, *args, **kwargs):
+        self.filename = filename
+        self.args = args
+        self.kwargs = kwargs
+
+    def load(self) -> SimpleComponent:
+        return SimpleComponent((pt.basename(self.filename),
+                                self.args, self.kwargs))
+
+
 def is_sorted(seq, key=None) -> bool:
     """Check if the given iterable is sorted (uses lte comparison)."""
     if not seq:
