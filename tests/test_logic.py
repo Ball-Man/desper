@@ -767,3 +767,14 @@ def test_coroutine_decorator_default_loop():
 
     promise = coroutine()
     assert promise.state == desper.CoroutineState.ACTIVE
+
+
+def test_on_update_processor(world):
+    processor = desper.OnUpdateProcessor()
+
+    world.add_processor(processor)
+    component = OnUpdateComponent()
+    world.create_entity(component)
+
+    processor.process(1)
+    assert component.dt == 1

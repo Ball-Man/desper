@@ -348,3 +348,11 @@ class CoroutineComponent:
     def coroutine3(self):
         while True:
             yield 3
+
+
+@desper.event_handler('on_update')
+class OnUpdateComponent:
+    dt = None
+
+    def on_update(self, dt):
+        self.dt = dt

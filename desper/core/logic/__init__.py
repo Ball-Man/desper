@@ -4,7 +4,7 @@ Entities are collections of components (Python objects) catalogued in
 centralized :class:`World`s.
 """
 from typing import (Protocol, runtime_checkable, Optional, Hashable, Generic,
-                    Callable)
+                    Callable, SupportsFloat)
 
 from desper.core.events import event_handler
 from .world import *        # NOQA
@@ -13,6 +13,8 @@ from .coroutines import *   # NOQA
 
 C = TypeVar('C')
 P = TypeVar('P', bound=Processor)
+
+ON_UPDATE_EVENT_NAME = 'on_update'
 
 
 @runtime_checkable
@@ -326,3 +328,14 @@ class Prototype:
                 getattr(self, f'{self.init_prefix}{comp_t.__name__}',
                         self._default_init))(comp_t)
                 for comp_t in self.component_types)
+
+
+class OnUpdateProcessor(Processor):
+    """Dispatch :attr:`ON_UPDATE_EVENT_NAME` event at each frame.
+
+    The event carries one decimal parameter, the delta time.
+    """
+
+    def process(self, dt: SupportsFloat = 1):
+        """Dispatch event."""
+        self.world.dispatch(ON_UPDATE_EVENT_NAME, dt)
