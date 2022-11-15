@@ -443,8 +443,6 @@ class TestDirectoryResourcePopulator:
 
         populator(resource_map)
 
-        print(resource_map.maps)
-
         assert resource_map['dir/file1'].val == (
             'file1', ('args',), {'kwarg': 'kwarg'})
 
