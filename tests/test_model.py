@@ -451,6 +451,22 @@ class TestDirectoryResourcePopulator:
 
         assert resource_map.get('dir2') is None
 
+    def test_call_root_override(self, resource_map):
+        populator = self.test_add_rule()
+
+        populator(resource_map, root=get_filename('files', 'fake_project2'))
+
+        assert resource_map['dir/file1'].val == (
+            'file1', ('args',), {'kwarg': 'kwarg'})
+
+        assert resource_map['dir/subdir/file2'].val == (
+            'file2', ('args',), {'kwarg': 'kwarg'})
+
+        assert resource_map['dir/project2'].val == (
+            'project2', ('args',), {'kwarg': 'kwarg'})
+
+        assert resource_map.get('dir2') is None
+
     def test_call_conflicting_nest(self, resource_map):
         populator = self.test_add_rule(nest=True)
 
@@ -461,10 +477,28 @@ class TestDirectoryResourcePopulator:
         for map_ in resource_map['dir'].handles.maps:
             assert 'file1' in map_ and isinstance(map_['file1'], desper.Handle)
 
+    def test_call_conflicting_nest_override(self, resource_map):
+        populator = self.test_add_rule(nest=False)
+
+        populator(resource_map, nest_on_conflict=True)
+        populator(resource_map, nest_on_conflict=True)
+
+        assert len(resource_map['dir'].handles.maps) == 2
+        for map_ in resource_map['dir'].handles.maps:
+            assert 'file1' in map_ and isinstance(map_['file1'], desper.Handle)
+
     def test_call_conflicting_no_nest(self, resource_map):
         populator = self.test_add_rule(nest=False)
 
         populator(resource_map)
         populator(resource_map)
+
+        assert len(resource_map['dir'].handles.maps) == 1
+
+    def test_call_conflicting_no_nest_override(self, resource_map):
+        populator = self.test_add_rule(nest=True)
+
+        populator(resource_map, nest_on_conflict=False)
+        populator(resource_map, nest_on_conflict=False)
 
         assert len(resource_map['dir'].handles.maps) == 1

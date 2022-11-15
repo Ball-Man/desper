@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import glob
 import importlib
 import os.path as pt
-from typing import Sequence, Mapping, AnyStr, Callable
+from typing import Sequence, Mapping, AnyStr, Callable, Optional
 
 from .tree import *             # NOQA
 from .world import *            # NOQA
@@ -83,7 +83,8 @@ class DirectoryResourcePopulator:
         self.rules.append(
             DirectoryPopulatorRule(relative_path, handle_type, args, kwargs))
 
-    def __call__(self, resource_map: ResourceMap):
+    def __call__(self, resource_map: ResourceMap, root: Optional[str] = None,
+                 nest_on_conflict: Optional[bool] = None):
         """Apply populator on given map.
 
         Based on given rules (specified with :meth:`add_rule` and stored
@@ -99,8 +100,14 @@ class DirectoryResourcePopulator:
 
         TODO: Manage separately rules for subdirectories
         """
+        if root is None:
+            root = self.root
+
+        if nest_on_conflict is None:
+            nest_on_conflict = self.nest_on_conflict
+
         for rule in self.rules:
-            full_dir_path = pt.join(self.root, rule.directory_path)
+            full_dir_path = pt.join(root, rule.directory_path)
 
             # Silently skip if non-existing, but get angry if it exists
             # and is not a directory
@@ -115,7 +122,7 @@ class DirectoryResourcePopulator:
             for full_file_path in glob.glob(pt.join(full_dir_path, '**'),
                                             recursive=True):
                 # Prepare some paths for map insertion
-                relpath = pt.relpath(full_file_path, self.root)
+                relpath = pt.relpath(full_file_path, root)
                 resource_string = pt.normpath(relpath).replace(
                     pt.sep, ResourceMap.split_char)
 
@@ -127,7 +134,7 @@ class DirectoryResourcePopulator:
                     new_resource = rule.instantiate(full_file_path)
 
                     # Add scope level if a conflicting handle is encountered?
-                    if self.nest_on_conflict:
+                    if nest_on_conflict:
                         handle = resource_map.get(resource_string)
                         if (handle is not None
                             and handle is handle.parent.handles.maps[0].get(
