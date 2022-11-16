@@ -1,0 +1,48 @@
+{
+    "processors": [
+        {
+            "type": "SimpleProcessor"
+        }
+    ],
+    "entities": [
+        {
+            "components": [
+                {
+                    "type": "SimpleComponent",
+                    "args": [
+                        42
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "string id",
+            "components": [
+                {
+                    "type": "SimpleComponent",
+                    "kwargs": {
+                        "val": "${helpers.SimpleComponent}"
+                    }
+                },
+                {
+                    "type": "SimpleChildComponent"
+                }
+            ]
+        },
+        {
+            "id": "string id 2",
+            "components": [
+                {
+                    "type": "SimpleComponent",
+                    "kwargs": {
+                        "val": "$res{map1.map2.res1}"
+                    }
+                },
+                {
+                    "type": "SimpleChildComponent",
+                    "args": ["$handle{map1.map2.res1}"]
+                }
+            ]
+        }
+    ]
+}
