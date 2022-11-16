@@ -8,7 +8,7 @@ from collections import deque
 from typing import Callable, Sequence, Any
 
 from desper.core.model import Handle, ResourceMap
-from desper.core.logic import World
+from desper.core.logic import World, OnUpdateProcessor, CoroutineProcessor
 
 ON_WORLD_LOAD_EVENT_NAME = 'on_world_load'
 
@@ -161,6 +161,19 @@ class WorldFromFileTransformer:
                     + str(ex))
 
 
+def default_processors_transformer(world_handle: WorldHandle, world: World):
+    """World transformer, uses with :class:`WorldHandle`.
+
+    Populate ``world`` with the default utility processors.
+    In particular:
+
+    - :class:`OnUpdateProcessor`
+    - :class:`CoroutineProcessor`
+    """
+    world.add_processor(OnUpdateProcessor())
+    world.add_processor(CoroutineProcessor())
+
+
 class WorldFromFileHandle(WorldHandle):
     """Specialized handle for loading worlds from file.
 
@@ -178,11 +191,12 @@ class WorldFromFileHandle(WorldHandle):
         super().__init__()
 
         self.filename = filename
-        self.transform_functions.append(
+        self.transform_functions.extend((
+            default_processors_transformer,
             WorldFromFileTransformer([type_dict_transformer,
                                       object_dict_transformer,
                                       resource_dict_transformer])
-        )
+        ))
 
 
 @functools.lru_cache()

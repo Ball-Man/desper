@@ -389,6 +389,16 @@ def test_resource_dict_transformer(resource_map):
             is resource_map.get('map1/map2/res1'))
 
 
+def test_default_processors_transformer():
+    handle = desper.WorldHandle()
+    world = handle()
+
+    desper.default_processors_transformer(handle, world)
+
+    assert world.get_processor(desper.OnUpdateProcessor) is not None
+    assert world.get_processor(desper.CoroutineProcessor) is not None
+
+
 def test_world_from_file_handle(resource_map):
     handle = desper.WorldFromFileHandle(
         get_filename('files', 'simple_world_namespace.json'))
@@ -408,6 +418,9 @@ def test_world_from_file_handle(resource_map):
 
     assert (world.get_component("string id 2", SimpleChildComponent).val
             is resource_map.get('map1/map2/res1'))
+
+    assert world.get_processor(desper.OnUpdateProcessor) is not None
+    assert world.get_processor(desper.CoroutineProcessor) is not None
 
 
 def test_project_path():
