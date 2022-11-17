@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 README = open('README.md').read()
 
@@ -15,5 +15,5 @@ setup(name='desper',
       author='Francesco Mistri',
       author_email='franc.mistri@gmail.com',
       license='MIT',
-      packages=['desper', 'desper.core'],
+      packages=find_packages(),
       )
