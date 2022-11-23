@@ -430,7 +430,8 @@ class World(EventDispatcher):
                 getattr(processor,
                         processor.__events__[ON_ADD_EVENT_NAME])()
             # on_add exists but dispatching is disabled
-            elif not self._dispatch_enabled:
+            elif (ON_ADD_EVENT_NAME in processor.__events__
+                    and not self._dispatch_enabled):
                 self.dispatch(ON_SINGLE_DISPATCH_EVENT_NAME, ON_ADD_EVENT_NAME,
                               processor)
 
