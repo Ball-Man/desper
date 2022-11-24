@@ -825,6 +825,19 @@ class Mat4(tuple):
         return cls().rotate(angle, vector)
 
     @classmethod
+    def from_scale(cls, vector: Vec3) -> 'Mat4':
+        """Create a scale matrix from a Vec3.
+
+        :Parameters:
+            `vector` : A `Vec3`, or 3 component tuple of float or int
+                Vec3 or tuple with x, y and z scale values
+        """
+        return cls((vector[0], 0.0, 0.0, 0.0,
+                    0.0, vector[1], 0.0, 0.0,
+                    0.0, 0.0, vector[2], 0.0,
+                    0.0, 0.0, 0.0, 1.0))
+
+    @classmethod
     def look_at_direction(cls, direction: Vec3, up: Vec3) -> 'Mat4':
         vec_z = direction.normalize()
         vec_x = direction.cross_product(up).normalize()
