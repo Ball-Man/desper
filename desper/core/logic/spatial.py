@@ -30,7 +30,7 @@ class Transform2D(EventDispatcher):
         super().__init__()
 
         self._position: dmath.Vec2 = position
-        self._rotation: float = rotation
+        self._rotation: float = rotation % 360.
         self._scale: dmath.Vec2 = scale
 
     @property
@@ -48,7 +48,7 @@ class Transform2D(EventDispatcher):
 
     @rotation.setter
     def rotation(self, value):
-        self._rotation = value
+        self._rotation = value % 360.
         self.dispatch(ON_ROTATION_CHANGE_EVENT_NAME, value)
 
     @property
