@@ -25,13 +25,14 @@ class Transform2D(EventDispatcher):
     new property's value.
     """
 
-    def __init__(self, position: dmath.Vec2 = dmath.Vec2(),
-                 rotation: float = 0., scale: dmath.Vec2 = dmath.Vec2(1., 1.)):
+    def __init__(self, position: tuple[float, float] = dmath.Vec2(),
+                 rotation: float = 0.,
+                 scale: tuple[float, float] = dmath.Vec2(1., 1.)):
         super().__init__()
 
-        self._position: dmath.Vec2 = position
+        self._position: dmath.Vec2 = dmath.Vec2(*position)
         self._rotation: float = rotation % 360.
-        self._scale: dmath.Vec2 = scale
+        self._scale: dmath.Vec2 = dmath.Vec2(*scale)
 
     @property
     def position(self) -> dmath.Vec2:
@@ -79,14 +80,14 @@ class Transform3D(EventDispatcher):
     new property's value.
     """
 
-    def __init__(self, position: dmath.Vec3 = dmath.Vec3(),
-                 rotation: dmath.Vec3 = dmath.Vec3(),
-                 scale: dmath.Vec3 = dmath.Vec3(1., 1., 1.)):
+    def __init__(self, position: tuple[float, float, float] = dmath.Vec3(),
+                 rotation: tuple[float, float, float] = dmath.Vec3(),
+                 scale: tuple[float, float, float] = dmath.Vec3(1., 1., 1.)):
         super().__init__()
 
-        self._position: dmath.Vec3 = position
-        self._rotation: dmath.Vec3 = rotation
-        self._scale: dmath.Vec3 = scale
+        self._position: dmath.Vec3 = dmath.Vec3(*position)
+        self._rotation: dmath.Vec3 = dmath.Vec3(*rotation)
+        self._scale: dmath.Vec3 = dmath.Vec3(*scale)
 
     @property
     def position(self) -> dmath.Vec3:
