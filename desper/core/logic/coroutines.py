@@ -4,13 +4,14 @@ import enum
 from collections import deque
 from dataclasses import dataclass, field
 import functools
-from typing import Generator, Callable, ParamSpec, TypeVar, Generic
+from typing import Generator, Callable, TypeVar, Generic
+# from typing import ParamSpec          >= 3.10 only
 import heapq
 
 import desper
 from desper.core.logic import Processor, World
 
-Params = ParamSpec('Params')
+# Params = ParamSpec('Params')          >= 3.10 only
 T = TypeVar('T')
 
 
@@ -250,8 +251,8 @@ class CoroutineProcessor(Processor):
                 self._active_queue.rotate(-1)
 
 
-def coroutine(function: Callable[Params, T]
-              ) -> Callable[Params, CoroutinePromise[T]]:
+def coroutine(function: Callable[..., T]
+              ) -> Callable[..., CoroutinePromise[T]]:
     """Decorator: easy coroutine startup.
 
     The wrapped function must be a generator function. As a result,
