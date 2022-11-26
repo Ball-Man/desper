@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 import glob
 import importlib
 import os.path as pt
-from typing import Sequence, Mapping, AnyStr, Callable, Optional
+from typing import (Iterable, Sequence, Mapping, AnyStr, Callable, Optional,
+                    Container)
 
 from .tree import *             # NOQA
 from .world import *            # NOQA
@@ -36,6 +37,7 @@ class DirectoryPopulatorRule:
     directory_path: str
     handle_type: Callable[..., Handle]
     args: Sequence = field(default_factory=lambda: [])
+    file_exts: Container[str] = ()
     kwargs: Mapping = field(default_factory=lambda: {})
 
     def instantiate(self, filename: str) -> Handle:
@@ -66,7 +68,7 @@ class DirectoryResourcePopulator:
         self.rules: list[DirectoryPopulatorRule] = []
 
     def add_rule(self, relative_path: str, handle_type: Callable[..., Handle],
-                 *args, **kwargs):
+                 *args, file_exts: Iterable[str] = (), **kwargs):
         """Add a rule that maps a subdirectory to a resource type.
 
         Whenever a file from the given subdirectory (``relative_path``)
@@ -77,11 +79,17 @@ class DirectoryResourcePopulator:
         ``relative_path`` is the path of the target directory, relative
         to :attr:`root`.
 
+        Keyword argument ``file_exts`` can be specified if filtering
+        on specific extensions is desired (an empty iterable defaults
+        to: accept all extensions). Extensions shall be given in the
+        form `.ext`.
+
         Additional arguments (positional and keywords) can be specified.
         They will be passed to ``handle_type`` at invocation time.
         """
         self.rules.append(
-            DirectoryPopulatorRule(relative_path, handle_type, args, kwargs))
+            DirectoryPopulatorRule(relative_path, handle_type, args,
+                                   set(file_exts), kwargs))
 
     def __call__(self, resource_map: ResourceMap, root: Optional[str] = None,
                  nest_on_conflict: Optional[bool] = None):
@@ -121,6 +129,14 @@ class DirectoryResourcePopulator:
 
             for full_file_path in glob.glob(pt.join(full_dir_path, '**'),
                                             recursive=True):
+                # Filter rule extensions
+                # Empty container means all extensions. Explicitly use
+                # len to check it as the container type is unsure
+                if (len(rule.file_exts)
+                    and pt.splitext(full_file_path)[1]
+                        not in rule.file_exts):
+                    continue
+
                 # Prepare some paths for map insertion
                 relpath = pt.relpath(full_file_path, root)
                 resource_string = pt.normpath(relpath).replace(

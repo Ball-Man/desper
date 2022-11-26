@@ -439,6 +439,7 @@ class TestDirectoryResourcePopulator:
 
         populator.add_rule('dir', FilenameHandle, 'args', kwarg='kwarg')
         populator.add_rule('dir2', lambda filename: SimpleWorldHandle())
+        populator.add_rule('dir3', FilenameHandle, file_exts=['.xml'])
 
         assert populator.rules[0].directory_path == 'dir'
         assert populator.rules[0].handle_type is FilenameHandle
@@ -448,6 +449,10 @@ class TestDirectoryResourcePopulator:
         assert populator.rules[1].directory_path == 'dir2'
         assert populator.rules[1].args == ()
         assert populator.rules[1].kwargs == {}
+
+        assert populator.rules[2].directory_path == 'dir3'
+        assert populator.rules[2].args == ()
+        assert populator.rules[2].kwargs == {}
 
         return populator
 
@@ -461,6 +466,10 @@ class TestDirectoryResourcePopulator:
 
         assert resource_map['dir/subdir/file2'].val == (
             'file2', ('args',), {'kwarg': 'kwarg'})
+
+        # .txt should have been filtered out
+        assert resource_map['dir3/file1.xml']
+        assert resource_map.get('dir3/file2.txt') is None
 
         assert resource_map.get('dir2') is None
 
