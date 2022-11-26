@@ -127,8 +127,8 @@ class DirectoryResourcePopulator:
                     f"Trying to gather resources from {full_path}, but it's "
                     'not a directory')
 
-            for full_file_path in glob.glob(pt.join(full_dir_path, '**'),
-                                            recursive=True):
+            for full_file_path in glob.iglob(pt.join(full_dir_path, '**'),
+                                             recursive=True):
                 # Filter rule extensions
                 # Empty container means all extensions. Explicitly use
                 # len to check it as the container type is unsure
