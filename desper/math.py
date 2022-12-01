@@ -252,7 +252,7 @@ class Vec2(tuple):
         :returns: A unit vector with the same heading.
         :rtype: Vec2
         """
-        d = self.__abs__()
+        d = Vec2.__abs__(self)
         if d:
             return Vec2(self[0] / d, self[1] / d)
         return self
@@ -486,7 +486,7 @@ class Vec3(tuple):
         :returns: A unit vector with the same rotation.
         :rtype: Vec3
         """
-        d = self.__abs__()
+        d = Vec3.__abs__(self)
         if d:
             return Vec3(self[0] / d, self[1] / d, self[2] / d)
         return self
@@ -593,7 +593,7 @@ class Vec4(tuple):
                           + ((other[3] - self[3]) ** 2))
 
     def normalize(self):
-        d = self.__abs__()
+        d = Vec4.__abs__(self)
         if d:
             return Vec4(self[0] / d, self[1] / d, self[2] / d, self[3] / d)
         return self
@@ -850,10 +850,15 @@ class Mat4(tuple):
 
     @classmethod
     def look_at(cls, position: Vec3, target: Vec3, up: Vec3) -> 'Mat4':
-        direction = target - position
-        direction_mat4 = cls.look_at_direction(direction, up)
-        position_mat4 = cls.from_translation(position.negate())
-        return direction_mat4 @ position_mat4
+        f = (Vec3.__sub__(target, position)).normalize()
+        u = Vec3.normalize(up)
+        s = Vec3.cross(f, u)
+        u = Vec3.cross(s, f)
+
+        return cls([s.x, u.x, -f.x, 0.0,
+                    s.y, u.y, -f.y, 0.0,
+                    s.z, u.z, -f.z, 0.0,
+                    -s.dot(position), -u.dot(position), f.dot(position), 1.0])
 
     def row(self, index: int):
         """Get a specific row as a tuple."""
