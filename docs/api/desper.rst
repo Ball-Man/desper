@@ -1,0 +1,4 @@
+desper
+=======
+
+.. automodule:: desper
