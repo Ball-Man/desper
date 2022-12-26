@@ -4,9 +4,9 @@ import time
 from typing import Optional, TypeVar, Generic, Callable, SupportsFloat
 
 import desper
-from desper.core.events import EventDispatcher
-from desper.core.logic import World
-from desper.core.model import Handle
+from desper.events import EventDispatcher
+from desper.logic import World
+from desper.model import Handle
 
 _T = TypeVar('T')
 

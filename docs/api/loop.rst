@@ -1,6 +1,6 @@
 desper.loop
 ===========
 
-.. automodule:: desper.core.loop
+.. automodule:: desper.loop
     :members:
     :undoc-members:

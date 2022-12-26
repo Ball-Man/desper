@@ -1,27 +1,27 @@
 desper.logic
 =============
 
-.. automodule:: desper.core.logic
+.. automodule:: desper.logic
     :members:
     :undoc-members:
 
 desper.logic.world
 ------------------
 
-.. automodule:: desper.core.logic.world
+.. automodule:: desper.logic.world
     :members:
     :undoc-members:
 
 desper.logic.spatial
 --------------------
 
-.. automodule:: desper.core.logic.spatial
+.. automodule:: desper.logic.spatial
     :members:
     :undoc-members:
 
 desper.logic.coroutines
 -----------------------
 
-.. automodule:: desper.core.logic.coroutines
+.. automodule:: desper.logic.coroutines
     :members:
     :undoc-members:

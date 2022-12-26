@@ -6,7 +6,7 @@ centralized :class:`World`s.
 from typing import (Protocol, runtime_checkable, Optional, Hashable, Generic,
                     Callable, SupportsFloat)
 
-from desper.core.events import event_handler
+from desper.events import event_handler
 from .world import *        # NOQA
 from .spatial import *      # NOQA
 from .coroutines import *   # NOQA

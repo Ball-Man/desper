@@ -1,5 +1,5 @@
 """Spatial positioning utilities."""
-from desper.core.events import EventDispatcher
+from desper.events import EventDispatcher
 import desper.math as dmath
 
 ON_POSITION_CHANGE_EVENT_NAME = 'on_position_change'

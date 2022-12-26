@@ -4,8 +4,8 @@ from itertools import count
 from typing import (Hashable, Any, TypeVar, Iterable, Union, Optional,
                     Callable, SupportsFloat)
 
-import desper.core.bisect as bisect
-from desper.core.events import EventDispatcher, event_handler
+import desper.bisect as bisect
+from desper.events import EventDispatcher, event_handler
 
 C = TypeVar('C')
 T = TypeVar('T')

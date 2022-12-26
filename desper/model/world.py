@@ -7,8 +7,8 @@ import re
 from collections import deque
 from typing import Callable, Sequence, Any
 
-from desper.core.model import Handle, ResourceMap
-from desper.core.logic import World, OnUpdateProcessor, CoroutineProcessor
+from desper.model import Handle, ResourceMap
+from desper.logic import World, OnUpdateProcessor, CoroutineProcessor
 
 ON_WORLD_LOAD_EVENT_NAME = 'on_world_load'
 

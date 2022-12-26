@@ -9,7 +9,7 @@ from typing import Generator, Callable, TypeVar, Generic
 import heapq
 
 import desper
-from desper.core.logic import Processor, World
+from desper.logic import Processor, World
 
 # Params = ParamSpec('Params')          >= 3.10 only
 T = TypeVar('T')

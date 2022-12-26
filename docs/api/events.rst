@@ -1,6 +1,6 @@
 desper.events
 ===========
 
-.. automodule:: desper.core.events
+.. automodule:: desper.events
     :members:
     :undoc-members:
