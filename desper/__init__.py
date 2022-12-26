@@ -4,7 +4,7 @@ Desper implements a slim set of tools to create the working structure of
 a game, but specific scopes are delegated to external libraries (e.g.
 graphics).
 
-In particular, the package proveides:
+In particular, the package provides:
 
 - (Lazy) resource management (see :mod:`model`)
 - Component and event based logics (see :mod:`logic`)
