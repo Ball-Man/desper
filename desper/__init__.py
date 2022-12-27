@@ -16,7 +16,7 @@ from .model import *        # NOQA
 from .logic import *        # NOQA
 from .loop import *         # NOQA
 
-version = '1.0.0'
+version = '1.1.0'
 
 default_loop = SimpleLoop()
 """Default global loop object.
