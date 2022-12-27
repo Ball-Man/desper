@@ -50,6 +50,7 @@ class DirectoryResourcePopulator:
 
     Instances of this populator are callables which accept a map and
     populate it with the resources gathered from the file system.
+    Filenames are used as handle names.
 
     ``nest_on_conflict`` can be used to enable/disable nesting of
     conflicting handles. When trying to place a new :class:`Handle` in
@@ -59,12 +60,22 @@ class DirectoryResourcePopulator:
     handles are kept in memory. The new one will become the default
     value, but it will always be possible to retrieve the shadowed one.
     If nesting is disabled, only the new resource is kept.
+
+    ``trim_extensions`` can be used to drop file extensions from the
+    name of the generated handles. This makes names more memorable,
+    but can cause conflicting handles (make sure ``nest_on_conflict``
+    was properly set, based your expected behaviour). Moreover, dropping
+    extensions simple usage of :class:`StaticResourceMap` (
+    see :meth:`ResourceMap.get_static_map`). Defaults
+    to ``False`` (disabled), but enabling it is recommended.
     """
 
     def __init__(self, root: str = project_path('resources'),
-                 nest_on_conflict: bool = True):
+                 nest_on_conflict: bool = True, trim_extensions: bool = False):
         self.root: str = root
         self.nest_on_conflict = nest_on_conflict
+        self.trim_extensions = trim_extensions
+
         self.rules: list[DirectoryPopulatorRule] = []
 
     def add_rule(self, relative_path: str, handle_type: Callable[..., Handle],
@@ -92,7 +103,8 @@ class DirectoryResourcePopulator:
                                    set(file_exts), kwargs))
 
     def __call__(self, resource_map: ResourceMap, root: Optional[str] = None,
-                 nest_on_conflict: Optional[bool] = None):
+                 nest_on_conflict: Optional[bool] = None,
+                 trim_extensions: Optional[bool] = None):
         """Apply populator on given map.
 
         Based on given rules (specified with :meth:`add_rule` and stored
@@ -106,6 +118,10 @@ class DirectoryResourcePopulator:
           a submap, i.e. a new :class:`ResourceMap` having as key the
           directory name.
 
+        Keyword arguments' meaning can be inspected at
+        :class:`DirectoryResourcePopulator`. ``None`` values will fall
+        back to the values specified during construction.
+
         TODO: Manage separately rules for subdirectories
         """
         if root is None:
@@ -113,6 +129,9 @@ class DirectoryResourcePopulator:
 
         if nest_on_conflict is None:
             nest_on_conflict = self.nest_on_conflict
+
+        if trim_extensions is None:
+            trim_extensions = self.trim_extensions
 
         for rule in self.rules:
             full_dir_path = pt.join(root, rule.directory_path)
@@ -141,6 +160,9 @@ class DirectoryResourcePopulator:
                 relpath = pt.relpath(full_file_path, root)
                 resource_string = pt.normpath(relpath).replace(
                     pt.sep, ResourceMap.split_char)
+                # Optionally trim extensions from files
+                if trim_extensions and pt.isfile(full_file_path):
+                    resource_string = pt.splitext(resource_string)[0]
 
                 new_resource = None
                 if (pt.isdir(full_file_path)

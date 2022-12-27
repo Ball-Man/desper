@@ -524,3 +524,12 @@ class TestDirectoryResourcePopulator:
         populator(resource_map, nest_on_conflict=False)
 
         assert len(resource_map['dir'].handles.maps) == 1
+
+    def test_call_trim_extensions_override(self, resource_map):
+        populator = self.test_add_rule(nest=False)
+
+        populator(resource_map, trim_extensions=True)
+
+        assert resource_map.get('dir/file1')
+        assert resource_map.get('dir/subdir/file2')
+        assert resource_map.get('dir3/file1')
