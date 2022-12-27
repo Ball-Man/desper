@@ -7,6 +7,7 @@ setup(name='desper',
                    'Intended Audience :: Developers',
                    'Programming Language :: Python :: 3 :: Only',
                    'Topic :: Games/Entertainment'],
+      python_requires='>=3.9',
       version='1.1.0',
       description='A Python3 game development toolkit for resource and logic '
                   'management',
