@@ -1,5 +1,5 @@
 desper.events
-===========
+=============
 
 .. automodule:: desper.events
     :members:

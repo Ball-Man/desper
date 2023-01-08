@@ -1,7 +1,7 @@
 """Desper's logic module.
 
 Entities are collections of components (Python objects) catalogued in
-centralized :class:`World`s.
+centralized :class:`World` instances.
 """
 from typing import (Protocol, runtime_checkable, Optional, Hashable, Generic,
                     Callable, SupportsFloat)
